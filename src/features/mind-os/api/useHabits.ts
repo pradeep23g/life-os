@@ -40,6 +40,7 @@ export type HabitStreakBreak = {
   habit_id: string
   break_date: string
   reason: string | null
+  recovery_commitment: string | null
   created_at: string
   healed_at: string | null
 }
@@ -57,6 +58,7 @@ export type HabitWithStats = Habit & {
   longestStreak: number
   completedToday: boolean
   totalCompletions: number
+  todayValue: number
 }
 
 export type HabitMistake = HabitStreakBreak & {
@@ -72,6 +74,7 @@ export type HabitHealHistory = HabitStreakHeal & {
 export type HabitWorkspaceData = {
   habits: HabitWithStats[]
   logs: HabitLog[]
+  logValueByHabitDate: Record<string, number>
   breaks: HabitStreakBreak[]
   heals: HabitStreakHeal[]
   mistakes: HabitMistake[]
@@ -85,6 +88,22 @@ export type HabitWorkspaceData = {
   recentHeal: HabitHealHistory | null
   healsUsedThisMonth: number
   healTokensRemaining: number
+  lowHealTokenWarning: boolean
+  bestHabitThisWeek: {
+    habitId: string
+    title: string
+    count: number
+  } | null
+  mostHealedHabit: {
+    habitId: string
+    title: string
+    count: number
+  } | null
+  mostBrokenHabit: {
+    habitId: string
+    title: string
+    count: number
+  } | null
 }
 
 type CreateHabitInput = {
@@ -98,7 +117,23 @@ type MarkHabitDoneInput = {
   habitId: string
   habitType: HabitType
   targetValue: number
+  currentValue?: number
   struggleNote?: string
+}
+
+type MarkHabitNotDoneInput = {
+  habitId: string
+}
+
+type AdjustHabitCountInput = {
+  habitId: string
+  delta: number
+  struggleNote?: string
+}
+
+type SetHabitCountForTodayInput = {
+  habitId: string
+  value: number
 }
 
 type UpdateHabitBreakReasonInput = {
@@ -106,10 +141,20 @@ type UpdateHabitBreakReasonInput = {
   reason: string
 }
 
+type UpdateRecoveryCommitmentInput = {
+  breakId: string
+  recoveryCommitment: string
+}
+
 type HealHabitBreakInput = {
   breakId: string
   habitId: string
   reason: string
+}
+
+type HabitCounter = {
+  habitId: string
+  count: number
 }
 
 function normalizeHabitType(value: string | null | undefined): HabitType {
@@ -146,6 +191,50 @@ function buildError(context: string, error: unknown): Error {
   return new Error(`${context} (${getErrorCode(error)}): ${getErrorMessage(error)}`)
 }
 
+function isMissingColumnError(error: unknown, columnName: string): boolean {
+  const code = getErrorCode(error).toLowerCase()
+  const message = getErrorMessage(error).toLowerCase()
+  const column = columnName.toLowerCase()
+
+  if (code === '42703' || code === 'pgrst204') {
+    return message.includes(column)
+  }
+
+  return message.includes(column) && (message.includes('does not exist') || message.includes('could not find'))
+}
+
+function isCompletionLog(habit: Habit, log: HabitLog): boolean {
+  if (habit.habit_type === 'target') {
+    return log.value >= habit.target_value
+  }
+
+  return log.value >= 1
+}
+
+function getCounterWinner(counters: HabitCounter[], titleByHabitId: Map<string, string>) {
+  if (counters.length === 0) {
+    return null
+  }
+
+  const winner = counters.reduce((best, candidate) => {
+    if (candidate.count > best.count) {
+      return candidate
+    }
+
+    return best
+  })
+
+  if (winner.count <= 0) {
+    return null
+  }
+
+  return {
+    habitId: winner.habitId,
+    title: titleByHabitId.get(winner.habitId) ?? 'Untitled Habit',
+    count: winner.count,
+  }
+}
+
 function sortByDateDesc<T>(items: T[], keyGetter: (item: T) => string) {
   return [...items].sort((left, right) => {
     if (left === right) {
@@ -171,6 +260,22 @@ async function requireUserId() {
   }
 
   return user.id
+}
+
+async function fetchTodayHabitLog(userId: string, habitId: string) {
+  const { data, error } = await supabase
+    .from('habit_logs')
+    .select('id, value, struggle_note')
+    .eq('habit_id', habitId)
+    .eq('user_id', userId)
+    .eq('log_date', getTodayIndiaDateKey())
+    .maybeSingle()
+
+  if (error) {
+    throw buildError('Failed to fetch today habit log', error)
+  }
+
+  return data
 }
 
 async function fetchHabits(): Promise<Habit[]> {
@@ -210,7 +315,7 @@ async function fetchHabitWorkspaceData(): Promise<HabitWorkspaceData> {
       .order('log_date', { ascending: false }),
     supabase
       .from('habit_streak_breaks')
-      .select('id, habit_id, break_date, reason, created_at, healed_at')
+      .select('id, habit_id, break_date, reason, recovery_commitment, created_at, healed_at')
       .eq('user_id', userId)
       .order('break_date', { ascending: false }),
     supabase
@@ -228,12 +333,33 @@ async function fetchHabitWorkspaceData(): Promise<HabitWorkspaceData> {
     throw buildError('Failed to fetch habit logs', logsResult.error)
   }
 
-  if (breaksResult.error) {
-    throw buildError('Failed to fetch habit streak breaks', breaksResult.error)
-  }
-
   if (healsResult.error) {
     throw buildError('Failed to fetch habit streak heals', healsResult.error)
+  }
+
+  let breaks: HabitStreakBreak[] = []
+
+  if (breaksResult.error) {
+    if (!isMissingColumnError(breaksResult.error, 'recovery_commitment')) {
+      throw buildError('Failed to fetch habit streak breaks', breaksResult.error)
+    }
+
+    const fallbackBreaksResult = await supabase
+      .from('habit_streak_breaks')
+      .select('id, habit_id, break_date, reason, created_at, healed_at')
+      .eq('user_id', userId)
+      .order('break_date', { ascending: false })
+
+    if (fallbackBreaksResult.error) {
+      throw buildError('Failed to fetch habit streak breaks (fallback)', fallbackBreaksResult.error)
+    }
+
+    breaks = (fallbackBreaksResult.data ?? []).map((row) => ({
+      ...row,
+      recovery_commitment: null,
+    }))
+  } else {
+    breaks = breaksResult.data ?? []
   }
 
   const habits: Habit[] = (habitsResult.data ?? []).map((habit) => ({
@@ -241,29 +367,49 @@ async function fetchHabitWorkspaceData(): Promise<HabitWorkspaceData> {
     habit_type: normalizeHabitType(habit.habit_type),
   }))
   const logs: HabitLog[] = logsResult.data ?? []
-  const breaks: HabitStreakBreak[] = breaksResult.data ?? []
   const heals: HabitStreakHeal[] = healsResult.data ?? []
 
   const healedBreakIds = new Set(heals.map((item) => item.break_id))
   const habitTitleById = new Map(habits.map((habit) => [habit.id, habit.title]))
   const breakById = new Map(breaks.map((item) => [item.id, item]))
+  const todayDateKey = getTodayIndiaDateKey()
+  const rollingWeekStart = addDays(todayDateKey, -6)
+  const logsByHabitId = new Map<string, HabitLog[]>()
+  const logValueByHabitDate: HabitWorkspaceData['logValueByHabitDate'] = {}
+
+  for (const log of logs) {
+    const list = logsByHabitId.get(log.habit_id) ?? []
+    list.push(log)
+    logsByHabitId.set(log.habit_id, list)
+    logValueByHabitDate[`${log.habit_id}:${log.log_date}`] = log.value
+  }
+
+  const weeklyCounters: HabitCounter[] = []
 
   const habitsWithStats: HabitWithStats[] = habits.map((habit) => {
-    const habitLogs = logs.filter((log) => log.habit_id === habit.id)
-    const completionDates = new Set(habitLogs.map((log) => log.log_date))
+    const habitLogs = logsByHabitId.get(habit.id) ?? []
+    const completionDates = new Set(habitLogs.filter((log) => isCompletionLog(habit, log)).map((log) => log.log_date))
 
     const healedBreakDates = new Set(
       breaks.filter((item) => item.habit_id === habit.id && isBreakHealed(item, healedBreakIds)).map((item) => item.break_date),
     )
 
     const streakDates = new Set([...completionDates, ...healedBreakDates])
+    const todayLog = habitLogs.find((log) => log.log_date === todayDateKey)
+    const weekCount = [...streakDates].filter((dateKey) => dateKey >= rollingWeekStart && dateKey <= todayDateKey).length
+
+    weeklyCounters.push({
+      habitId: habit.id,
+      count: weekCount,
+    })
 
     return {
       ...habit,
       currentStreak: getCurrentStreak(streakDates),
       longestStreak: getLongestStreak(streakDates),
-      completedToday: completionDates.has(getTodayIndiaDateKey()),
+      completedToday: completionDates.has(todayDateKey),
       totalCompletions: completionDates.size,
+      todayValue: todayLog?.value ?? 0,
     }
   })
 
@@ -303,10 +449,32 @@ async function fetchHabitWorkspaceData(): Promise<HabitWorkspaceData> {
 
   const currentMonthKey = getIndiaMonthKey(new Date())
   const healsUsedThisMonth = healHistory.filter((item) => getIndiaMonthKey(item.created_at) === currentMonthKey).length
+  const healTokensRemaining = Math.max(0, 5 - healsUsedThisMonth)
+  const breakCounters = new Map<string, number>()
+  const healCounters = new Map<string, number>()
+
+  for (const breakItem of breaks) {
+    breakCounters.set(breakItem.habit_id, (breakCounters.get(breakItem.habit_id) ?? 0) + 1)
+  }
+
+  for (const healItem of heals) {
+    healCounters.set(healItem.habit_id, (healCounters.get(healItem.habit_id) ?? 0) + 1)
+  }
+
+  const mostBrokenHabit = getCounterWinner(
+    [...breakCounters.entries()].map(([habitId, count]) => ({ habitId, count })),
+    habitTitleById,
+  )
+  const mostHealedHabit = getCounterWinner(
+    [...healCounters.entries()].map(([habitId, count]) => ({ habitId, count })),
+    habitTitleById,
+  )
+  const bestHabitThisWeek = getCounterWinner(weeklyCounters, habitTitleById)
 
   return {
     habits: habitsWithStats,
     logs,
+    logValueByHabitDate,
     breaks,
     heals,
     mistakes,
@@ -315,7 +483,11 @@ async function fetchHabitWorkspaceData(): Promise<HabitWorkspaceData> {
     recentMistake: mistakes[0] ?? null,
     recentHeal: healHistory[0] ?? null,
     healsUsedThisMonth,
-    healTokensRemaining: Math.max(0, 5 - healsUsedThisMonth),
+    healTokensRemaining,
+    lowHealTokenWarning: healTokensRemaining <= 1,
+    bestHabitThisWeek,
+    mostHealedHabit,
+    mostBrokenHabit,
   }
 }
 
@@ -335,8 +507,15 @@ async function syncMissingHabitBreaks(data: HabitWorkspaceData): Promise<number>
   const existingBreakKeys = new Set(data.breaks.map((item) => `${item.habit_id}:${item.break_date}`))
 
   const completionDatesByHabit = new Map<string, string[]>()
+  const habitById = new Map(data.habits.map((habit) => [habit.id, habit]))
 
   for (const log of data.logs) {
+    const habit = habitById.get(log.habit_id)
+
+    if (!habit || !isCompletionLog(habit, log)) {
+      continue
+    }
+
     const list = completionDatesByHabit.get(log.habit_id) ?? []
     list.push(log.log_date)
     completionDatesByHabit.set(log.habit_id, list)
@@ -415,8 +594,10 @@ async function createHabit({ title, habitType, targetValue, unit }: CreateHabitI
 
 async function markHabitDone({ habitId, habitType, targetValue, struggleNote }: MarkHabitDoneInput): Promise<void> {
   const userId = await requireUserId()
-  const cleanedNote = struggleNote?.trim() || null
-  const value = habitType === 'target' ? Math.max(1, Math.floor(targetValue)) : 1
+  const existingLog = await fetchTodayHabitLog(userId, habitId)
+  const cleanedNote =
+    struggleNote === undefined ? existingLog?.struggle_note ?? null : (struggleNote.trim().length > 0 ? struggleNote.trim() : null)
+  const value = habitType === 'target' ? Math.max(1, Math.floor(targetValue), Math.floor(existingLog?.value ?? 0)) : 1
 
   const { error } = await supabase.from('habit_logs').upsert(
     {
@@ -437,6 +618,116 @@ async function markHabitDone({ habitId, habitType, targetValue, struggleNote }: 
   }
 }
 
+async function markHabitNotDone({ habitId }: MarkHabitNotDoneInput): Promise<void> {
+  const userId = await requireUserId()
+
+  const { error } = await supabase
+    .from('habit_logs')
+    .delete()
+    .eq('habit_id', habitId)
+    .eq('user_id', userId)
+    .eq('log_date', getTodayIndiaDateKey())
+
+  if (error) {
+    throw buildError('Failed to mark habit not done', error)
+  }
+}
+
+async function adjustHabitCount({ habitId, delta, struggleNote }: AdjustHabitCountInput): Promise<void> {
+  const normalizedDelta = Math.trunc(delta)
+
+  if (normalizedDelta === 0) {
+    return
+  }
+
+  const userId = await requireUserId()
+  const todayDateKey = getTodayIndiaDateKey()
+  const existingLog = await fetchTodayHabitLog(userId, habitId)
+  const currentValue = Math.max(0, Math.floor(existingLog?.value ?? 0))
+  const nextValue = Math.max(0, currentValue + normalizedDelta)
+
+  if (nextValue === 0) {
+    if (!existingLog?.id) {
+      return
+    }
+
+    const { error } = await supabase
+      .from('habit_logs')
+      .delete()
+      .eq('id', existingLog.id)
+      .eq('user_id', userId)
+
+    if (error) {
+      throw buildError('Failed to clear habit count', error)
+    }
+
+    return
+  }
+
+  const cleanedNote =
+    struggleNote === undefined ? existingLog?.struggle_note ?? null : (struggleNote.trim().length > 0 ? struggleNote.trim() : null)
+
+  const { error } = await supabase.from('habit_logs').upsert(
+    {
+      habit_id: habitId,
+      user_id: userId,
+      value: nextValue,
+      log_date: todayDateKey,
+      logged_at: new Date().toISOString(),
+      struggle_note: cleanedNote,
+    },
+    {
+      onConflict: 'habit_id,log_date',
+    },
+  )
+
+  if (error) {
+    throw buildError('Failed to update habit count', error)
+  }
+}
+
+async function setHabitCountForToday({ habitId, value }: SetHabitCountForTodayInput): Promise<void> {
+  const normalizedValue = Math.max(0, Math.floor(value))
+  const userId = await requireUserId()
+  const existingLog = await fetchTodayHabitLog(userId, habitId)
+
+  if (normalizedValue === 0) {
+    if (!existingLog?.id) {
+      return
+    }
+
+    const { error } = await supabase
+      .from('habit_logs')
+      .delete()
+      .eq('id', existingLog.id)
+      .eq('user_id', userId)
+
+    if (error) {
+      throw buildError('Failed to clear habit count', error)
+    }
+
+    return
+  }
+
+  const { error } = await supabase.from('habit_logs').upsert(
+    {
+      habit_id: habitId,
+      user_id: userId,
+      value: normalizedValue,
+      log_date: getTodayIndiaDateKey(),
+      logged_at: new Date().toISOString(),
+      struggle_note: existingLog?.struggle_note ?? null,
+    },
+    {
+      onConflict: 'habit_id,log_date',
+    },
+  )
+
+  if (error) {
+    throw buildError('Failed to set habit count for today', error)
+  }
+}
+
 async function updateHabitBreakReason({ breakId, reason }: UpdateHabitBreakReasonInput): Promise<void> {
   const userId = await requireUserId()
   const cleanedReason = reason.trim() || null
@@ -449,6 +740,21 @@ async function updateHabitBreakReason({ breakId, reason }: UpdateHabitBreakReaso
 
   if (error) {
     throw buildError('Failed to update streak break reason', error)
+  }
+}
+
+async function updateRecoveryCommitment({ breakId, recoveryCommitment }: UpdateRecoveryCommitmentInput): Promise<void> {
+  const userId = await requireUserId()
+  const cleanedCommitment = recoveryCommitment.trim() || null
+
+  const { error } = await supabase
+    .from('habit_streak_breaks')
+    .update({ recovery_commitment: cleanedCommitment })
+    .eq('id', breakId)
+    .eq('user_id', userId)
+
+  if (error) {
+    throw buildError('Failed to update recovery commitment', error)
   }
 }
 
@@ -549,11 +855,66 @@ export function useMarkHabitDone() {
   })
 }
 
+export function useMarkHabitNotDone() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: markHabitNotDone,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: mindOsHabitWorkspaceQueryKey })
+    },
+  })
+}
+
+export function useUndoHabitDone() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: markHabitNotDone,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: mindOsHabitWorkspaceQueryKey })
+    },
+  })
+}
+
+export function useAdjustHabitCount() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: adjustHabitCount,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: mindOsHabitWorkspaceQueryKey })
+    },
+  })
+}
+
+export function useSetHabitCountForToday() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: setHabitCountForToday,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: mindOsHabitWorkspaceQueryKey })
+    },
+  })
+}
+
 export function useUpdateHabitBreakReason() {
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: updateHabitBreakReason,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: mindOsHabitWorkspaceQueryKey })
+    },
+  })
+}
+
+export function useUpdateRecoveryCommitment() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: updateRecoveryCommitment,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: mindOsHabitWorkspaceQueryKey })
     },
