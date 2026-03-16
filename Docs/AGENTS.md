@@ -152,8 +152,26 @@ Vite dev server
 
 ---
 
+# LOCAL COMMAND WORKFLOW
+
+Use npm commands from the repo root (life-os/):
+
+- npm install (initial setup or dependency sync)
+- npm ci (clean, lockfile-based install for reproducible environments)
+- npm run dev (start local Vite dev server)
+- npm run lint (run ESLint checks)
+- npm run build (type-check + production build)
+- npm run preview (serve the production build locally)
+
+Recommended pre-commit check for code changes:
+
+- npm run lint && npm run build
+
+---
+
 # PROJECT STRUCTURE & AGENT RESPONSIBILITY
 
 The project uses a **Strict Domain-Driven Feature Architecture**.
 
 Agents MUST isolate features inside their specific OS folders (e.g., `src/features/mind-os/`). Flat directory structures are explicitly forbidden to ensure system scalability and cognitive isolation.
+

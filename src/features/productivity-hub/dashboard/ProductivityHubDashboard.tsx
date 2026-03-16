@@ -8,20 +8,20 @@ function ProductivityHubDashboard() {
   const doneCount = tasks.filter((task) => task.status === 'Done').length
 
   return (
-    <section className="grid grid-cols-1 gap-4 md:grid-cols-3">
-      <article className="rounded-xl border border-slate-700 bg-surface p-4">
-        <p className="text-sm text-slate-300">Tasks in To Do</p>
-        <p className="mt-2 text-2xl font-semibold text-slate-100">{isLoading ? '--' : todoCount}</p>
+    <section className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3">
+      <article className="min-h-[120px] rounded-xl border border-slate-700 bg-surface p-3 sm:p-4">
+        <p className="text-xs text-slate-300 sm:text-sm">Tasks in To Do</p>
+        <p className="mt-2 text-xl font-semibold text-slate-100 sm:text-2xl">{isLoading ? '--' : todoCount}</p>
       </article>
 
-      <article className="rounded-xl border border-slate-700 bg-surface p-4">
-        <p className="text-sm text-slate-300">Tasks in Doing</p>
-        <p className="mt-2 text-2xl font-semibold text-slate-100">{isLoading ? '--' : doingCount}</p>
+      <article className="min-h-[120px] rounded-xl border border-slate-700 bg-surface p-3 sm:p-4">
+        <p className="text-xs text-slate-300 sm:text-sm">Tasks in Doing</p>
+        <p className="mt-2 text-xl font-semibold text-slate-100 sm:text-2xl">{isLoading ? '--' : doingCount}</p>
       </article>
 
-      <article className="rounded-xl border border-slate-700 bg-surface p-4">
-        <p className="text-sm text-slate-300">Tasks Done</p>
-        <p className="mt-2 text-2xl font-semibold text-slate-100">{isLoading ? '--' : doneCount}</p>
+      <article className="col-span-2 min-h-[120px] rounded-xl border border-slate-700 bg-surface p-3 sm:p-4 md:col-span-1">
+        <p className="text-xs text-slate-300 sm:text-sm">Tasks Done</p>
+        <p className="mt-2 text-xl font-semibold text-slate-100 sm:text-2xl">{isLoading ? '--' : doneCount}</p>
       </article>
     </section>
   )

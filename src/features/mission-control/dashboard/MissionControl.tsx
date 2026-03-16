@@ -65,10 +65,7 @@ function MissionControl() {
     {
       label: 'Longest Habit Streak',
       value: formatMetric(`${longestHabitStreak?.streak ?? 0} days`, habitsLoading, habitsError),
-      detail:
-        !habitsLoading && !habitsError
-          ? longestHabitStreak?.title ?? 'No streaks yet'
-          : '',
+      detail: !habitsLoading && !habitsError ? longestHabitStreak?.title ?? 'No streaks yet' : '',
     },
     {
       label: 'Pending Tasks',
@@ -96,12 +93,12 @@ function MissionControl() {
         <p className="mt-1 text-sm text-slate-300">Live summaries across Life OS modules.</p>
       </header>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-6">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-6">
         {stats.map((stat) => (
-          <article key={stat.label} className="rounded-xl border border-slate-700 bg-surface p-4">
-            <p className="text-sm text-slate-300">{stat.label}</p>
-            <p className="mt-2 text-2xl font-semibold text-slate-100">{stat.value}</p>
-            {stat.detail ? <p className="mt-1 text-xs text-slate-400">{stat.detail}</p> : null}
+          <article key={stat.label} className="min-h-[120px] rounded-xl border border-slate-700 bg-surface p-3 sm:p-4">
+            <p className="text-xs text-slate-300 sm:text-sm">{stat.label}</p>
+            <p className="mt-2 text-xl font-semibold text-slate-100 sm:text-2xl">{stat.value}</p>
+            {stat.detail ? <p className="mt-1 text-[11px] text-slate-400 sm:text-xs">{stat.detail}</p> : null}
           </article>
         ))}
       </div>

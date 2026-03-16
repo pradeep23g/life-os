@@ -98,10 +98,28 @@ function AnalogClockWidget() {
   )
 }
 
+function PenIcon({ className = 'h-5 w-5' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true">
+      <path d="M4 20l4.5-1 9-9a1.8 1.8 0 000-2.5l-1-1a1.8 1.8 0 00-2.5 0l-9 9L4 20z" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M13 7l4 4" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function CloseIcon({ className = 'h-5 w-5' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true">
+      <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
+    </svg>
+  )
+}
+
 function JournalPage() {
   const { data: entries = [], isLoading, isError } = useJournalEntries()
   const { mutate: createEntry, isPending, error: createError } = useCreateJournalEntry()
 
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [mood, setMood] = useState<number>(3)
   const [whatWentGood, setWhatWentGood] = useState('')
   const [whatYouLearned, setWhatYouLearned] = useState('')
@@ -130,6 +148,38 @@ function JournalPage() {
     return [whatWentGood, whatYouLearned, briefAboutDay].some((value) => value.trim().length > 0)
   }, [whatWentGood, whatYouLearned, briefAboutDay])
 
+  useEffect(() => {
+    if (!isCreateModalOpen && !isCalendarOpen && !selectedEntry) {
+      return
+    }
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') {
+        return
+      }
+
+      if (selectedEntry) {
+        setSelectedEntry(null)
+        return
+      }
+
+      if (isCalendarOpen) {
+        setIsCalendarOpen(false)
+        return
+      }
+
+      if (isCreateModalOpen) {
+        setIsCreateModalOpen(false)
+      }
+    }
+
+    window.addEventListener('keydown', handleEscape)
+
+    return () => {
+      window.removeEventListener('keydown', handleEscape)
+    }
+  }, [isCalendarOpen, isCreateModalOpen, selectedEntry])
+
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
@@ -146,130 +196,57 @@ function JournalPage() {
           setWhatWentGood('')
           setWhatYouLearned('')
           setBriefAboutDay('')
+          setIsCreateModalOpen(false)
         },
       },
     )
   }
 
   return (
-    <section className="space-y-4">
+    <section className="space-y-4 pb-24">
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1.2fr_1fr]">
-        <article className="rounded-xl border border-slate-700 bg-slate-900 p-4">
-          <h2 className="text-lg font-semibold text-slate-100">Journal Entry</h2>
+        <article
+          className="cursor-pointer rounded-xl border border-slate-700 bg-slate-900 p-4"
+          onClick={() => {
+            setCalendarMonth(new Date())
+            setIsCalendarOpen(true)
+          }}
+        >
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-slate-100">Journal Calendar</h2>
+            <span className="rounded-md border border-slate-600 px-2 py-1 text-xs text-slate-300">Open</span>
+          </div>
+          <p className="mt-1 text-xs text-slate-400">Logged days are green with mood emoji.</p>
 
-          <form onSubmit={handleSubmit} className="mt-3 space-y-4">
-            <div>
-              <p className="mb-2 text-sm text-slate-300">Mood Selector</p>
-              <div className="flex flex-wrap gap-2">
-                {moodOptions.map((option) => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    onClick={() => setMood(option.value)}
-                    style={{
-                      fontFamily: '"Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif',
-                    }}
-                    className={`rounded-md border px-3 py-1 text-lg ${
-                      mood === option.value
-                        ? 'border-emerald-500 bg-emerald-500/10'
-                        : 'border-slate-600 bg-slate-800 hover:bg-slate-700'
-                    }`}
-                    title={option.label}
-                  >
-                    {option.emoji}
-                  </button>
-                ))}
-              </div>
-            </div>
+          <div className="mt-3 grid grid-cols-7 gap-1 text-center text-[11px] text-slate-500">
+            {weekdayHeaders.map((weekday) => (
+              <p key={weekday}>{weekday}</p>
+            ))}
+          </div>
 
-            <label className="block text-sm text-slate-300">
-              What went good
-              <textarea
-                value={whatWentGood}
-                onChange={(event) => setWhatWentGood(event.target.value)}
-                rows={3}
-                className="mt-1 w-full rounded-md border border-slate-600 bg-slate-800 p-2 text-slate-100"
-              />
-            </label>
+          <div className="mt-1 grid grid-cols-7 gap-1">
+            {miniMonthCells.map((day) => {
+              const dayEntry = entriesByDate.get(day.dateKey)
+              const isLogged = Boolean(dayEntry)
 
-            <label className="block text-sm text-slate-300">
-              What you've learned
-              <textarea
-                value={whatYouLearned}
-                onChange={(event) => setWhatYouLearned(event.target.value)}
-                rows={3}
-                className="mt-1 w-full rounded-md border border-slate-600 bg-slate-800 p-2 text-slate-100"
-              />
-            </label>
-
-            <label className="block text-sm text-slate-300">
-              Brief about day
-              <textarea
-                value={briefAboutDay}
-                onChange={(event) => setBriefAboutDay(event.target.value)}
-                rows={4}
-                className="mt-1 w-full rounded-md border border-slate-600 bg-slate-800 p-2 text-slate-100"
-              />
-            </label>
-
-            {createError ? (
-              <p className="text-sm text-red-400">Failed to save journal entry: {getReadableErrorMessage(createError)}</p>
-            ) : null}
-
-            <button
-              type="submit"
-              disabled={isPending || !hasContent}
-              className="rounded-md border border-slate-600 px-4 py-2 text-sm text-slate-100 hover:bg-slate-800 disabled:opacity-60"
-            >
-              {isPending ? 'Saving...' : 'Save Entry'}
-            </button>
-          </form>
+              return (
+                <div
+                  key={day.dateKey}
+                  className={`rounded border p-1 text-center text-xs ${
+                    isLogged
+                      ? 'border-emerald-500/60 bg-emerald-500/20 text-emerald-100'
+                      : 'border-slate-700 bg-slate-800 text-slate-400'
+                  } ${day.inCurrentMonth ? '' : 'opacity-40'}`}
+                >
+                  <p>{day.day}</p>
+                  <p className="leading-none">{dayEntry ? moodToEmoji(dayEntry.mood) : ''}</p>
+                </div>
+              )
+            })}
+          </div>
         </article>
 
-        <section className="space-y-4">
-          <article
-            className="cursor-pointer rounded-xl border border-slate-700 bg-slate-900 p-4"
-            onClick={() => {
-              setCalendarMonth(new Date())
-              setIsCalendarOpen(true)
-            }}
-          >
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-slate-100">Journal Calendar</h2>
-              <span className="rounded-md border border-slate-600 px-2 py-1 text-xs text-slate-300">Open</span>
-            </div>
-            <p className="mt-1 text-xs text-slate-400">Logged days are green with mood emoji.</p>
-
-            <div className="mt-3 grid grid-cols-7 gap-1 text-center text-[11px] text-slate-500">
-              {weekdayHeaders.map((weekday) => (
-                <p key={weekday}>{weekday}</p>
-              ))}
-            </div>
-
-            <div className="mt-1 grid grid-cols-7 gap-1">
-              {miniMonthCells.map((day) => {
-                const dayEntry = entriesByDate.get(day.dateKey)
-                const isLogged = Boolean(dayEntry)
-
-                return (
-                  <div
-                    key={day.dateKey}
-                    className={`rounded border p-1 text-center text-xs ${
-                      isLogged
-                        ? 'border-emerald-500/60 bg-emerald-500/20 text-emerald-100'
-                        : 'border-slate-700 bg-slate-800 text-slate-400'
-                    } ${day.inCurrentMonth ? '' : 'opacity-40'}`}
-                  >
-                    <p>{day.day}</p>
-                    <p className="leading-none">{dayEntry ? moodToEmoji(dayEntry.mood) : ''}</p>
-                  </div>
-                )
-              })}
-            </div>
-          </article>
-
-          <AnalogClockWidget />
-        </section>
+        <AnalogClockWidget />
       </div>
 
       <article className="rounded-xl border border-slate-700 bg-slate-900 p-4">
@@ -291,6 +268,111 @@ function JournalPage() {
           ))}
         </ul>
       </article>
+
+      <button
+        type="button"
+        onClick={() => setIsCreateModalOpen(true)}
+        className="fixed bottom-5 right-5 z-30 inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-slate-600 bg-slate-800 text-slate-100 shadow-xl shadow-black/60 transition hover:bg-slate-700"
+        aria-label="Create journal entry"
+      >
+        <PenIcon />
+      </button>
+
+      {isCreateModalOpen ? (
+        <div className="fixed inset-0 z-40 flex items-center justify-center p-3">
+          <button
+            type="button"
+            onClick={() => setIsCreateModalOpen(false)}
+            className="absolute inset-0 bg-slate-950/85"
+            aria-label="Close journal entry modal"
+          />
+
+          <article className="relative z-10 h-[88vh] w-[96vw] max-w-4xl overflow-auto rounded-xl border border-slate-700 bg-slate-900 p-4 sm:p-6">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-semibold text-slate-100">New Journal Entry</h2>
+                <p className="text-sm text-slate-400">Capture what went good, your mood, learnings, and day summary.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsCreateModalOpen(false)}
+                className="flex h-9 w-9 items-center justify-center rounded-md border border-slate-600 bg-slate-800 text-slate-100 hover:bg-slate-700"
+                aria-label="Close"
+              >
+                <CloseIcon />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="mt-4 space-y-4">
+              <div>
+                <p className="mb-2 text-sm text-slate-300">Mood Selector</p>
+                <div className="flex flex-wrap gap-2">
+                  {moodOptions.map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => setMood(option.value)}
+                      style={{
+                        fontFamily: '"Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif',
+                      }}
+                      className={`rounded-md border px-3 py-1 text-lg ${
+                        mood === option.value
+                          ? 'border-emerald-500 bg-emerald-500/10'
+                          : 'border-slate-600 bg-slate-800 hover:bg-slate-700'
+                      }`}
+                      title={option.label}
+                    >
+                      {option.emoji}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <label className="block text-sm text-slate-300">
+                What went good
+                <textarea
+                  value={whatWentGood}
+                  onChange={(event) => setWhatWentGood(event.target.value)}
+                  rows={4}
+                  className="mt-1 w-full rounded-md border border-slate-600 bg-slate-800 p-2 text-slate-100"
+                />
+              </label>
+
+              <label className="block text-sm text-slate-300">
+                What you've learned
+                <textarea
+                  value={whatYouLearned}
+                  onChange={(event) => setWhatYouLearned(event.target.value)}
+                  rows={4}
+                  className="mt-1 w-full rounded-md border border-slate-600 bg-slate-800 p-2 text-slate-100"
+                />
+              </label>
+
+              <label className="block text-sm text-slate-300">
+                Brief about day
+                <textarea
+                  value={briefAboutDay}
+                  onChange={(event) => setBriefAboutDay(event.target.value)}
+                  rows={5}
+                  className="mt-1 w-full rounded-md border border-slate-600 bg-slate-800 p-2 text-slate-100"
+                />
+              </label>
+
+              {createError ? (
+                <p className="text-sm text-red-400">Failed to save journal entry: {getReadableErrorMessage(createError)}</p>
+              ) : null}
+
+              <button
+                type="submit"
+                disabled={isPending || !hasContent}
+                className="w-full rounded-md border border-slate-600 bg-slate-800 px-4 py-2 text-sm text-slate-100 hover:bg-slate-700 disabled:opacity-60"
+              >
+                {isPending ? 'Saving...' : 'Save Entry'}
+              </button>
+            </form>
+          </article>
+        </div>
+      ) : null}
 
       {isCalendarOpen ? (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-950/85 p-3">

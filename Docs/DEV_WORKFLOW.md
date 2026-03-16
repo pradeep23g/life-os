@@ -253,6 +253,19 @@ Prefer:
 • efficient database queries
 • precise React Query caching
 
+LOCAL COMMAND CHECKLIST
+Use npm commands from the repo root (`life-os/`).
+
+- `npm install` for initial setup or dependency sync
+- `npm ci` for clean, lockfile-based installs (recommended for reproducible environments)
+- `npm run dev` for local feature development
+- `npm run lint` before commits to catch lint issues
+- `npm run build` before commits to validate type-check + production build
+- `npm run preview` when you need to verify the production build output
+
+Quick verification command:
+- `npm run lint && npm run build`
+
 GIT WORKFLOW
 Every change should follow this process:
 
@@ -405,3 +418,5 @@ Codex must optimize for:
 • minimal dependencies
 • efficient queries
 • responsive UI
+
+

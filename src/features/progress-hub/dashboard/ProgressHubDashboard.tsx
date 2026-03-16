@@ -63,38 +63,38 @@ function ProgressHubDashboard() {
 
   return (
     <section className="space-y-4">
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
-        <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
-          <p className="text-sm text-[#a1a1aa]">Programming Skills</p>
-          <p className="mt-2 text-2xl font-semibold text-[#f1f5f9]">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-5">
+        <article className="min-h-[120px] rounded-xl border border-[#222222] bg-[#0a0a0a] p-3 sm:p-4">
+          <p className="text-xs text-[#a1a1aa] sm:text-sm">Programming Skills</p>
+          <p className="mt-2 text-xl font-semibold text-[#f1f5f9] sm:text-2xl">
             {formatMetric(programmingSkills.length, skillsLoading, skillsError)}
           </p>
         </article>
 
-        <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
-          <p className="text-sm text-[#a1a1aa]">Personal Skills</p>
-          <p className="mt-2 text-2xl font-semibold text-[#f1f5f9]">
+        <article className="min-h-[120px] rounded-xl border border-[#222222] bg-[#0a0a0a] p-3 sm:p-4">
+          <p className="text-xs text-[#a1a1aa] sm:text-sm">Personal Skills</p>
+          <p className="mt-2 text-xl font-semibold text-[#f1f5f9] sm:text-2xl">
             {formatMetric(personalSkills.length, personalLoading, personalError)}
           </p>
         </article>
 
-        <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
-          <p className="text-sm text-[#a1a1aa]">Pending Milestones</p>
-          <p className="mt-2 text-2xl font-semibold text-[#f1f5f9]">
+        <article className="min-h-[120px] rounded-xl border border-[#222222] bg-[#0a0a0a] p-3 sm:p-4">
+          <p className="text-xs text-[#a1a1aa] sm:text-sm">Pending Milestones</p>
+          <p className="mt-2 text-xl font-semibold text-[#f1f5f9] sm:text-2xl">
             {formatMetric(pendingMilestones, milestonesLoading, milestonesError)}
           </p>
         </article>
 
-        <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
-          <p className="text-sm text-[#a1a1aa]">Active Challenges</p>
-          <p className="mt-2 text-2xl font-semibold text-[#f1f5f9]">
+        <article className="min-h-[120px] rounded-xl border border-[#222222] bg-[#0a0a0a] p-3 sm:p-4">
+          <p className="text-xs text-[#a1a1aa] sm:text-sm">Active Challenges</p>
+          <p className="mt-2 text-xl font-semibold text-[#f1f5f9] sm:text-2xl">
             {formatMetric(activeChallenges, challengesLoading, challengesError)}
           </p>
         </article>
 
-        <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
-          <p className="text-sm text-[#a1a1aa]">Completion</p>
-          <p className="mt-2 text-2xl font-semibold text-[#f1f5f9]">
+        <article className="col-span-2 min-h-[120px] rounded-xl border border-[#222222] bg-[#0a0a0a] p-3 sm:p-4 md:col-span-1">
+          <p className="text-xs text-[#a1a1aa] sm:text-sm">Completion</p>
+          <p className="mt-2 text-xl font-semibold text-[#f1f5f9] sm:text-2xl">
             {formatMetric(`${completionPercent}%`, challengesLoading, challengesError)}
           </p>
         </article>

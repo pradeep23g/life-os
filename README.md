@@ -1,6 +1,20 @@
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Life OS local commands
+
+Run these from `C:\Users\gpk74\life-os`:
+
+- `npm install` - install dependencies
+- `npm ci` - clean install from lockfile (reproducible setup)
+- `npm run dev` - start the dev server
+- `npm run lint` - run ESLint
+- `npm run build` - run TypeScript build + Vite build
+- `npm run preview` - preview production build
+
+Recommended verification before commit:
+
+- `npm run lint && npm run build`
 
 Currently, two official plugins are available:
 
@@ -71,3 +85,5 @@ export default defineConfig([
   },
 ])
 ```
+
+
