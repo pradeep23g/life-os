@@ -1,4 +1,5 @@
-﻿import { useHabitWorkspace } from '../../mind-os/api/useHabits'
+import { useEventsAnalytics } from '../../../lib/useEventsAnalytics'
+import { useHabitWorkspace } from '../../mind-os/api/useHabits'
 import { useJournal } from '../../mind-os/api/useJournal'
 import { useChallenges, useMilestones } from '../../progress-hub/api/useProgress'
 import { useTasks } from '../../productivity-hub/api/useTasks'
@@ -41,6 +42,11 @@ function MissionControl() {
     isLoading: challengesLoading,
     isError: challengesError,
   } = useChallenges()
+  const {
+    data: eventsAnalytics,
+    isLoading: eventsLoading,
+    isError: eventsError,
+  } = useEventsAnalytics()
 
   const activeHabits = habitData?.habits.length ?? 0
   const longestHabitStreak = habitData?.longestHabitStreak
@@ -84,6 +90,11 @@ function MissionControl() {
       value: formatMetric(`${activeChallenges} Active`, progressLoading, progressError),
       detail: !progressLoading && !progressError ? `${pendingMilestones} Pending • ${completionPercent}% Complete` : '',
     },
+    {
+      label: 'Activity Consistency',
+      value: formatMetric(`${eventsAnalytics?.consistencyPercent ?? 0}%`, eventsLoading, eventsError),
+      detail: !eventsLoading && !eventsError ? `${eventsAnalytics?.activeDaysThisWeek ?? 0}/7 active days this week` : '',
+    },
   ]
 
   return (
@@ -93,7 +104,7 @@ function MissionControl() {
         <p className="mt-1 text-sm text-slate-300">Live summaries across Life OS modules.</p>
       </header>
 
-      <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-6">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-7">
         {stats.map((stat) => (
           <article key={stat.label} className="min-h-[120px] rounded-xl border border-slate-700 bg-surface p-3 sm:p-4">
             <p className="text-xs text-slate-300 sm:text-sm">{stat.label}</p>

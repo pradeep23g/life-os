@@ -1,5 +1,6 @@
 ﻿import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
+import { logEventSafe } from '../../../lib/events'
 import { supabase } from '../../../lib/supabase'
 import { getCurrentStreak, toIndiaDateKey } from '../utils/date'
 
@@ -106,6 +107,16 @@ async function insertJournalEntry({
     })
     throw buildError('Insert failed', error)
   }
+
+  await logEventSafe({
+    userId: user.id,
+    domain: 'mind-os',
+    entityType: 'journal_entry',
+    eventType: 'journal_entry_created',
+    payload: {
+      mood,
+    },
+  })
 }
 
 export function getJournalStreak(entries: JournalEntry[]): number {

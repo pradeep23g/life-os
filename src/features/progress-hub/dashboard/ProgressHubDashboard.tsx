@@ -1,11 +1,7 @@
-﻿import { useMemo } from 'react'
+import { useMemo } from 'react'
 
-import {
-  useChallenges,
-  useMilestones,
-  usePersonalSkills,
-  useProgrammingSkills,
-} from '../api/useProgress'
+import { useEventsAnalytics } from '../../../lib/useEventsAnalytics'
+import { useChallenges, useMilestones, usePersonalSkills, useProgrammingSkills } from '../api/useProgress'
 
 const quotes = [
   'Small wins compound into long-term mastery.',
@@ -48,6 +44,11 @@ function ProgressHubDashboard() {
     isLoading: challengesLoading,
     isError: challengesError,
   } = useChallenges()
+  const {
+    data: eventsAnalytics,
+    isLoading: eventsLoading,
+    isError: eventsError,
+  } = useEventsAnalytics()
 
   const pendingMilestones = milestones.filter((milestone) => !milestone.is_completed).length
   const activeChallenges = challenges.filter((challenge) => challenge.status === 'Active').length
@@ -63,7 +64,7 @@ function ProgressHubDashboard() {
 
   return (
     <section className="space-y-4">
-      <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-5">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-6">
         <article className="min-h-[120px] rounded-xl border border-[#222222] bg-[#0a0a0a] p-3 sm:p-4">
           <p className="text-xs text-[#a1a1aa] sm:text-sm">Programming Skills</p>
           <p className="mt-2 text-xl font-semibold text-[#f1f5f9] sm:text-2xl">
@@ -92,10 +93,24 @@ function ProgressHubDashboard() {
           </p>
         </article>
 
-        <article className="col-span-2 min-h-[120px] rounded-xl border border-[#222222] bg-[#0a0a0a] p-3 sm:p-4 md:col-span-1">
+        <article className="min-h-[120px] rounded-xl border border-[#222222] bg-[#0a0a0a] p-3 sm:p-4">
           <p className="text-xs text-[#a1a1aa] sm:text-sm">Completion</p>
           <p className="mt-2 text-xl font-semibold text-[#f1f5f9] sm:text-2xl">
             {formatMetric(`${completionPercent}%`, challengesLoading, challengesError)}
+          </p>
+        </article>
+
+        <article className="col-span-2 min-h-[120px] rounded-xl border border-[#222222] bg-[#0a0a0a] p-3 sm:col-span-1 sm:p-4">
+          <p className="text-xs text-[#a1a1aa] sm:text-sm">Weekly Momentum</p>
+          <p className="mt-2 text-xl font-semibold text-[#f1f5f9] sm:text-2xl">
+            {formatMetric(
+              `${eventsAnalytics?.weeklyMomentumDelta && eventsAnalytics.weeklyMomentumDelta > 0 ? '+' : ''}${eventsAnalytics?.weeklyMomentumDelta ?? 0}`,
+              eventsLoading,
+              eventsError,
+            )}
+          </p>
+          <p className="mt-1 text-xs text-[#a1a1aa]">
+            {eventsLoading ? '--' : `${eventsAnalytics?.thisWeekEvents ?? 0} events this week`}
           </p>
         </article>
       </div>

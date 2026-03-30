@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 
+import { useEventsAnalytics } from '../../../lib/useEventsAnalytics'
 import { useHabitWorkspace } from '../api/useHabits'
 import { getJournalStreak, useJournalEntries } from '../api/useJournal'
 import { formatIndiaDate, formatIndiaDateTime, toIndiaDateKey } from '../utils/date'
@@ -15,6 +16,7 @@ function average(values: number[]) {
 function MindOsDashboard() {
   const { data: habitData, isLoading: habitsLoading } = useHabitWorkspace()
   const { data: journals = [], isLoading: journalsLoading } = useJournalEntries()
+  const { data: eventsAnalytics, isLoading: eventsLoading } = useEventsAnalytics()
 
   const latestJournal = journals[0]
   const journalStreak = journalsLoading ? '--' : String(getJournalStreak(journals))
@@ -69,7 +71,7 @@ function MindOsDashboard() {
     <section className="space-y-4">
       <article className="rounded-xl border border-slate-700 bg-slate-900 p-4">
         <p className="text-xs uppercase tracking-wide text-slate-400">Core Signals</p>
-        <div className="mt-3 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+        <div className="mt-3 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-5">
           <article className="min-h-[120px] rounded-xl border border-slate-700 bg-slate-950/70 p-3 sm:p-4">
             <p className="text-xs text-slate-400 sm:text-sm">Active Habits</p>
             <p className="mt-2 text-xl font-semibold text-slate-100 sm:text-2xl">{habitsLoading ? '--' : habitData?.habits.length ?? 0}</p>
@@ -91,6 +93,12 @@ function MindOsDashboard() {
           <article className="min-h-[120px] rounded-xl border border-slate-700 bg-slate-950/70 p-3 sm:p-4">
             <p className="text-xs text-slate-400 sm:text-sm">Journal Streak</p>
             <p className="mt-2 text-xl font-semibold text-slate-100 sm:text-2xl">{journalStreak} days</p>
+          </article>
+
+          <article className="col-span-2 min-h-[120px] rounded-xl border border-slate-700 bg-slate-950/70 p-3 sm:p-4 lg:col-span-1">
+            <p className="text-xs text-slate-400 sm:text-sm">Consistency Pulse</p>
+            <p className="mt-2 text-xl font-semibold text-slate-100 sm:text-2xl">{eventsLoading ? '--' : `${eventsAnalytics?.consistencyPercent ?? 0}%`}</p>
+            <p className="mt-1 text-xs text-slate-400">{eventsLoading ? 'Loading...' : `${eventsAnalytics?.activeDaysThisWeek ?? 0}/7 active days this week`}</p>
           </article>
         </div>
       </article>
