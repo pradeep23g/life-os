@@ -14,6 +14,7 @@ import ProgrammingProgressPage from './features/progress-hub/programming/Program
 import ProductivityHubDashboard from './features/productivity-hub/dashboard/ProductivityHubDashboard'
 import PlanningPage from './features/productivity-hub/planning/PlanningPage'
 import TasksPage from './features/productivity-hub/tasks/TasksPage'
+import AppErrorBoundary from './components/AppErrorBoundary'
 import { AuthProvider, useAuth } from './lib/AuthContext'
 import Sidebar from './layout/Sidebar'
 
@@ -197,7 +198,9 @@ function AppShell() {
         </header>
 
         <main className="p-3 sm:p-4 md:p-6">
-          <Outlet />
+          <AppErrorBoundary key={location.pathname}>
+            <Outlet />
+          </AppErrorBoundary>
         </main>
       </div>
 

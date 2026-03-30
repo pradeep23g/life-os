@@ -1,5 +1,6 @@
 ﻿import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
+import { logEventSafe } from '../../../lib/events'
 import { supabase } from '../../../lib/supabase'
 
 export const productivityTasksQueryKey = ['productivity-hub', 'tasks'] as const
@@ -79,17 +80,32 @@ async function requireUserId() {
 async function createTask({ title, priority }: CreateTaskInput): Promise<void> {
   const userId = await requireUserId()
 
-  const { error } = await supabase.from('tasks').insert({
-    user_id: userId,
-    title,
-    priority,
-    status: 'To Do',
-  })
+  const { data, error } = await supabase
+    .from('tasks')
+    .insert({
+      user_id: userId,
+      title,
+      priority,
+      status: 'To Do',
+    })
+    .select('id')
+    .single()
 
   if (error) {
     console.error('[useTasks] Failed to create task', error)
     throw new Error(`Failed to create task: ${extractErrorMessage(error)}`)
   }
+
+  await logEventSafe({
+    userId,
+    domain: 'productivity-hub',
+    entityType: 'task',
+    entityId: data.id,
+    eventType: 'task_created',
+    payload: {
+      priority,
+    },
+  })
 }
 
 async function updateTaskStatus({ id, status }: UpdateTaskStatusInput): Promise<void> {
@@ -106,6 +122,17 @@ async function updateTaskStatus({ id, status }: UpdateTaskStatusInput): Promise<
     console.error('[useTasks] Failed to update task status', error)
     throw new Error(`Failed to update task: ${extractErrorMessage(error)}`)
   }
+
+  await logEventSafe({
+    userId,
+    domain: 'productivity-hub',
+    entityType: 'task',
+    entityId: id,
+    eventType: 'task_status_updated',
+    payload: {
+      status,
+    },
+  })
 }
 
 export function useTasks() {

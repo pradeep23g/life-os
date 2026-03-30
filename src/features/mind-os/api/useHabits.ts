@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
+import { logEventSafe } from '../../../lib/events'
 import { supabase } from '../../../lib/supabase'
 import {
   addDays,
@@ -579,17 +580,33 @@ async function createHabit({ title, habitType, targetValue, unit }: CreateHabitI
   const resolvedTargetValue = resolvedType === 'target' ? Math.max(1, Math.floor(targetValue ?? 1)) : 1
   const resolvedUnit = resolvedType === 'target' ? unit?.trim() || null : null
 
-  const { error } = await supabase.from('habits').insert({
-    user_id: userId,
-    title: normalizedTitle,
-    habit_type: resolvedType,
-    target_value: resolvedTargetValue,
-    unit: resolvedUnit,
-  })
+  const { data, error } = await supabase
+    .from('habits')
+    .insert({
+      user_id: userId,
+      title: normalizedTitle,
+      habit_type: resolvedType,
+      target_value: resolvedTargetValue,
+      unit: resolvedUnit,
+    })
+    .select('id')
+    .single()
 
   if (error) {
     throw buildError('Failed to create habit', error)
   }
+
+  await logEventSafe({
+    userId,
+    domain: 'mind-os',
+    entityType: 'habit',
+    entityId: data.id,
+    eventType: 'habit_created',
+    payload: {
+      habitType: resolvedType,
+      targetValue: resolvedTargetValue,
+    },
+  })
 }
 
 async function markHabitDone({ habitId, habitType, targetValue, struggleNote }: MarkHabitDoneInput): Promise<void> {
@@ -616,6 +633,19 @@ async function markHabitDone({ habitId, habitType, targetValue, struggleNote }: 
   if (error) {
     throw buildError('Failed to mark habit done', error)
   }
+
+  await logEventSafe({
+    userId,
+    domain: 'mind-os',
+    entityType: 'habit_log',
+    entityId: habitId,
+    eventType: 'habit_logged_done',
+    payload: {
+      habitType,
+      value,
+      logDate: getTodayIndiaDateKey(),
+    },
+  })
 }
 
 async function markHabitNotDone({ habitId }: MarkHabitNotDoneInput): Promise<void> {
@@ -631,6 +661,17 @@ async function markHabitNotDone({ habitId }: MarkHabitNotDoneInput): Promise<voi
   if (error) {
     throw buildError('Failed to mark habit not done', error)
   }
+
+  await logEventSafe({
+    userId,
+    domain: 'mind-os',
+    entityType: 'habit_log',
+    entityId: habitId,
+    eventType: 'habit_marked_not_done',
+    payload: {
+      logDate: getTodayIndiaDateKey(),
+    },
+  })
 }
 
 async function adjustHabitCount({ habitId, delta, struggleNote }: AdjustHabitCountInput): Promise<void> {
@@ -782,6 +823,17 @@ async function healHabitBreak({ breakId, habitId, reason }: HealHabitBreakInput)
   if (breakUpdateError) {
     throw buildError('Failed to mark break as healed', breakUpdateError)
   }
+
+  await logEventSafe({
+    userId,
+    domain: 'mind-os',
+    entityType: 'habit_break',
+    entityId: breakId,
+    eventType: 'habit_break_healed',
+    payload: {
+      habitId,
+    },
+  })
 }
 
 export function useHabits() {

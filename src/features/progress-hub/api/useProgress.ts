@@ -1,5 +1,6 @@
 ﻿import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
+import { logEventSafe } from '../../../lib/events'
 import { supabase } from '../../../lib/supabase'
 
 export const progressSkillsQueryKey = ['progress-hub', 'skills'] as const
@@ -158,17 +159,32 @@ async function fetchProgrammingSkills(): Promise<ProgrammingSkill[]> {
 async function createProgrammingSkill({ languageOrTool, proficiencyLevel }: CreateProgrammingSkillInput): Promise<void> {
   const userId = await requireUserId()
 
-  const { error } = await supabase.from('programming_skills').insert({
-    user_id: userId,
-    language_or_tool: languageOrTool,
-    proficiency_level: proficiencyLevel,
-    projects_completed: 0,
-  })
+  const { data, error } = await supabase
+    .from('programming_skills')
+    .insert({
+      user_id: userId,
+      language_or_tool: languageOrTool,
+      proficiency_level: proficiencyLevel,
+      projects_completed: 0,
+    })
+    .select('id')
+    .single()
 
   if (error) {
     console.error('[useProgress] failed to create programming skill', error)
     throw new Error(`Failed to create programming skill: ${getErrorMessage(error)}`)
   }
+
+  await logEventSafe({
+    userId,
+    domain: 'progress-hub',
+    entityType: 'programming_skill',
+    entityId: data.id,
+    eventType: 'programming_skill_created',
+    payload: {
+      proficiencyLevel,
+    },
+  })
 }
 
 async function levelUpProgrammingSkill({ id, currentLevel }: UpdateSkillLevelInput): Promise<void> {
@@ -189,6 +205,18 @@ async function levelUpProgrammingSkill({ id, currentLevel }: UpdateSkillLevelInp
     console.error('[useProgress] failed to level up programming skill', error)
     throw new Error(`Failed to update programming level: ${getErrorMessage(error)}`)
   }
+
+  await logEventSafe({
+    userId,
+    domain: 'progress-hub',
+    entityType: 'programming_skill',
+    entityId: id,
+    eventType: 'programming_skill_level_up',
+    payload: {
+      from: currentLevel,
+      to: nextLevel,
+    },
+  })
 }
 
 async function addProgrammingProject({ id, currentProjects }: AddProjectInput): Promise<void> {
@@ -204,6 +232,17 @@ async function addProgrammingProject({ id, currentProjects }: AddProjectInput): 
     console.error('[useProgress] failed to update programming projects', error)
     throw new Error(`Failed to update project count: ${getErrorMessage(error)}`)
   }
+
+  await logEventSafe({
+    userId,
+    domain: 'progress-hub',
+    entityType: 'programming_skill',
+    entityId: id,
+    eventType: 'programming_project_count_incremented',
+    payload: {
+      nextProjectsCompleted: currentProjects + 1,
+    },
+  })
 }
 
 async function fetchMilestones(): Promise<Milestone[]> {
@@ -223,18 +262,30 @@ async function fetchMilestones(): Promise<Milestone[]> {
 async function createMilestone({ title, targetDate }: CreateMilestoneInput): Promise<void> {
   const userId = await requireUserId()
 
-  const { error } = await supabase.from('milestones').insert({
-    user_id: userId,
-    title,
-    target_date: targetDate,
-    is_completed: false,
-    achieved_date: null,
-  })
+  const { data, error } = await supabase
+    .from('milestones')
+    .insert({
+      user_id: userId,
+      title,
+      target_date: targetDate,
+      is_completed: false,
+      achieved_date: null,
+    })
+    .select('id')
+    .single()
 
   if (error) {
     console.error('[useProgress] failed to create milestone', error)
     throw new Error(`Failed to create milestone: ${getErrorMessage(error)}`)
   }
+
+  await logEventSafe({
+    userId,
+    domain: 'progress-hub',
+    entityType: 'milestone',
+    entityId: data.id,
+    eventType: 'milestone_created',
+  })
 }
 
 async function toggleMilestoneCompletion({ id, isCompleted }: ToggleMilestoneInput): Promise<void> {
@@ -260,6 +311,14 @@ async function toggleMilestoneCompletion({ id, isCompleted }: ToggleMilestoneInp
     console.error('[useProgress] failed to toggle milestone', error)
     throw new Error(`Failed to update milestone: ${getErrorMessage(error)}`)
   }
+
+  await logEventSafe({
+    userId,
+    domain: 'progress-hub',
+    entityType: 'milestone',
+    entityId: id,
+    eventType: isCompleted ? 'milestone_reopened' : 'milestone_completed',
+  })
 }
 
 async function fetchChallenges(): Promise<Challenge[]> {
@@ -279,17 +338,29 @@ async function fetchChallenges(): Promise<Challenge[]> {
 async function createChallenge({ title, description }: CreateChallengeInput): Promise<void> {
   const userId = await requireUserId()
 
-  const { error } = await supabase.from('challenges').insert({
-    user_id: userId,
-    title,
-    description,
-    status: 'Active',
-  })
+  const { data, error } = await supabase
+    .from('challenges')
+    .insert({
+      user_id: userId,
+      title,
+      description,
+      status: 'Active',
+    })
+    .select('id')
+    .single()
 
   if (error) {
     console.error('[useProgress] failed to create challenge', error)
     throw new Error(`Failed to create challenge: ${getErrorMessage(error)}`)
   }
+
+  await logEventSafe({
+    userId,
+    domain: 'progress-hub',
+    entityType: 'challenge',
+    entityId: data.id,
+    eventType: 'challenge_created',
+  })
 }
 
 async function updateChallengeStatus({ id, status }: UpdateChallengeStatusInput): Promise<void> {
@@ -305,6 +376,17 @@ async function updateChallengeStatus({ id, status }: UpdateChallengeStatusInput)
     console.error('[useProgress] failed to update challenge status', error)
     throw new Error(`Failed to update challenge: ${getErrorMessage(error)}`)
   }
+
+  await logEventSafe({
+    userId,
+    domain: 'progress-hub',
+    entityType: 'challenge',
+    entityId: id,
+    eventType: 'challenge_status_updated',
+    payload: {
+      status,
+    },
+  })
 }
 
 async function fetchPersonalSkills(): Promise<PersonalSkill[]> {
@@ -328,19 +410,35 @@ async function createPersonalSkill({
 }: CreatePersonalSkillInput): Promise<void> {
   const userId = await requireUserId()
 
-  const { error } = await supabase.from('personal_skills').insert({
-    user_id: userId,
-    skill_name: skillName,
-    domain,
-    proficiency_level: proficiencyLevel,
-    projects_completed: 0,
-    progress_percent: 0,
-  })
+  const { data, error } = await supabase
+    .from('personal_skills')
+    .insert({
+      user_id: userId,
+      skill_name: skillName,
+      domain,
+      proficiency_level: proficiencyLevel,
+      projects_completed: 0,
+      progress_percent: 0,
+    })
+    .select('id')
+    .single()
 
   if (error) {
     console.error('[useProgress] failed to create personal skill', error)
     throw new Error(`Failed to create personal skill: ${getErrorMessage(error)}`)
   }
+
+  await logEventSafe({
+    userId,
+    domain: 'progress-hub',
+    entityType: 'personal_skill',
+    entityId: data.id,
+    eventType: 'personal_skill_created',
+    payload: {
+      domain,
+      proficiencyLevel,
+    },
+  })
 }
 
 async function levelUpPersonalSkill({ id, currentLevel }: UpdateSkillLevelInput): Promise<void> {
@@ -361,6 +459,18 @@ async function levelUpPersonalSkill({ id, currentLevel }: UpdateSkillLevelInput)
     console.error('[useProgress] failed to level up personal skill', error)
     throw new Error(`Failed to update personal skill level: ${getErrorMessage(error)}`)
   }
+
+  await logEventSafe({
+    userId,
+    domain: 'progress-hub',
+    entityType: 'personal_skill',
+    entityId: id,
+    eventType: 'personal_skill_level_up',
+    payload: {
+      from: currentLevel,
+      to: nextLevel,
+    },
+  })
 }
 
 async function addPersonalSkillProject({ id, currentProjects }: AddProjectInput): Promise<void> {
@@ -376,6 +486,17 @@ async function addPersonalSkillProject({ id, currentProjects }: AddProjectInput)
     console.error('[useProgress] failed to update personal projects', error)
     throw new Error(`Failed to update personal project count: ${getErrorMessage(error)}`)
   }
+
+  await logEventSafe({
+    userId,
+    domain: 'progress-hub',
+    entityType: 'personal_skill',
+    entityId: id,
+    eventType: 'personal_skill_project_count_incremented',
+    payload: {
+      nextProjectsCompleted: currentProjects + 1,
+    },
+  })
 }
 
 async function increasePersonalSkillProgress({ id, currentProgress }: IncreaseProgressInput): Promise<void> {
@@ -391,6 +512,17 @@ async function increasePersonalSkillProgress({ id, currentProgress }: IncreasePr
     console.error('[useProgress] failed to increase personal progress', error)
     throw new Error(`Failed to update personal progress: ${getErrorMessage(error)}`)
   }
+
+  await logEventSafe({
+    userId,
+    domain: 'progress-hub',
+    entityType: 'personal_skill',
+    entityId: id,
+    eventType: 'personal_skill_progress_incremented',
+    payload: {
+      nextProgressPercent: Math.min(100, currentProgress + 10),
+    },
+  })
 }
 
 export function useProgrammingSkills() {
