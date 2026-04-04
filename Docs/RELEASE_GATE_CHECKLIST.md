@@ -31,6 +31,11 @@ Run from repo root:
 - Milestones: create and toggle completion.
 - Challenges: create and status transitions.
 
+### Fitness OS
+- Dashboard renders weekly cards, calendar popup/day drawer, and 90-day heatmap.
+- Workouts: create, update, soft-delete, and manage exercise logs.
+- Library: create, update, and soft-delete custom exercises.
+
 ## 3) Data Integrity / Schema Guard
 - App remains functional if optional/new tables are not migrated yet (graceful fallbacks where defined).
 - New migrations are applied and verified in Supabase before production rollout.

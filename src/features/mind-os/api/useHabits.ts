@@ -4,6 +4,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { logEventSafe } from '../../../lib/events'
 import { supabase } from '../../../lib/supabase'
+import { emitSystemFeedback } from '../../system/feedback'
+import { systemStatusQueryKey } from '../../system/api/useSystemStatus'
 import {
   addDays,
   getCurrentStreak,
@@ -892,6 +894,11 @@ export function useCreateHabit() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: mindOsHabitsQueryKey })
       queryClient.invalidateQueries({ queryKey: mindOsHabitWorkspaceQueryKey })
+      queryClient.invalidateQueries({ queryKey: systemStatusQueryKey })
+      emitSystemFeedback({
+        title: '+1 Awareness',
+        description: 'Momentum +4% — system stabilizing',
+      })
     },
   })
 }
@@ -903,6 +910,11 @@ export function useMarkHabitDone() {
     mutationFn: markHabitDone,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: mindOsHabitWorkspaceQueryKey })
+      queryClient.invalidateQueries({ queryKey: systemStatusQueryKey })
+      emitSystemFeedback({
+        title: '+1 Awareness',
+        description: 'Momentum +4% — system stabilizing',
+      })
     },
   })
 }
@@ -914,6 +926,11 @@ export function useMarkHabitNotDone() {
     mutationFn: markHabitNotDone,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: mindOsHabitWorkspaceQueryKey })
+      queryClient.invalidateQueries({ queryKey: systemStatusQueryKey })
+      emitSystemFeedback({
+        title: '+1 Awareness',
+        description: 'Momentum +4% — system stabilizing',
+      })
     },
   })
 }
@@ -925,6 +942,11 @@ export function useUndoHabitDone() {
     mutationFn: markHabitNotDone,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: mindOsHabitWorkspaceQueryKey })
+      queryClient.invalidateQueries({ queryKey: systemStatusQueryKey })
+      emitSystemFeedback({
+        title: '+1 Awareness',
+        description: 'Momentum +4% — system stabilizing',
+      })
     },
   })
 }
@@ -936,6 +958,11 @@ export function useAdjustHabitCount() {
     mutationFn: adjustHabitCount,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: mindOsHabitWorkspaceQueryKey })
+      queryClient.invalidateQueries({ queryKey: systemStatusQueryKey })
+      emitSystemFeedback({
+        title: '+1 Awareness',
+        description: 'Momentum +4% — system stabilizing',
+      })
     },
   })
 }
@@ -947,6 +974,11 @@ export function useSetHabitCountForToday() {
     mutationFn: setHabitCountForToday,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: mindOsHabitWorkspaceQueryKey })
+      queryClient.invalidateQueries({ queryKey: systemStatusQueryKey })
+      emitSystemFeedback({
+        title: '+1 Awareness',
+        description: 'Momentum +4% — system stabilizing',
+      })
     },
   })
 }
@@ -958,6 +990,11 @@ export function useUpdateHabitBreakReason() {
     mutationFn: updateHabitBreakReason,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: mindOsHabitWorkspaceQueryKey })
+      queryClient.invalidateQueries({ queryKey: systemStatusQueryKey })
+      emitSystemFeedback({
+        title: '+1 Awareness',
+        description: 'Momentum +4% — system stabilizing',
+      })
     },
   })
 }
@@ -969,6 +1006,11 @@ export function useUpdateRecoveryCommitment() {
     mutationFn: updateRecoveryCommitment,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: mindOsHabitWorkspaceQueryKey })
+      queryClient.invalidateQueries({ queryKey: systemStatusQueryKey })
+      emitSystemFeedback({
+        title: '+1 Awareness',
+        description: 'Momentum +4% — system stabilizing',
+      })
     },
   })
 }
@@ -980,6 +1022,11 @@ export function useHealHabitBreak() {
     mutationFn: healHabitBreak,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: mindOsHabitWorkspaceQueryKey })
+      queryClient.invalidateQueries({ queryKey: systemStatusQueryKey })
+      emitSystemFeedback({
+        title: '+1 Awareness',
+        description: 'Momentum +4% — system stabilizing',
+      })
     },
   })
 }

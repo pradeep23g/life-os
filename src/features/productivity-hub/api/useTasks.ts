@@ -2,6 +2,8 @@
 
 import { logEventSafe } from '../../../lib/events'
 import { supabase } from '../../../lib/supabase'
+import { emitSystemFeedback } from '../../system/feedback'
+import { systemStatusQueryKey } from '../../system/api/useSystemStatus'
 
 export const productivityTasksQueryKey = ['productivity-hub', 'tasks'] as const
 
@@ -149,6 +151,11 @@ export function useCreateTask() {
     mutationFn: createTask,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: productivityTasksQueryKey })
+      queryClient.invalidateQueries({ queryKey: systemStatusQueryKey })
+      emitSystemFeedback({
+        title: '+1 Awareness',
+        description: 'Momentum +4% — system stabilizing',
+      })
     },
   })
 }
@@ -160,6 +167,11 @@ export function useUpdateTaskStatus() {
     mutationFn: updateTaskStatus,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: productivityTasksQueryKey })
+      queryClient.invalidateQueries({ queryKey: systemStatusQueryKey })
+      emitSystemFeedback({
+        title: '+1 Awareness',
+        description: 'Momentum +4% — system stabilizing',
+      })
     },
   })
 }
