@@ -55,6 +55,17 @@ function ProgressIcon({ className = 'h-5 w-5' }: IconProps) {
   )
 }
 
+function FitnessIcon({ className = 'h-5 w-5' }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true">
+      <path d="M6 9v6M18 9v6" strokeLinecap="round" />
+      <path d="M9 8v8M15 8v8" strokeLinecap="round" />
+      <path d="M4 11h2M18 11h2M4 13h2M18 13h2" strokeLinecap="round" />
+      <path d="M9 12h6" strokeLinecap="round" />
+    </svg>
+  )
+}
+
 function SignOutIcon({ className = 'h-5 w-5' }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true">
@@ -82,6 +93,7 @@ const navItems = [
   { to: '/mission-control', label: 'Mission Control', Icon: MissionControlIcon },
   { to: '/mind-os', label: 'Mind OS', Icon: MindOsIcon },
   { to: '/productivity-hub', label: 'Productivity Hub', Icon: ProductivityIcon },
+  { to: '/fitness-os', label: 'Fitness OS', Icon: FitnessIcon },
   { to: '/progress-hub', label: 'Progress Hub', Icon: ProgressIcon },
 ] as const
 

@@ -5,6 +5,9 @@ import AuthPage from './features/auth/AuthPage'
 import MindOsDashboard from './features/mind-os/dashboard/MindOsDashboard'
 import HabitsPage from './features/mind-os/habits/HabitsPage'
 import JournalPage from './features/mind-os/journal/JournalPage'
+import FitnessOsDashboard from './features/fitness-os/dashboard/FitnessOsDashboard'
+import FitnessLibraryPage from './features/fitness-os/library/FitnessLibraryPage'
+import WorkoutsPage from './features/fitness-os/workouts/WorkoutsPage'
 import MissionControl from './features/mission-control/dashboard/MissionControl'
 import ChallengesPage from './features/progress-hub/challenges/ChallengesPage'
 import ProgressHubDashboard from './features/progress-hub/dashboard/ProgressHubDashboard'
@@ -14,6 +17,7 @@ import ProgrammingProgressPage from './features/progress-hub/programming/Program
 import ProductivityHubDashboard from './features/productivity-hub/dashboard/ProductivityHubDashboard'
 import PlanningPage from './features/productivity-hub/planning/PlanningPage'
 import TasksPage from './features/productivity-hub/tasks/TasksPage'
+import SystemFeedbackToast from './features/system/components/SystemFeedbackToast'
 import AppErrorBoundary from './components/AppErrorBoundary'
 import { AuthProvider, useAuth } from './lib/AuthContext'
 import Sidebar from './layout/Sidebar'
@@ -65,6 +69,18 @@ function getShellTitle(pathname: string) {
 
   if (pathname.startsWith('/progress-hub/challenges')) {
     return 'Progress Hub - Challenges'
+  }
+
+  if (pathname === '/fitness-os') {
+    return 'Fitness OS'
+  }
+
+  if (pathname.startsWith('/fitness-os/workouts')) {
+    return 'Fitness OS - Workouts'
+  }
+
+  if (pathname.startsWith('/fitness-os/library')) {
+    return 'Fitness OS - Library'
   }
 
   return 'Life OS'
@@ -223,6 +239,8 @@ function AppShell() {
           <Sidebar onNavigate={closeMobileSidebar} />
         </aside>
       </div>
+
+      <SystemFeedbackToast />
     </div>
   )
 }
@@ -277,6 +295,22 @@ function ProgressHubLayout() {
   )
 }
 
+function FitnessOsLayout() {
+  return (
+    <section className="space-y-4">
+      <header className="rounded-xl border border-slate-700 bg-slate-900 p-4">
+        <h1 className="text-xl font-semibold sm:text-2xl">Fitness OS</h1>
+        <nav className="mt-3 flex gap-2 overflow-x-auto pb-1">
+          <LocalNavLink to="." label="Dashboard" />
+          <LocalNavLink to="workouts" label="Workouts" />
+          <LocalNavLink to="library" label="Library" />
+        </nav>
+      </header>
+      <Outlet />
+    </section>
+  )
+}
+
 function App() {
   return (
     <AuthProvider>
@@ -307,6 +341,12 @@ function App() {
                 <Route path="personal-skills" element={<PersonalSkillsPage />} />
                 <Route path="milestones" element={<MilestonesPage />} />
                 <Route path="challenges" element={<ChallengesPage />} />
+              </Route>
+
+              <Route path="fitness-os" element={<FitnessOsLayout />}>
+                <Route index element={<FitnessOsDashboard />} />
+                <Route path="workouts" element={<WorkoutsPage />} />
+                <Route path="library" element={<FitnessLibraryPage />} />
               </Route>
 
               <Route path="*" element={<Navigate to="/" replace />} />

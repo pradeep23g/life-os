@@ -2,6 +2,8 @@
 
 import { logEventSafe } from '../../../lib/events'
 import { supabase } from '../../../lib/supabase'
+import { systemStatusQueryKey } from '../../system/api/useSystemStatus'
+import { emitSystemFeedback } from '../../system/feedback'
 import { getCurrentStreak, toIndiaDateKey } from '../utils/date'
 
 export const mindOsJournalsQueryKey = ['mind-os', 'journals'] as const
@@ -142,6 +144,11 @@ export function useCreateJournalEntry() {
     mutationFn: insertJournalEntry,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: mindOsJournalsQueryKey })
+      queryClient.invalidateQueries({ queryKey: systemStatusQueryKey })
+      emitSystemFeedback({
+        title: '+1 Awareness',
+        description: 'Momentum +4% — system stabilizing',
+      })
     },
     onError: (error) => {
       console.error('[useJournal] mutation failed', error)
