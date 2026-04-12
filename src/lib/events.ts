@@ -1,6 +1,13 @@
 import { supabase } from './supabase'
 
-export type LifeOsDomain = 'mind-os' | 'productivity-hub' | 'progress-hub' | 'mission-control' | 'fitness-os'
+export type LifeOsDomain =
+  | 'mind-os'
+  | 'productivity-hub'
+  | 'progress-hub'
+  | 'mission-control'
+  | 'fitness-os'
+  | 'finance-os'
+  | 'time-os'
 
 export type LifeOsEventInput = {
   userId?: string

@@ -43,14 +43,56 @@ function isMissingSnapshotViewError(error: unknown): boolean {
   return message.includes('current_day_snapshot') && message.includes('does not exist')
 }
 
+function isMissingDeepWorkColumnError(error: unknown): boolean {
+  const code = getErrorCode(error).toLowerCase()
+  const message = getErrorMessage(error).toLowerCase()
+
+  if (code === '42703' || code === 'pgrst204') {
+    return message.includes('deep_work_minutes_today')
+  }
+
+  return message.includes('deep_work_minutes_today') && message.includes('column')
+}
+
+async function fetchSnapshotWithDeepWorkFallback() {
+  const latestSelect = await supabase
+    .from('current_day_snapshot')
+    .select(
+      'user_id, pending_tasks_count, habits_completed_today, total_active_habits, journal_logged_today, workout_days_this_week, deep_work_minutes_today, oldest_pending_task_title, newest_active_habit_title, snapshot_date',
+    )
+    .maybeSingle()
+
+  if (!latestSelect.error) {
+    return latestSelect
+  }
+
+  if (!isMissingDeepWorkColumnError(latestSelect.error)) {
+    return latestSelect
+  }
+
+  const fallbackSelect = await supabase
+    .from('current_day_snapshot')
+    .select(
+      'user_id, pending_tasks_count, habits_completed_today, total_active_habits, journal_logged_today, workout_days_this_week, oldest_pending_task_title, newest_active_habit_title, snapshot_date',
+    )
+    .maybeSingle()
+
+  if (fallbackSelect.error || !fallbackSelect.data) {
+    return fallbackSelect
+  }
+
+  return {
+    data: {
+      ...fallbackSelect.data,
+      deep_work_minutes_today: 0,
+    },
+    error: null,
+  }
+}
+
 async function fetchSystemStatus() {
   const [snapshotResult, historyResult] = await Promise.all([
-    supabase
-      .from('current_day_snapshot')
-      .select(
-        'user_id, pending_tasks_count, habits_completed_today, total_active_habits, journal_logged_today, workout_days_this_week, oldest_pending_task_title, newest_active_habit_title, snapshot_date',
-      )
-      .maybeSingle(),
+    fetchSnapshotWithDeepWorkFallback(),
     supabase
       .from('current_day_snapshot_history_14d')
       .select(

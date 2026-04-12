@@ -15,30 +15,48 @@ function sanitizeCount(value: number): number {
   return Math.max(0, Math.floor(value))
 }
 
+function isPastWednesdayInIndia() {
+  const indiaNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }))
+  const day = indiaNow.getDay() // 0 (Sun) ... 6 (Sat)
+  return day === 0 || day > 3
+}
+
 function buildUrgencyScores(snapshot: CurrentDaySnapshot): UrgencyScores {
   const pendingTasks = sanitizeCount(snapshot.pending_tasks_count)
   const activeHabits = sanitizeCount(snapshot.total_active_habits)
   const completedHabitsToday = sanitizeCount(snapshot.habits_completed_today)
   const workoutDaysThisWeek = sanitizeCount(snapshot.workout_days_this_week)
+  const deepWorkMinutesToday = sanitizeCount(snapshot.deep_work_minutes_today)
   const unfinishedHabits = Math.max(0, activeHabits - completedHabitsToday)
+
+  const isCoachModeFitnessOverride = workoutDaysThisWeek === 0 && isPastWednesdayInIndia()
 
   return {
     task: pendingTasks * 2,
     habit: unfinishedHabits * 2,
     journal: snapshot.journal_logged_today ? 0 : 5,
-    fitness: workoutDaysThisWeek < 2 ? 3 : 0,
+    fitness: isCoachModeFitnessOverride ? 100 : workoutDaysThisWeek < 2 ? 3 : 0,
+    deep_work: deepWorkMinutesToday === 0 ? 6 : deepWorkMinutesToday < 60 ? 4 : 0,
   }
 }
 
 function getTopDomain(urgency: UrgencyScores): DirectiveDomain {
-  const topEntry = Object.entries(urgency)
+  const orderedDomains: Array<Exclude<DirectiveDomain, 'none'>> = [
+    'task',
+    'habit',
+    'journal',
+    'deep-work',
+    'fitness',
+  ]
+  const topEntry = orderedDomains
+    .map((domain) => [domain, urgency[domain === 'deep-work' ? 'deep_work' : domain]] as const)
     .sort((left, right) => right[1] - left[1])[0]
 
   if (!topEntry) {
     return 'none'
   }
 
-  return topEntry[0] as Exclude<DirectiveDomain, 'none'>
+  return topEntry[0]
 }
 
 function buildDirective(snapshot: CurrentDaySnapshot, topDomain: DirectiveDomain) {
@@ -72,11 +90,39 @@ function buildDirective(snapshot: CurrentDaySnapshot, topDomain: DirectiveDomain
   }
 
   if (topDomain === 'fitness') {
+    if (sanitizeCount(snapshot.workout_days_this_week) === 0 && isPastWednesdayInIndia()) {
+      return {
+        action: 'fitness' as const,
+        label: 'Execution is slipping. Start a Calisthenics session right now.',
+        reason: 'No workout logged this week and the week is already past Wednesday',
+        route: '/fitness-os/workouts',
+      }
+    }
+
     return {
       action: 'fitness' as const,
       label: 'Start a 10 min workout',
       reason: 'Re-activate physical momentum this week',
       route: '/fitness-os/workouts',
+    }
+  }
+
+  if (topDomain === 'deep-work') {
+    const deepWorkMinutesToday = sanitizeCount(snapshot.deep_work_minutes_today)
+    if (deepWorkMinutesToday <= 0) {
+      return {
+        action: 'deep-work' as const,
+        label: 'Start a 30-minute focus session',
+        reason: 'Zero deep work logged today',
+        route: '/time-os',
+      }
+    }
+
+    return {
+      action: 'deep-work' as const,
+      label: 'Run one more 30-minute focus session',
+      reason: `Deep work is only ${deepWorkMinutesToday} mins today`,
+      route: '/time-os',
     }
   }
 
@@ -96,13 +142,20 @@ export function generateDirectives(snapshot: CurrentDaySnapshot | null | undefin
         habit: 0,
         journal: 0,
         fitness: 0,
+        deep_work: 0,
       },
     }
   }
 
   const urgency = buildUrgencyScores(snapshot)
   const topDomain = getTopDomain(urgency)
-  const maxUrgency = Math.max(urgency.task, urgency.habit, urgency.journal, urgency.fitness)
+  const maxUrgency = Math.max(
+    urgency.task,
+    urgency.habit,
+    urgency.journal,
+    urgency.fitness,
+    urgency.deep_work,
+  )
 
   if (maxUrgency <= 0) {
     return {

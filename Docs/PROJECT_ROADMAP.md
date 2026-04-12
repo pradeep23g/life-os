@@ -1,10 +1,8 @@
-# LIFE OS — DEVELOPMENT ROADMAP
+# LIFE OS - DEVELOPMENT ROADMAP
 
 This document defines the structured development plan for Life OS.
 
-It exists to guide both human developers and AI agents when deciding what systems to implement next.
-
-The goal is to maintain a **clear priority order** while ensuring the system remains scalable and cognitively protected.
+It guides both human developers and AI agents on what to build next while preserving domain boundaries and long-term scalability.
 
 ---
 
@@ -12,175 +10,197 @@ The goal is to maintain a **clear priority order** while ensuring the system rem
 
 Life OS should evolve gradually.
 
-Each new system must follow these principles:
+Each system must follow:
 
-• domain-isolated modular architecture  
-• relational database design  
-• analytics compatibility  
-• low-friction logging  
-• cognitive boundaries (separation of reflection vs. execution)
+- domain-isolated modular architecture
+- relational database design
+- analytics compatibility
+- low-friction logging
+- cognitive boundaries (reflection vs execution)
 
-Features must only be added when the underlying nested architecture supports them.
-
----
-
-# PHASE 1 — CORE SYSTEMS & SHELL (CURRENT)
-
-These systems form the foundation of Life OS. AI Agents must build these as nested domains.
-
-### Step 1.1: The Global Shell & Mission Control
-
-Build the top-level application router and sidebar.
-Mission Control is the central dashboard showing system summaries.
-
-Displays (Aggregated Widgets):
-
-• active habits (Mind OS link)
-• pending tasks (Productivity Hub link)
-• journal entries (Mind OS link)
-• mood trend (Mind OS link)
-
-Purpose:
-
-Provide instant clarity of life status without raw data overload.
+Features should only be added when the underlying architecture can support them safely.
 
 ---
 
-### Step 1.2: Mind OS Domain (Reflection)
+# PHASE 1 - CORE SYSTEMS AND SHELL (IMPLEMENTED)
 
-Build the nested routing for `/mind-os`.
+## 1.1 Global Shell and Mission Control
 
-**Habit System**
-Tracks repeated behaviors.
-Capabilities:
-• value-based progress habits  
-• habit logs  
-• progress tracking  
-• streak analytics
+Build top-level routing and sidebar.
+Mission Control provides aggregated system summaries.
 
-**Journal System**
-Daily reflection system.
-Structure:
-• Mood
-• What went well
-• What went wrong
-• Lesson learned
+Core widgets:
 
-Future enhancements:
-• habit heatmap  
-• emotional analytics  
+- active habits (Mind OS)
+- pending tasks (Productivity Hub)
+- journal signals (Mind OS)
+- mood/consistency summaries
+
+## 1.2 Mind OS Domain (Reflection)
+
+Build nested routing for `/mind-os`.
+
+Habit system:
+
+- value-based and binary habits
+- habit logs
+- streak analytics
+- mistakes, heals, and recovery context
+
+Journal system:
+
+- mood
+- what went good
+- what you've learned
+- brief about day
+
+## 1.3 Productivity Hub Domain (Execution)
+
+Build nested routing for `/productivity-hub`.
+
+Tasks system:
+
+- Kanban states (`To Do`, `Doing`, `Done`)
+- task creation
+- priority levels
+- status updates
 
 ---
 
-### Step 1.3: Productivity Hub Domain (Execution)
+# PHASE 2 - PROGRESS HUB (IMPLEMENTED)
 
-Build the nested routing for `/productivity-hub`.
-
-**Tasks System**
-Kanban-based task management.
-States: To Do, Doing, Done
-Capabilities:
-• task creation  
-• priority levels  
-• status updates  
-
-Future enhancements:
-• deadlines  
-• reminders  
-• calendar linking  
-
----
-
-# PHASE 2 — PROGRESS HUB
-
-Tracks long-term and short-term learning progress inside its own workspace.
+Track long-term and short-term learning progress.
 
 Modules:
 
-• Progress Hub Dashboard
-• programming progress
-• learning milestones
-• personal challenges
+- Progress Hub dashboard
+- programming progress
+- personal skills
+- milestones
+- challenges
 
 ---
 
-# PHASE 3 — FITNESS OS
+# PHASE 3 - FITNESS OS (IMPLEMENTED V1)
 
-Fitness OS tracks physical discipline inside the `/fitness-os` workspace.
+Fitness OS tracks physical discipline in `/fitness-os`.
 
-This system should focus on **effort tracking rather than body metrics**.
+Focus:
 
-## Workout Tracking & Progress
-Users should be able to log workouts. Track improvements over time.
-Suggested tables: `workouts`, `exercise_logs`
-
-## Exercise Library
-Provide a reference database of exercises to avoid searching online during workouts.
-
-Future analytics:
-• strength progression charts spanning multiple grid columns
-• workout consistency score  
-
----
-
-# PHASE 4 — FINANCE OS
-
-Finance OS provides financial awareness inside the `/finance-os` workspace.
-
-This system should remain **simple and lightweight**. The focus is **behavior awareness**, not complex accounting.
-
-## Expense & Income Tracking
-Track spending and income. Use domain-specific dashboards to show monthly spending, remaining balance, and top spending categories using full-width CSS Grid charts.
-
----
-
-# PHASE 5 — ANALYTICS SYSTEM
-
-Life OS should eventually analyze behavioral patterns.
-
-This system relies on the **events table**.
-
-Possible insights:
-Habit completion vs productivity
-Workout days vs mood
-Study streak vs output
-
-Visualization examples:
-• line charts  
-• heatmaps  
-• consistency graphs  
-
----
-
-# PHASE 6 — PLANNING ENGINE (Inside Productivity Hub)
-
-Planning helps connect goals to daily action.
+- effort tracking over body metrics
 
 Modules:
-### Weekly Planning
-Users define weekly priorities.
 
-### Goal Alignment
-Goals connect to: habits, tasks, progress trackers.
+- dashboard with weekly cards
+- workouts and aggregate exercise logs
+- exercise library
+- calendar popup and day details drawer
+- 90-day effort heatmap
+
+---
+
+# PHASE 4 - FINANCE OS (NEXT MAJOR DOMAIN)
+
+Finance OS should remain simple and behavior-focused inside `/finance-os`.
+
+Initial scope:
+
+- expense and income tracking
+- monthly overview
+- category-level awareness summaries
+
+---
+
+# PHASE 5 - ANALYTICS SYSTEM (IN PROGRESS)
+
+Life OS analyzes behavioral patterns via the events pipeline.
+
+Current foundation exists:
+
+- `events` table
+- domain event emission
+- weekly consistency summaries
+
+Next expansion:
+
+- stronger cross-domain comparative insights
+- more SQL-first aggregated views
+- stable analytics contracts for dashboards
+
+---
+
+# PHASE 6 - PLANNING ENGINE (INSIDE PRODUCTIVITY HUB, IMPLEMENTED V1)
+
+Planning connects goals to daily action.
+
+Implemented core:
+
+- weekly focus
+- goals CRUD
+- weekly plan items
+- weekly review
+- alignment health summaries
+
+Next expansion:
+
+- richer planning loops and coaching quality summaries
+
+---
+
+# PHASE 7 - TIME OS (IMPLEMENTED V1)
+
+Time OS in `/time-os` tracks focused execution with low friction.
+
+Implemented core:
+
+- global active timer persisted in DB (`end_time is null`)
+- optional task linkage from Productivity Hub
+- strict buckets (`Academics`, `Deep Work`, `Admin`, `Fitness`, `Learning`)
+- manual log entry
+- lightweight analytics (today total, distribution, 7-day trend)
+
+---
+
+# PHASE 8 - BRAIN ENGINE (IMPLEMENTED V1, EVOLVING)
+
+Brain Engine turns Life OS into an active decision system.
+
+Implemented core:
+
+- SQL-first snapshot views (`current_day_snapshot`, `current_day_snapshot_history_14d`)
+- TS intelligence layer (momentum, trend, directive)
+- issue detection + severity
+- interactive next move in Mission Control
+- daily briefing tone logic
+- cross-module reactivity via `['system-status']` invalidation
+
+Next expansion:
+
+- deeper directive quality
+- broader domain intelligence inputs
 
 ---
 
 # SOCIAL FEATURES (LIMITED)
 
-Life OS is primarily a **personal system**. Social features must remain minimal.
-The goal is **reflection and growth**, not social comparison. Avoid public leaderboards.
+Life OS is primarily personal. Social features must stay minimal.
+
+Avoid public comparison mechanics (for example, public leaderboards).
 
 ---
 
 # AI INSIGHT SYSTEM (LONG TERM)
 
-Eventually Life OS can provide intelligent insights.
-Examples: "You are most productive on workout days."
-This requires large historical datasets powered by the events pipeline.
+Long-term intelligence should explain patterns like:
+
+- productivity on workout days
+- habit consistency vs output
+- mood vs execution patterns
+
+This depends on robust historical event coverage and stable aggregation contracts.
 
 ---
 
 # FINAL DEVELOPMENT RULE
 
-All future systems must integrate with the **events analytics pipeline**.
-This ensures Life OS can analyze long-term behavioral data across all isolated domains.
+All future systems must integrate with the events analytics pipeline and preserve strict cognitive boundaries.

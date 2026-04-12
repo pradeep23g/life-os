@@ -1,6 +1,8 @@
 import type { MomentumAnalysis, SystemHistoryDay } from './types'
 
 const MOMENTUM_ALPHA = 0.6
+const DEEP_WORK_BOOST_MINUTES = 120
+const DEEP_WORK_BOOST_POINTS = 4
 
 function clampPercentage(value: number): number {
   if (!Number.isFinite(value)) {
@@ -28,6 +30,14 @@ function normalizeBooleanScore(value: boolean): number {
   return value ? 100 : 0
 }
 
+function sanitizeMinutes(value: number | null | undefined): number {
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    return 0
+  }
+
+  return Math.max(0, Math.floor(value))
+}
+
 function getDailyActivityValue(historyDay: SystemHistoryDay): number {
   const taskScore = normalizeTaskScore(historyDay.tasks_completed_count)
   const habitScore = normalizeHabitScore(historyDay.total_active_habits, historyDay.habits_completed_count)
@@ -43,7 +53,10 @@ function getDailyActivityValue(historyDay: SystemHistoryDay): number {
   return clampPercentage(weightedValue)
 }
 
-export function analyzeMomentum(history: SystemHistoryDay[]): MomentumAnalysis {
+export function analyzeMomentum(
+  history: SystemHistoryDay[],
+  deepWorkMinutesToday: number = 0,
+): MomentumAnalysis {
   if (!history.length) {
     return {
       momentum: 0,
@@ -75,13 +88,17 @@ export function analyzeMomentum(history: SystemHistoryDay[]): MomentumAnalysis {
   }
 
   const latestMomentum = emaSeries[emaSeries.length - 1]
+  const deepWorkBoost = sanitizeMinutes(deepWorkMinutesToday) > DEEP_WORK_BOOST_MINUTES
+    ? DEEP_WORK_BOOST_POINTS
+    : 0
+  const adjustedLatestMomentum = clampPercentage(latestMomentum + deepWorkBoost)
   const previousDayMomentum = emaSeries.length > 1 ? emaSeries[emaSeries.length - 2] : latestMomentum
-  const delta = latestMomentum - previousDayMomentum
+  const delta = adjustedLatestMomentum - previousDayMomentum
 
   const trend: MomentumAnalysis['trend'] = delta > 2 ? 'rising' : delta < -2 ? 'falling' : 'stable'
 
   return {
-    momentum: Math.round(clampPercentage(latestMomentum)),
+    momentum: Math.round(adjustedLatestMomentum),
     trend,
   }
 }
