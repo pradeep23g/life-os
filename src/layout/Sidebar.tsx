@@ -66,6 +66,25 @@ function FitnessIcon({ className = 'h-5 w-5' }: IconProps) {
   )
 }
 
+function TimeOsIcon({ className = 'h-5 w-5' }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true">
+      <circle cx="12" cy="12" r="8" />
+      <path d="M12 8v5l3 2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function FinanceIcon({ className = 'h-5 w-5' }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true">
+      <circle cx="12" cy="12" r="8" />
+      <path d="M9 10.5c0-.9.9-1.5 2-1.5h2c1.1 0 2 .6 2 1.5s-.9 1.5-2 1.5h-2c-1.1 0-2 .6-2 1.5S9.9 15 11 15h2c1.1 0 2-.6 2-1.5" strokeLinecap="round" />
+      <path d="M12 7v10" strokeLinecap="round" />
+    </svg>
+  )
+}
+
 function SignOutIcon({ className = 'h-5 w-5' }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true">
@@ -93,6 +112,8 @@ const navItems = [
   { to: '/mission-control', label: 'Mission Control', Icon: MissionControlIcon },
   { to: '/mind-os', label: 'Mind OS', Icon: MindOsIcon },
   { to: '/productivity-hub', label: 'Productivity Hub', Icon: ProductivityIcon },
+  { to: '/time-os', label: 'Time OS', Icon: TimeOsIcon },
+  { to: '/finance-os', label: 'Finance OS', Icon: FinanceIcon },
   { to: '/fitness-os', label: 'Fitness OS', Icon: FitnessIcon },
   { to: '/progress-hub', label: 'Progress Hub', Icon: ProgressIcon },
 ] as const

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 
 import {
@@ -8,21 +8,13 @@ import {
   useFitnessExercises,
   useUpdateFitnessExercise,
 } from '../api/useFitness'
-
-type ExerciseFormState = {
-  name: string
-  category: string
-  equipment: string
-  primaryMuscle: string
-  defaultUnit: string
-  notes: string
-}
+import CreateExerciseForm, { type ExerciseFormState } from './CreateExerciseForm'
 
 const emptyExerciseForm: ExerciseFormState = {
   name: '',
   category: '',
-  equipment: '',
-  primaryMuscle: '',
+  equipment: [],
+  targetMuscles: [],
   defaultUnit: '',
   notes: '',
 }
@@ -46,11 +38,19 @@ function mapExerciseToForm(exercise: FitnessExercise): ExerciseFormState {
   return {
     name: exercise.name,
     category: exercise.category ?? '',
-    equipment: exercise.equipment ?? '',
-    primaryMuscle: exercise.primary_muscle ?? '',
+    equipment: exercise.equipment ?? [],
+    targetMuscles: exercise.target_muscles ?? [],
     defaultUnit: exercise.default_unit ?? '',
     notes: exercise.notes ?? '',
   }
+}
+
+function formatTagList(tags: string[] | null): string {
+  if (!tags || tags.length === 0) {
+    return 'N/A'
+  }
+
+  return tags.join(', ')
 }
 
 function FitnessLibraryPage() {
@@ -62,6 +62,41 @@ function FitnessLibraryPage() {
   const [form, setForm] = useState<ExerciseFormState>(emptyExerciseForm)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editingForm, setEditingForm] = useState<ExerciseFormState>(emptyExerciseForm)
+  const [selectedMuscle, setSelectedMuscle] = useState('All')
+  const [moreOpen, setMoreOpen] = useState(false)
+
+  const muscleStats = useMemo(() => {
+    const counts = new Map<string, number>()
+    for (const exercise of exercises) {
+      for (const rawMuscle of exercise.target_muscles ?? []) {
+        const muscle = rawMuscle.trim()
+        if (!muscle) {
+          continue
+        }
+        counts.set(muscle, (counts.get(muscle) ?? 0) + 1)
+      }
+    }
+
+    const sorted = [...counts.entries()].sort((left, right) => {
+      if (left[1] === right[1]) {
+        return left[0].localeCompare(right[0])
+      }
+      return right[1] - left[1]
+    })
+
+    return {
+      top5: sorted.slice(0, 5).map(([muscle]) => muscle),
+      more: sorted.slice(5).map(([muscle]) => muscle),
+    }
+  }, [exercises])
+
+  const filteredExercises = useMemo(() => {
+    if (selectedMuscle === 'All') {
+      return exercises
+    }
+
+    return exercises.filter((exercise) => (exercise.target_muscles ?? []).includes(selectedMuscle))
+  }, [exercises, selectedMuscle])
 
   const handleCreate = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -75,7 +110,7 @@ function FitnessLibraryPage() {
         name: form.name,
         category: form.category,
         equipment: form.equipment,
-        primaryMuscle: form.primaryMuscle,
+        targetMuscles: form.targetMuscles,
         defaultUnit: form.defaultUnit,
         notes: form.notes,
       },
@@ -105,7 +140,7 @@ function FitnessLibraryPage() {
         name: editingForm.name,
         category: editingForm.category,
         equipment: editingForm.equipment,
-        primaryMuscle: editingForm.primaryMuscle,
+        targetMuscles: editingForm.targetMuscles,
         defaultUnit: editingForm.defaultUnit,
         notes: editingForm.notes,
       },
@@ -122,73 +157,16 @@ function FitnessLibraryPage() {
 
   return (
     <section className="space-y-4">
-      <article className="rounded-xl border border-slate-700 bg-slate-900 p-4">
+      <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
         <h2 className="text-lg font-semibold text-slate-100">Create Exercise</h2>
         <p className="mt-1 text-xs text-slate-400">Custom-only exercise library for quick reuse in workout logs.</p>
-
-        <form onSubmit={handleCreate} className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
-          <label className="block text-sm text-slate-300">
-            Exercise name
-            <input
-              value={form.name}
-              onChange={(event) => setForm((previous) => ({ ...previous, name: event.target.value }))}
-              className="mt-1 w-full rounded-md border border-slate-600 bg-slate-800 p-2 text-sm text-slate-100"
-            />
-          </label>
-          <label className="block text-sm text-slate-300">
-            Category
-            <input
-              value={form.category}
-              onChange={(event) => setForm((previous) => ({ ...previous, category: event.target.value }))}
-              placeholder="Strength / Cardio / Mobility"
-              className="mt-1 w-full rounded-md border border-slate-600 bg-slate-800 p-2 text-sm text-slate-100"
-            />
-          </label>
-          <label className="block text-sm text-slate-300">
-            Equipment
-            <input
-              value={form.equipment}
-              onChange={(event) => setForm((previous) => ({ ...previous, equipment: event.target.value }))}
-              placeholder="Barbell, Dumbbell, Bodyweight"
-              className="mt-1 w-full rounded-md border border-slate-600 bg-slate-800 p-2 text-sm text-slate-100"
-            />
-          </label>
-          <label className="block text-sm text-slate-300">
-            Primary muscle
-            <input
-              value={form.primaryMuscle}
-              onChange={(event) => setForm((previous) => ({ ...previous, primaryMuscle: event.target.value }))}
-              placeholder="Chest, Back, Legs"
-              className="mt-1 w-full rounded-md border border-slate-600 bg-slate-800 p-2 text-sm text-slate-100"
-            />
-          </label>
-          <label className="block text-sm text-slate-300">
-            Default unit
-            <input
-              value={form.defaultUnit}
-              onChange={(event) => setForm((previous) => ({ ...previous, defaultUnit: event.target.value }))}
-              placeholder="reps, min, km"
-              className="mt-1 w-full rounded-md border border-slate-600 bg-slate-800 p-2 text-sm text-slate-100"
-            />
-          </label>
-          <label className="block text-sm text-slate-300 md:col-span-2">
-            Notes
-            <textarea
-              value={form.notes}
-              onChange={(event) => setForm((previous) => ({ ...previous, notes: event.target.value }))}
-              rows={2}
-              className="mt-1 w-full rounded-md border border-slate-600 bg-slate-800 p-2 text-sm text-slate-100"
-            />
-          </label>
-
-          <button
-            type="submit"
-            disabled={isCreating || !form.name.trim()}
-            className="rounded-md border border-slate-600 bg-slate-800 px-4 py-2 text-sm text-slate-100 hover:bg-slate-700 disabled:opacity-60 md:col-span-2"
-          >
-            {isCreating ? 'Creating...' : 'Create Exercise'}
-          </button>
-        </form>
+        <CreateExerciseForm
+          value={form}
+          onChange={setForm}
+          onSubmit={handleCreate}
+          submitLabel="Create Exercise"
+          isSubmitting={isCreating}
+        />
       </article>
 
       {mutationError ? (
@@ -197,80 +175,85 @@ function FitnessLibraryPage() {
         </article>
       ) : null}
 
-      <article className="rounded-xl border border-slate-700 bg-slate-900 p-4">
+      <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
         <h2 className="text-lg font-semibold text-slate-100">Exercise Library</h2>
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setSelectedMuscle('All')}
+            className={`rounded-full border px-3 py-1 text-xs transition-colors ${
+              selectedMuscle === 'All'
+                ? 'border-slate-500 bg-slate-800 text-slate-100'
+                : 'border-[#222222] bg-black text-slate-300 hover:bg-slate-900'
+            }`}
+          >
+            All
+          </button>
+          {muscleStats.top5.map((muscle) => (
+            <button
+              key={muscle}
+              type="button"
+              onClick={() => setSelectedMuscle(muscle)}
+              className={`rounded-full border px-3 py-1 text-xs transition-colors ${
+                selectedMuscle === muscle
+                  ? 'border-slate-500 bg-slate-800 text-slate-100'
+                  : 'border-[#222222] bg-black text-slate-300 hover:bg-slate-900'
+              }`}
+            >
+              {muscle}
+            </button>
+          ))}
+          {muscleStats.more.length > 0 ? (
+            <details className="relative" open={moreOpen} onToggle={(event) => setMoreOpen((event.currentTarget as HTMLDetailsElement).open)}>
+              <summary className="cursor-pointer list-none rounded-full border border-[#222222] bg-black px-3 py-1 text-xs text-slate-300 hover:bg-slate-900">
+                More ▾
+              </summary>
+              <div className="absolute right-0 z-10 mt-2 w-40 rounded-md border border-[#222222] bg-black p-2 shadow-2xl">
+                <div className="flex flex-col gap-1">
+                  {muscleStats.more.map((muscle) => (
+                    <button
+                      key={muscle}
+                      type="button"
+                      onClick={() => {
+                        setSelectedMuscle(muscle)
+                        setMoreOpen(false)
+                      }}
+                      className={`rounded px-2 py-1 text-left text-xs transition-colors ${
+                        selectedMuscle === muscle ? 'bg-slate-800 text-slate-100' : 'text-slate-300 hover:bg-slate-900'
+                      }`}
+                    >
+                      {muscle}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </details>
+          ) : null}
+        </div>
 
         {isLoading ? <p className="mt-3 text-sm text-slate-400">Loading exercises...</p> : null}
         {isError ? <p className="mt-3 text-sm text-red-400">Failed to load exercises.</p> : null}
-        {!isLoading && !isError && exercises.length === 0 ? <p className="mt-3 text-sm text-slate-400">No exercises yet.</p> : null}
+        {!isLoading && !isError && filteredExercises.length === 0 ? (
+          <p className="mt-3 text-sm text-slate-400">No exercises match this filter.</p>
+        ) : null}
 
         <ul className="mt-3 space-y-3">
-          {exercises.map((exercise) => (
-            <li key={exercise.id} className="rounded-lg border border-slate-700 bg-slate-800 p-3">
+          {filteredExercises.map((exercise) => (
+            <li key={exercise.id} className="rounded-lg border border-[#222222] bg-black p-3">
               {editingId === exercise.id ? (
-                <form onSubmit={handleUpdate} className="space-y-2">
-                  <input
-                    value={editingForm.name}
-                    onChange={(event) => setEditingForm((previous) => ({ ...previous, name: event.target.value }))}
-                    className="w-full rounded-md border border-slate-600 bg-slate-900 p-2 text-sm text-slate-100"
-                  />
-                  <div className="grid grid-cols-2 gap-2">
-                    <input
-                      value={editingForm.category}
-                      onChange={(event) => setEditingForm((previous) => ({ ...previous, category: event.target.value }))}
-                      placeholder="Category"
-                      className="rounded-md border border-slate-600 bg-slate-900 p-2 text-sm text-slate-100"
-                    />
-                    <input
-                      value={editingForm.equipment}
-                      onChange={(event) => setEditingForm((previous) => ({ ...previous, equipment: event.target.value }))}
-                      placeholder="Equipment"
-                      className="rounded-md border border-slate-600 bg-slate-900 p-2 text-sm text-slate-100"
-                    />
-                    <input
-                      value={editingForm.primaryMuscle}
-                      onChange={(event) => setEditingForm((previous) => ({ ...previous, primaryMuscle: event.target.value }))}
-                      placeholder="Primary muscle"
-                      className="rounded-md border border-slate-600 bg-slate-900 p-2 text-sm text-slate-100"
-                    />
-                    <input
-                      value={editingForm.defaultUnit}
-                      onChange={(event) => setEditingForm((previous) => ({ ...previous, defaultUnit: event.target.value }))}
-                      placeholder="Default unit"
-                      className="rounded-md border border-slate-600 bg-slate-900 p-2 text-sm text-slate-100"
-                    />
-                  </div>
-                  <textarea
-                    value={editingForm.notes}
-                    onChange={(event) => setEditingForm((previous) => ({ ...previous, notes: event.target.value }))}
-                    rows={2}
-                    className="w-full rounded-md border border-slate-600 bg-slate-900 p-2 text-sm text-slate-100"
-                  />
-                  <div className="flex flex-wrap gap-2">
-                    <button
-                      type="submit"
-                      disabled={isUpdating}
-                      className="rounded-md border border-slate-600 bg-slate-900 px-3 py-1 text-sm text-slate-100 hover:bg-slate-700 disabled:opacity-60"
-                    >
-                      {isUpdating ? 'Saving...' : 'Save'}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEditingId(null)
-                        setEditingForm(emptyExerciseForm)
-                      }}
-                      className="rounded-md border border-slate-600 px-3 py-1 text-sm text-slate-300 hover:bg-slate-700"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </form>
+                <CreateExerciseForm
+                  value={editingForm}
+                  onChange={setEditingForm}
+                  onSubmit={handleUpdate}
+                  submitLabel="Save Changes"
+                  isSubmitting={isUpdating}
+                />
               ) : (
                 <>
                   <p className="text-sm font-semibold text-slate-100">{exercise.name}</p>
                   <p className="text-xs text-slate-400">
-                    {exercise.category || 'General'} • {exercise.equipment || 'No equipment'} • {exercise.primary_muscle || 'N/A'}
+                    {exercise.category || 'General'} • Equipment: {formatTagList(exercise.equipment)} • Muscles:{' '}
+                    {formatTagList(exercise.target_muscles)}
                   </p>
                   {exercise.default_unit ? <p className="text-xs text-slate-400">Default unit: {exercise.default_unit}</p> : null}
                   {exercise.notes ? <p className="mt-1 text-xs text-slate-300">{exercise.notes}</p> : null}
@@ -279,7 +262,7 @@ function FitnessLibraryPage() {
                     <button
                       type="button"
                       onClick={() => beginEdit(exercise)}
-                      className="rounded-md border border-slate-600 bg-slate-900 px-3 py-1 text-xs text-slate-100 hover:bg-slate-700"
+                      className="rounded-md border border-[#222222] bg-[#0a0a0a] px-3 py-1 text-xs text-slate-100 transition-colors hover:bg-slate-900"
                     >
                       Edit
                     </button>
@@ -294,6 +277,20 @@ function FitnessLibraryPage() {
                   </div>
                 </>
               )}
+              {editingId === exercise.id ? (
+                <div className="mt-2 flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingId(null)
+                      setEditingForm(emptyExerciseForm)
+                    }}
+                    className="rounded-md border border-[#222222] px-3 py-1 text-sm text-slate-300 transition-colors hover:bg-slate-900"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              ) : null}
             </li>
           ))}
         </ul>

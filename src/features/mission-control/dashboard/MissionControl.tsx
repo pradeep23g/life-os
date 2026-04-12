@@ -111,6 +111,29 @@ function MissionControl() {
 
   return (
     <section className="space-y-4 bg-[#000000]">
+      <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
+        <h2 className="text-base font-semibold text-slate-100">Mind OS Snapshot</h2>
+        <p className="mt-1 text-xs text-slate-400">Core mental system status</p>
+        <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <div className="rounded-lg border border-[#222222] bg-black p-2">
+            <p className="text-[11px] text-slate-400">Active Habits</p>
+            <p className="text-lg font-semibold text-slate-100">{formatMetric(activeHabits, habitsLoading, habitsError)}</p>
+          </div>
+          <div className="rounded-lg border border-[#222222] bg-black p-2">
+            <p className="text-[11px] text-slate-400">Longest Streak</p>
+            <p className="text-lg font-semibold text-slate-100">{formatMetric(longestHabitStreak?.streak ?? 0, habitsLoading, habitsError)}</p>
+          </div>
+          <div className="rounded-lg border border-[#222222] bg-black p-2">
+            <p className="text-[11px] text-slate-400">Journal Entries</p>
+            <p className="text-lg font-semibold text-slate-100">{formatMetric(journals.length, journalsLoading, journalsError)}</p>
+          </div>
+          <div className="rounded-lg border border-[#222222] bg-black p-2">
+            <p className="text-[11px] text-slate-400">Average Mood</p>
+            <p className="text-lg font-semibold text-slate-100">{formatMetric(`${averageMood}/5`, journalsLoading, journalsError)}</p>
+          </div>
+        </div>
+      </article>
+
       <SystemStatusCard />
 
       <header className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">

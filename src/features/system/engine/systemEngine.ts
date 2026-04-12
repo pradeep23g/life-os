@@ -2,12 +2,18 @@ import { analyzeMomentum } from './analyzeMomentum'
 import { generateDirectives } from './generateDirectives'
 import type { CurrentDaySnapshot, IssueSeverity, SystemHistoryDay, SystemIssue, SystemStatus } from './types'
 
+function isPastWednesdayInIndia() {
+  const indiaNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }))
+  const day = indiaNow.getDay()
+  return day === 0 || day > 3
+}
+
 function getIssueSeverity(issue: string): IssueSeverity {
   if (issue.includes('No habits')) {
     return 'critical'
   }
 
-  if (issue.includes('pending')) {
+  if (issue.includes('pending') || issue.includes('Execution is slipping')) {
     return 'high'
   }
 
@@ -43,6 +49,14 @@ function detectIssues(snapshot: CurrentDaySnapshot | null | undefined): SystemIs
     issues.push('Low physical activity this week')
   }
 
+  if (snapshot.workout_days_this_week === 0 && isPastWednesdayInIndia()) {
+    issues.push('Execution is slipping: no workouts logged yet this week')
+  }
+
+  if (snapshot.deep_work_minutes_today < 60) {
+    issues.push(`Low deep work today (${snapshot.deep_work_minutes_today} mins)`)
+  }
+
   return issues.map((issue) => ({
     text: issue,
     severity: getIssueSeverity(issue),
@@ -76,6 +90,14 @@ function buildMomentumExplanation(snapshot: CurrentDaySnapshot | null | undefine
     reasons.push('Physical consistency is below target')
   }
 
+  if (snapshot.workout_days_this_week === 0 && isPastWednesdayInIndia()) {
+    reasons.push('No workouts logged and the week is already past Wednesday')
+  }
+
+  if (snapshot.deep_work_minutes_today < 60) {
+    reasons.push(`Deep work is below target (${snapshot.deep_work_minutes_today} mins)`)
+  }
+
   return reasons.length ? reasons : ['Execution baseline looks stable']
 }
 
@@ -83,7 +105,7 @@ export function getSystemStatus(
   snapshot: CurrentDaySnapshot | null | undefined,
   history: SystemHistoryDay[],
 ): SystemStatus {
-  const momentum = analyzeMomentum(history)
+  const momentum = analyzeMomentum(history, snapshot?.deep_work_minutes_today ?? 0)
   const directiveResult = generateDirectives(snapshot)
   const latestHistoryDate = history.length ? history[history.length - 1].snapshot_date : null
 

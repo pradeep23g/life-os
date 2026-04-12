@@ -7,6 +7,7 @@ import { systemStatusQueryKey } from '../../system/api/useSystemStatus'
 
 export const fitnessExercisesQueryKey = ['fitness-os', 'exercises'] as const
 export const fitnessWorkoutsQueryKey = ['fitness-os', 'workouts'] as const
+export const fitnessActiveWorkoutQueryKey = ['fitness-os', 'active-workout'] as const
 export const fitnessWorkoutDetailBaseQueryKey = ['fitness-os', 'workout-detail'] as const
 export const fitnessDashboardQueryKey = ['fitness-os', 'dashboard'] as const
 export const fitnessWeeklySummaryQueryKey = ['fitness-os', 'weekly-summary'] as const
@@ -18,8 +19,8 @@ export type FitnessExercise = {
   user_id: string
   name: string
   category: string | null
-  equipment: string | null
-  primary_muscle: string | null
+  equipment: string[] | null
+  target_muscles: string[] | null
   default_unit: string | null
   notes: string | null
   created_at: string
@@ -35,6 +36,8 @@ export type Workout = {
   session_type: string | null
   duration_minutes: number
   notes: string | null
+  start_time: string | null
+  end_time: string | null
   created_at: string
   updated_at: string
   deleted_at: string | null
@@ -107,8 +110,8 @@ type DeleteWorkoutInput = {
 type CreateExerciseInput = {
   name: string
   category?: string
-  equipment?: string
-  primaryMuscle?: string
+  equipment?: string[]
+  targetMuscles?: string[]
   defaultUnit?: string
   notes?: string
 }
@@ -117,8 +120,8 @@ type UpdateExerciseInput = {
   id: string
   name: string
   category?: string
-  equipment?: string
-  primaryMuscle?: string
+  equipment?: string[]
+  targetMuscles?: string[]
   defaultUnit?: string
   notes?: string
 }
@@ -157,6 +160,17 @@ type UpdateExerciseLogInput = {
 type DeleteExerciseLogInput = {
   id: string
   workoutId: string
+}
+
+type StartWorkoutSessionInput = {
+  title?: string
+  sessionType?: string
+  notes?: string
+}
+
+type EndWorkoutSessionInput = {
+  workoutId: string
+  startTime: string
 }
 
 function getErrorMessage(error: unknown): string {
@@ -222,6 +236,15 @@ function normalizeNumber(value: number | null | undefined): number | null {
   return Math.max(0, value)
 }
 
+function normalizeTagArray(values: string[] | null | undefined): string[] | null {
+  if (!values || values.length === 0) {
+    return null
+  }
+
+  const cleaned = [...new Set(values.map((value) => value.trim()).filter((value) => value.length > 0))]
+  return cleaned.length > 0 ? cleaned : null
+}
+
 function sortWorkoutsByDateDesc(workouts: Workout[]) {
   return [...workouts].sort((left, right) => {
     if (left.workout_date === right.workout_date) {
@@ -252,7 +275,7 @@ async function requireUserId() {
 async function fetchFitnessExercises(): Promise<FitnessExercise[]> {
   const { data, error } = await supabase
     .from('fitness_exercises')
-    .select('id, user_id, name, category, equipment, primary_muscle, default_unit, notes, created_at, updated_at, deleted_at')
+    .select('id, user_id, name, category, equipment, target_muscles, default_unit, notes, created_at, updated_at, deleted_at')
     .is('deleted_at', null)
     .order('name', { ascending: true })
 
@@ -270,8 +293,9 @@ async function fetchFitnessExercises(): Promise<FitnessExercise[]> {
 async function fetchWorkouts(): Promise<Workout[]> {
   const { data, error } = await supabase
     .from('workouts')
-    .select('id, user_id, workout_date, title, session_type, duration_minutes, notes, created_at, updated_at, deleted_at')
+    .select('id, user_id, workout_date, title, session_type, duration_minutes, notes, start_time, end_time, created_at, updated_at, deleted_at')
     .is('deleted_at', null)
+    .not('end_time', 'is', null)
     .order('workout_date', { ascending: false })
     .order('created_at', { ascending: false })
 
@@ -284,6 +308,27 @@ async function fetchWorkouts(): Promise<Workout[]> {
   }
 
   return data ?? []
+}
+
+async function fetchActiveWorkout(): Promise<Workout | null> {
+  const { data, error } = await supabase
+    .from('workouts')
+    .select('id, user_id, workout_date, title, session_type, duration_minutes, notes, start_time, end_time, created_at, updated_at, deleted_at')
+    .is('deleted_at', null)
+    .is('end_time', null)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  if (error) {
+    if (isMissingRelationError(error, 'workouts')) {
+      return null
+    }
+
+    throw buildError('Failed to fetch active workout', error)
+  }
+
+  return data ?? null
 }
 
 type ExerciseLogRow = {
@@ -314,7 +359,7 @@ type ExerciseLogRow = {
 async function fetchWorkoutDetail(workoutId: string): Promise<WorkoutDetail | null> {
   const { data: workout, error: workoutError } = await supabase
     .from('workouts')
-    .select('id, user_id, workout_date, title, session_type, duration_minutes, notes, created_at, updated_at, deleted_at')
+    .select('id, user_id, workout_date, title, session_type, duration_minutes, notes, start_time, end_time, created_at, updated_at, deleted_at')
     .eq('id', workoutId)
     .is('deleted_at', null)
     .maybeSingle()
@@ -463,6 +508,8 @@ async function fetchFitnessWeeklySummary(): Promise<FitnessWeeklySummary> {
 async function createWorkout({ workoutDate, title, sessionType, durationMinutes, notes }: CreateWorkoutInput): Promise<void> {
   const userId = await requireUserId()
   const resolvedDuration = Math.max(0, Math.floor(durationMinutes))
+  const startTime = new Date(`${workoutDate}T00:00:00.000Z`)
+  const endTime = new Date(startTime.getTime() + resolvedDuration * 60_000)
 
   const { data, error } = await supabase
     .from('workouts')
@@ -473,6 +520,8 @@ async function createWorkout({ workoutDate, title, sessionType, durationMinutes,
       session_type: sessionType?.trim() || null,
       duration_minutes: resolvedDuration,
       notes: notes?.trim() || null,
+      start_time: startTime.toISOString(),
+      end_time: endTime.toISOString(),
       updated_at: new Date().toISOString(),
     })
     .select('id')
@@ -491,6 +540,84 @@ async function createWorkout({ workoutDate, title, sessionType, durationMinutes,
     payload: {
       workoutDate,
       durationMinutes: resolvedDuration,
+    },
+  })
+}
+
+async function startWorkoutSession({ title, sessionType, notes }: StartWorkoutSessionInput): Promise<void> {
+  const userId = await requireUserId()
+  const startTime = new Date().toISOString()
+  const workoutDate = toIndiaDateKey(startTime)
+
+  const activeWorkout = await fetchActiveWorkout()
+  if (activeWorkout) {
+    throw new Error('An active workout session is already running.')
+  }
+
+  const { data, error } = await supabase
+    .from('workouts')
+    .insert({
+      user_id: userId,
+      workout_date: workoutDate,
+      title: title?.trim() || 'Live Workout Session',
+      session_type: sessionType?.trim() || 'Calisthenics',
+      duration_minutes: 0,
+      notes: notes?.trim() || null,
+      start_time: startTime,
+      end_time: null,
+      updated_at: startTime,
+    })
+    .select('id')
+    .single()
+
+  if (error) {
+    throw buildError('Failed to start workout session', error)
+  }
+
+  await logEventSafe({
+    userId,
+    domain: 'fitness-os',
+    entityType: 'workout',
+    entityId: data.id,
+    eventType: 'workout_started',
+    payload: {
+      workoutDate,
+      sessionType: sessionType?.trim() || 'Calisthenics',
+    },
+  })
+}
+
+async function endWorkoutSession({ workoutId, startTime }: EndWorkoutSessionInput): Promise<void> {
+  const userId = await requireUserId()
+  const endTimeIso = new Date().toISOString()
+  const startDate = new Date(startTime)
+  const endDate = new Date(endTimeIso)
+  const diffMinutes = Math.max(0, Math.round((endDate.getTime() - startDate.getTime()) / 60000))
+
+  const { error } = await supabase
+    .from('workouts')
+    .update({
+      end_time: endTimeIso,
+      duration_minutes: diffMinutes,
+      updated_at: endTimeIso,
+    })
+    .eq('id', workoutId)
+    .eq('user_id', userId)
+    .is('deleted_at', null)
+    .is('end_time', null)
+
+  if (error) {
+    throw buildError('Failed to end workout session', error)
+  }
+
+  await logEventSafe({
+    userId,
+    domain: 'fitness-os',
+    entityType: 'workout',
+    entityId: workoutId,
+    eventType: 'workout_completed',
+    payload: {
+      durationMinutes: diffMinutes,
     },
   })
 }
@@ -579,8 +706,8 @@ async function createExercise(input: CreateExerciseInput): Promise<void> {
       user_id: userId,
       name: input.name.trim(),
       category: input.category?.trim() || null,
-      equipment: input.equipment?.trim() || null,
-      primary_muscle: input.primaryMuscle?.trim() || null,
+      equipment: normalizeTagArray(input.equipment),
+      target_muscles: normalizeTagArray(input.targetMuscles),
       default_unit: input.defaultUnit?.trim() || null,
       notes: input.notes?.trim() || null,
       updated_at: new Date().toISOString(),
@@ -608,8 +735,8 @@ async function updateExercise(input: UpdateExerciseInput): Promise<void> {
     .update({
       name: input.name.trim(),
       category: input.category?.trim() || null,
-      equipment: input.equipment?.trim() || null,
-      primary_muscle: input.primaryMuscle?.trim() || null,
+      equipment: normalizeTagArray(input.equipment),
+      target_muscles: normalizeTagArray(input.targetMuscles),
       default_unit: input.defaultUnit?.trim() || null,
       notes: input.notes?.trim() || null,
       updated_at: new Date().toISOString(),
@@ -802,6 +929,14 @@ export function useWorkouts() {
   })
 }
 
+export function useActiveWorkout() {
+  return useQuery({
+    queryKey: fitnessActiveWorkoutQueryKey,
+    queryFn: fetchActiveWorkout,
+    refetchInterval: 15_000,
+  })
+}
+
 export function useWorkoutDetail(workoutId: string | null) {
   return useQuery({
     queryKey: fitnessWorkoutDetailQueryKey(workoutId ?? 'none'),
@@ -826,6 +961,7 @@ export function useFitnessWeeklySummary() {
 
 function invalidateFitnessQueries(queryClient: ReturnType<typeof useQueryClient>) {
   queryClient.invalidateQueries({ queryKey: fitnessWorkoutsQueryKey })
+  queryClient.invalidateQueries({ queryKey: fitnessActiveWorkoutQueryKey })
   queryClient.invalidateQueries({ queryKey: fitnessDashboardQueryKey })
   queryClient.invalidateQueries({ queryKey: fitnessWeeklySummaryQueryKey })
   queryClient.invalidateQueries({ queryKey: systemStatusQueryKey })
@@ -842,6 +978,30 @@ export function useCreateWorkout() {
     mutationFn: createWorkout,
     onSuccess: () => {
       invalidateFitnessQueries(queryClient)
+    },
+  })
+}
+
+export function useStartWorkoutSession() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: startWorkoutSession,
+    onSuccess: () => {
+      invalidateFitnessQueries(queryClient)
+    },
+  })
+}
+
+export function useEndWorkoutSession() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: endWorkoutSession,
+    onSuccess: (_, variables) => {
+      invalidateFitnessQueries(queryClient)
+      queryClient.invalidateQueries({ queryKey: fitnessWorkoutDetailQueryKey(variables.workoutId) })
+      queryClient.invalidateQueries({ queryKey: systemStatusQueryKey })
     },
   })
 }

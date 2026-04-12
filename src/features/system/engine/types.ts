@@ -7,6 +7,7 @@ export type CurrentDaySnapshot = {
   total_active_habits: number
   journal_logged_today: boolean
   workout_days_this_week: number
+  deep_work_minutes_today: number
   oldest_pending_task_title: string | null
   newest_active_habit_title: string | null
   snapshot_date: string
@@ -32,9 +33,10 @@ export type UrgencyScores = {
   habit: number
   journal: number
   fitness: number
+  deep_work: number
 }
 
-export type DirectiveDomain = 'task' | 'habit' | 'journal' | 'fitness' | 'none'
+export type DirectiveDomain = 'task' | 'habit' | 'journal' | 'fitness' | 'deep-work' | 'none'
 
 export type DirectiveResult = {
   action: DirectiveDomain

@@ -6,8 +6,9 @@ import MindOsDashboard from './features/mind-os/dashboard/MindOsDashboard'
 import HabitsPage from './features/mind-os/habits/HabitsPage'
 import JournalPage from './features/mind-os/journal/JournalPage'
 import FitnessOsDashboard from './features/fitness-os/dashboard/FitnessOsDashboard'
-import FitnessLibraryPage from './features/fitness-os/library/FitnessLibraryPage'
+import FitnessLibraryPage from './features/fitness-os/pages/Library'
 import WorkoutsPage from './features/fitness-os/workouts/WorkoutsPage'
+import FinanceDashboard from './features/finance-os/pages/FinanceDashboard'
 import MissionControl from './features/mission-control/dashboard/MissionControl'
 import ChallengesPage from './features/progress-hub/challenges/ChallengesPage'
 import ProgressHubDashboard from './features/progress-hub/dashboard/ProgressHubDashboard'
@@ -18,6 +19,8 @@ import ProductivityHubDashboard from './features/productivity-hub/dashboard/Prod
 import PlanningPage from './features/productivity-hub/planning/PlanningPage'
 import TasksPage from './features/productivity-hub/tasks/TasksPage'
 import SystemFeedbackToast from './features/system/components/SystemFeedbackToast'
+import TimeOSPage from './features/time-os/pages/TimeOSPage'
+import GlobalTimerBar from './features/time-os/components/GlobalTimerBar'
 import AppErrorBoundary from './components/AppErrorBoundary'
 import { AuthProvider, useAuth } from './lib/AuthContext'
 import Sidebar from './layout/Sidebar'
@@ -81,6 +84,14 @@ function getShellTitle(pathname: string) {
 
   if (pathname.startsWith('/fitness-os/library')) {
     return 'Fitness OS - Library'
+  }
+
+  if (pathname.startsWith('/time-os')) {
+    return 'Time OS'
+  }
+
+  if (pathname.startsWith('/finance-os')) {
+    return 'Finance OS'
   }
 
   return 'Life OS'
@@ -240,6 +251,7 @@ function AppShell() {
         </aside>
       </div>
 
+      <GlobalTimerBar />
       <SystemFeedbackToast />
     </div>
   )
@@ -348,6 +360,9 @@ function App() {
                 <Route path="workouts" element={<WorkoutsPage />} />
                 <Route path="library" element={<FitnessLibraryPage />} />
               </Route>
+
+              <Route path="time-os" element={<TimeOSPage />} />
+              <Route path="finance-os" element={<FinanceDashboard />} />
 
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
