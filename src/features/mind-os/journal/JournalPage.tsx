@@ -1,8 +1,8 @@
 ﻿import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 
-import type { JournalEntry } from '../api/useJournal'
 import { useCreateJournalEntry, useJournalEntries } from '../api/useJournal'
+import JournalDateModal from './JournalDateModal'
 import {
   buildMonthGrid,
   formatIndiaDateTime,
@@ -15,12 +15,15 @@ import {
 const weekdayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const
 
 const moodOptions = [
-  { value: 1, emoji: '\u{1F61E}', label: 'Very Low' },
-  { value: 2, emoji: '\u{1F610}', label: 'Low' },
-  { value: 3, emoji: '\u{1F642}', label: 'Stable' },
-  { value: 4, emoji: '\u{1F604}', label: 'Good' },
+  { value: 1, emoji: '\u{1F62D}', label: 'Very Low' },
+  { value: 2, emoji: '\u{1F614}', label: 'Low' },
+  { value: 3, emoji: '\u{1F610}', label: 'Stable' },
+  { value: 4, emoji: '\u{1F60E}', label: 'Good' },
   { value: 5, emoji: '\u{1F525}', label: 'Excellent' },
 ] as const
+
+const greenReplicaButtonClass =
+  'border border-emerald-900 text-emerald-500 hover:bg-emerald-950/30 transition-colors rounded px-4 py-2'
 
 function moodToEmoji(mood: number) {
   return moodOptions.find((option) => option.value === mood)?.emoji ?? '\u{1F642}'
@@ -60,12 +63,12 @@ function AnalogClockWidget() {
   const secondDegrees = second * 6
 
   return (
-    <article className="rounded-xl border border-slate-700 bg-slate-900 p-4">
+    <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
       <h2 className="text-lg font-semibold text-slate-100">IST Clock</h2>
       <p className="mt-1 text-xs text-slate-400">Asia/Kolkata</p>
 
-      <div className="mx-auto mt-4 h-40 w-40 rounded-full border border-slate-600 bg-slate-950 p-2">
-        <div className="relative h-full w-full rounded-full border border-slate-700">
+      <div className="mx-auto mt-4 h-40 w-40 rounded-full border border-[#222222] bg-black p-2">
+        <div className="relative h-full w-full rounded-full border border-[#222222]">
           {[...Array(12)].map((_, index) => (
             <span
               key={index}
@@ -126,30 +129,53 @@ function JournalPage() {
   const [briefAboutDay, setBriefAboutDay] = useState('')
   const [isCalendarOpen, setIsCalendarOpen] = useState(false)
   const [calendarMonth, setCalendarMonth] = useState(() => new Date())
-  const [selectedEntry, setSelectedEntry] = useState<JournalEntry | null>(null)
+  const [selectedDate, setSelectedDate] = useState<string | null>(null)
 
   const monthCells = useMemo(() => buildMonthGrid(calendarMonth), [calendarMonth])
   const miniMonthCells = useMemo(() => buildMonthGrid(new Date()), [])
 
   const entriesByDate = useMemo(() => {
-    const map = new Map<string, JournalEntry>()
+    const map = new Map<string, typeof entries>()
 
     for (const entry of entries) {
       const dateKey = toIndiaDateKey(entry.created_at)
-      if (!map.has(dateKey)) {
-        map.set(dateKey, entry)
-      }
+      const existing = map.get(dateKey) ?? []
+      existing.push(entry)
+      map.set(dateKey, existing)
+    }
+
+    for (const [dateKey, dayEntries] of map) {
+      map.set(
+        dateKey,
+        dayEntries.sort((left, right) => (left.created_at < right.created_at ? -1 : 1)),
+      )
     }
 
     return map
   }, [entries])
+
+  const dateMoodSummary = useMemo(() => {
+    const map = new Map<string, { averageMood: number; count: number }>()
+    for (const [dateKey, dayEntries] of entriesByDate) {
+      const count = dayEntries.length
+      if (count === 0) {
+        continue
+      }
+      const totalMood = dayEntries.reduce((sum, entry) => sum + entry.mood, 0)
+      map.set(dateKey, {
+        averageMood: Math.round(totalMood / count),
+        count,
+      })
+    }
+    return map
+  }, [entriesByDate])
 
   const hasContent = useMemo(() => {
     return [whatWentGood, whatYouLearned, briefAboutDay].some((value) => value.trim().length > 0)
   }, [whatWentGood, whatYouLearned, briefAboutDay])
 
   useEffect(() => {
-    if (!isCreateModalOpen && !isCalendarOpen && !selectedEntry) {
+    if (!isCreateModalOpen && !isCalendarOpen && !selectedDate) {
       return
     }
 
@@ -158,8 +184,8 @@ function JournalPage() {
         return
       }
 
-      if (selectedEntry) {
-        setSelectedEntry(null)
+      if (selectedDate) {
+        setSelectedDate(null)
         return
       }
 
@@ -178,13 +204,14 @@ function JournalPage() {
     return () => {
       window.removeEventListener('keydown', handleEscape)
     }
-  }, [isCalendarOpen, isCreateModalOpen, selectedEntry])
+  }, [isCalendarOpen, isCreateModalOpen, selectedDate])
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
     createEntry(
       {
+        entryDate: toIndiaDateKey(new Date()),
         mood,
         whatWentGood: whatWentGood.trim(),
         whatYouLearned: whatYouLearned.trim(),
@@ -203,10 +230,10 @@ function JournalPage() {
   }
 
   return (
-    <section className="space-y-4 pb-24">
+    <section className="space-y-4 bg-black pb-24">
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1.2fr_1fr]">
         <article
-          className="cursor-pointer rounded-xl border border-slate-700 bg-slate-900 p-4"
+          className="cursor-pointer rounded-xl border border-[#222222] bg-[#0a0a0a] p-4"
           onClick={() => {
             setCalendarMonth(new Date())
             setIsCalendarOpen(true)
@@ -214,7 +241,7 @@ function JournalPage() {
         >
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-slate-100">Journal Calendar</h2>
-            <span className="rounded-md border border-slate-600 px-2 py-1 text-xs text-slate-300">Open</span>
+            <span className="rounded-md border border-[#222222] px-2 py-1 text-xs text-slate-300">Open</span>
           </div>
           <p className="mt-1 text-xs text-slate-400">Logged days are green with mood emoji.</p>
 
@@ -226,21 +253,32 @@ function JournalPage() {
 
           <div className="mt-1 grid grid-cols-7 gap-1">
             {miniMonthCells.map((day) => {
-              const dayEntry = entriesByDate.get(day.dateKey)
-              const isLogged = Boolean(dayEntry)
+              const summary = dateMoodSummary.get(day.dateKey)
+              const isLogged = Boolean(summary)
+              const entryCount = summary?.count ?? 0
 
               return (
-                <div
+                <button
                   key={day.dateKey}
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation()
+                    setSelectedDate(day.dateKey)
+                  }}
                   className={`rounded border p-1 text-center text-xs ${
                     isLogged
                       ? 'border-emerald-500/60 bg-emerald-500/20 text-emerald-100'
-                      : 'border-slate-700 bg-slate-800 text-slate-400'
-                  } ${day.inCurrentMonth ? '' : 'opacity-40'}`}
+                      : 'border-[#222222] bg-[#0a0a0a] text-slate-400'
+                  } cursor-pointer transition-colors hover:bg-[#222222] ${day.inCurrentMonth ? '' : 'opacity-40'}`}
                 >
                   <p>{day.day}</p>
-                  <p className="leading-none">{dayEntry ? moodToEmoji(dayEntry.mood) : ''}</p>
-                </div>
+                  <p className="leading-none">{summary ? moodToEmoji(summary.averageMood) : ''}</p>
+                  {entryCount > 1 ? (
+                    <span className="absolute right-0.5 top-0.5 rounded-full border border-[#222222] bg-black px-1 text-[9px] leading-4 text-slate-300">
+                      x{entryCount}
+                    </span>
+                  ) : null}
+                </button>
               )
             })}
           </div>
@@ -249,7 +287,7 @@ function JournalPage() {
         <AnalogClockWidget />
       </div>
 
-      <article className="rounded-xl border border-slate-700 bg-slate-900 p-4">
+      <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
         <h2 className="text-lg font-semibold text-slate-100">Recent Journal Entries</h2>
 
         {isLoading ? <p className="mt-3 text-sm text-slate-400">Loading entries...</p> : null}
@@ -259,7 +297,7 @@ function JournalPage() {
 
         <ul className="mt-3 space-y-3">
           {entries.slice(0, 10).map((entry) => (
-            <li key={entry.id} className="rounded-lg border border-slate-700 bg-slate-800 p-3">
+            <li key={entry.id} className="rounded-lg border border-[#222222] bg-black p-3">
               <p className="text-sm text-slate-300">
                 {moodToEmoji(entry.mood)} {formatIndiaDateTime(entry.created_at)}
               </p>
@@ -272,7 +310,7 @@ function JournalPage() {
       <button
         type="button"
         onClick={() => setIsCreateModalOpen(true)}
-        className="fixed bottom-5 right-5 z-30 inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-slate-600 bg-slate-800 text-slate-100 shadow-xl shadow-black/60 transition hover:bg-slate-700"
+        className="fixed bottom-5 right-5 z-30 inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-[#222222] bg-[#0a0a0a] text-slate-100 shadow-xl shadow-black/60 transition hover:bg-[#222222]"
         aria-label="Create journal entry"
       >
         <PenIcon />
@@ -283,11 +321,11 @@ function JournalPage() {
           <button
             type="button"
             onClick={() => setIsCreateModalOpen(false)}
-            className="absolute inset-0 bg-slate-950/85"
+            className="absolute inset-0 bg-black/85"
             aria-label="Close journal entry modal"
           />
 
-          <article className="relative z-10 h-[88vh] w-[96vw] max-w-4xl overflow-auto rounded-xl border border-slate-700 bg-slate-900 p-4 sm:p-6">
+          <article className="relative z-10 h-[88vh] w-[96vw] max-w-4xl overflow-auto rounded-xl border border-[#222222] bg-[#0a0a0a] p-4 sm:p-6">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h2 className="text-xl font-semibold text-slate-100">New Journal Entry</h2>
@@ -296,7 +334,7 @@ function JournalPage() {
               <button
                 type="button"
                 onClick={() => setIsCreateModalOpen(false)}
-                className="flex h-9 w-9 items-center justify-center rounded-md border border-slate-600 bg-slate-800 text-slate-100 hover:bg-slate-700"
+                className="flex h-9 w-9 items-center justify-center rounded-md border border-[#222222] bg-black text-slate-100 hover:bg-[#222222]"
                 aria-label="Close"
               >
                 <CloseIcon />
@@ -318,7 +356,7 @@ function JournalPage() {
                       className={`rounded-md border px-3 py-1 text-lg ${
                         mood === option.value
                           ? 'border-emerald-500 bg-emerald-500/10'
-                          : 'border-slate-600 bg-slate-800 hover:bg-slate-700'
+                          : 'border-[#222222] bg-black hover:bg-[#222222]'
                       }`}
                       title={option.label}
                     >
@@ -334,7 +372,7 @@ function JournalPage() {
                   value={whatWentGood}
                   onChange={(event) => setWhatWentGood(event.target.value)}
                   rows={4}
-                  className="mt-1 w-full rounded-md border border-slate-600 bg-slate-800 p-2 text-slate-100"
+                  className="mt-1 w-full rounded-md border border-[#222222] bg-black p-2 text-slate-100"
                 />
               </label>
 
@@ -344,7 +382,7 @@ function JournalPage() {
                   value={whatYouLearned}
                   onChange={(event) => setWhatYouLearned(event.target.value)}
                   rows={4}
-                  className="mt-1 w-full rounded-md border border-slate-600 bg-slate-800 p-2 text-slate-100"
+                  className="mt-1 w-full rounded-md border border-[#222222] bg-black p-2 text-slate-100"
                 />
               </label>
 
@@ -354,7 +392,7 @@ function JournalPage() {
                   value={briefAboutDay}
                   onChange={(event) => setBriefAboutDay(event.target.value)}
                   rows={5}
-                  className="mt-1 w-full rounded-md border border-slate-600 bg-slate-800 p-2 text-slate-100"
+                  className="mt-1 w-full rounded-md border border-[#222222] bg-black p-2 text-slate-100"
                 />
               </label>
 
@@ -362,11 +400,7 @@ function JournalPage() {
                 <p className="text-sm text-red-400">Failed to save journal entry: {getReadableErrorMessage(createError)}</p>
               ) : null}
 
-              <button
-                type="submit"
-                disabled={isPending || !hasContent}
-                className="w-full rounded-md border border-slate-600 bg-slate-800 px-4 py-2 text-sm text-slate-100 hover:bg-slate-700 disabled:opacity-60"
-              >
+              <button type="submit" disabled={isPending || !hasContent} className={`w-full ${greenReplicaButtonClass} disabled:opacity-60`}>
                 {isPending ? 'Saving...' : 'Save Entry'}
               </button>
             </form>
@@ -375,17 +409,17 @@ function JournalPage() {
       ) : null}
 
       {isCalendarOpen ? (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-950/85 p-3">
-          <section className="h-[92vh] w-[96vw] max-w-6xl overflow-auto rounded-xl border border-slate-700 bg-slate-900 p-4">
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/85 p-3">
+          <section className="h-[92vh] w-[96vw] max-w-6xl overflow-auto rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <h3 className="text-xl font-semibold text-slate-100">Journal Calendar View</h3>
-                <p className="text-xs text-slate-400">Hover green days for mood + time, click green days for entry details.</p>
+                <p className="text-xs text-slate-400">Click any date to open timeline and add retroactive entries.</p>
               </div>
               <button
                 type="button"
                 onClick={() => setIsCalendarOpen(false)}
-                className="rounded-md border border-slate-600 px-3 py-1 text-sm text-slate-100 hover:bg-slate-800"
+                className="rounded-md border border-[#222222] px-3 py-1 text-sm text-slate-100 hover:bg-[#222222]"
               >
                 Close
               </button>
@@ -395,7 +429,7 @@ function JournalPage() {
               <button
                 type="button"
                 onClick={() => setCalendarMonth((previous) => shiftMonth(previous, -1))}
-                className="rounded-md border border-slate-600 px-3 py-1 text-sm text-slate-100 hover:bg-slate-800"
+                className="rounded-md border border-[#222222] px-3 py-1 text-sm text-slate-100 hover:bg-[#222222]"
               >
                 Previous
               </button>
@@ -403,7 +437,7 @@ function JournalPage() {
               <button
                 type="button"
                 onClick={() => setCalendarMonth((previous) => shiftMonth(previous, 1))}
-                className="rounded-md border border-slate-600 px-3 py-1 text-sm text-slate-100 hover:bg-slate-800"
+                className="rounded-md border border-[#222222] px-3 py-1 text-sm text-slate-100 hover:bg-[#222222]"
               >
                 Next
               </button>
@@ -417,32 +451,33 @@ function JournalPage() {
 
             <div className="mt-2 grid grid-cols-7 gap-2">
               {monthCells.map((day) => {
-                const dayEntry = entriesByDate.get(day.dateKey)
-                const isLogged = Boolean(dayEntry)
+                const summary = dateMoodSummary.get(day.dateKey)
+                const isLogged = Boolean(summary)
+                const entryCount = summary?.count ?? 0
 
                 return (
                   <div key={day.dateKey} className="group relative">
                     <button
                       type="button"
-                      disabled={!isLogged}
-                      onClick={() => {
-                        if (dayEntry) {
-                          setSelectedEntry(dayEntry)
-                        }
-                      }}
+                      onClick={() => setSelectedDate(day.dateKey)}
                       className={`w-full rounded-md border p-2 text-left transition ${
                         isLogged
                           ? 'cursor-pointer border-emerald-500/70 bg-emerald-500/20 text-emerald-100 hover:bg-emerald-500/30'
-                          : 'cursor-default border-slate-700 bg-slate-800 text-slate-400'
-                      } ${day.inCurrentMonth ? '' : 'opacity-40'} ${isLogged ? '' : 'pointer-events-none'}`}
+                          : 'cursor-pointer border-[#222222] bg-[#0a0a0a] text-slate-400 hover:bg-[#222222]'
+                      } ${day.inCurrentMonth ? '' : 'opacity-40'} cursor-pointer hover:bg-[#222222] transition-colors`}
                     >
                       <p className="text-sm font-semibold">{day.day}</p>
-                      <p className="mt-2 text-lg leading-none">{dayEntry ? moodToEmoji(dayEntry.mood) : ''}</p>
+                      <p className="mt-2 text-lg leading-none">{summary ? moodToEmoji(summary.averageMood) : ''}</p>
+                      {entryCount > 1 ? (
+                        <span className="absolute right-1 top-1 rounded-full border border-[#222222] bg-black px-1.5 text-[10px] leading-4 text-slate-300">
+                          x{entryCount}
+                        </span>
+                      ) : null}
                     </button>
 
-                    {dayEntry ? (
-                      <div className="pointer-events-none absolute left-1/2 top-full z-30 mt-1 hidden -translate-x-1/2 whitespace-nowrap rounded-md border border-slate-600 bg-slate-950 px-2 py-1 text-[11px] text-slate-100 group-hover:block">
-                        {formatIndiaDateTime(dayEntry.created_at)} • {moodToEmoji(dayEntry.mood)}
+                    {summary ? (
+                      <div className="pointer-events-none absolute left-1/2 top-full z-30 mt-1 hidden -translate-x-1/2 whitespace-nowrap rounded-md border border-[#222222] bg-black px-2 py-1 text-[11px] text-slate-100 group-hover:block">
+                        Avg mood: {moodToEmoji(summary.averageMood)} ({entryCount} entries)
                       </div>
                     ) : null}
                   </div>
@@ -453,43 +488,15 @@ function JournalPage() {
         </div>
       ) : null}
 
-      {selectedEntry ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4">
-          <article className="w-full max-w-2xl rounded-xl border border-slate-700 bg-slate-900 p-4">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <h3 className="text-lg font-semibold text-slate-100">Journal Entry Detail</h3>
-                <p className="text-sm text-slate-300">
-                  {moodToEmoji(selectedEntry.mood)} {formatIndiaDateTime(selectedEntry.created_at)}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setSelectedEntry(null)}
-                className="rounded-md border border-slate-600 px-3 py-1 text-sm text-slate-100 hover:bg-slate-800"
-              >
-                Close
-              </button>
-            </div>
-
-            <div className="mt-4 space-y-3 text-sm text-slate-200">
-              <div>
-                <p className="text-xs uppercase tracking-wide text-slate-400">What went good</p>
-                <p className="mt-1">{selectedEntry.what_went_good || 'No note added.'}</p>
-              </div>
-
-              <div>
-                <p className="text-xs uppercase tracking-wide text-slate-400">What you've learned</p>
-                <p className="mt-1">{selectedEntry.what_you_learned || 'No note added.'}</p>
-              </div>
-
-              <div>
-                <p className="text-xs uppercase tracking-wide text-slate-400">Brief about day</p>
-                <p className="mt-1">{selectedEntry.brief_about_day || 'No note added.'}</p>
-              </div>
-            </div>
-          </article>
-        </div>
+      {selectedDate ? (
+        <JournalDateModal
+          selectedDate={selectedDate}
+          entries={entries}
+          isSaving={isPending}
+          saveError={createError}
+          onCreateEntry={createEntry}
+          onClose={() => setSelectedDate(null)}
+        />
       ) : null}
     </section>
   )
