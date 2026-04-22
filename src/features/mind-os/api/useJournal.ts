@@ -18,10 +18,20 @@ export type JournalEntry = {
 }
 
 type CreateJournalEntryInput = {
+  entryDate: string
   mood: number
   whatWentGood: string
   whatYouLearned: string
   briefAboutDay: string
+}
+
+function buildEntryCreatedAtIso(entryDate: string): string {
+  const trimmed = entryDate.trim()
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    throw new Error('Invalid journal entry date. Expected YYYY-MM-DD.')
+  }
+
+  return `${trimmed}T12:00:00+05:30`
 }
 
 function getErrorMessage(error: unknown): string {
@@ -70,6 +80,7 @@ async function fetchJournalEntries(): Promise<JournalEntry[]> {
 }
 
 async function insertJournalEntry({
+  entryDate,
   mood,
   whatWentGood,
   whatYouLearned,
@@ -97,6 +108,8 @@ async function insertJournalEntry({
     what_went_good: whatWentGood,
     what_you_learned: whatYouLearned,
     brief_about_day: briefAboutDay,
+    created_at: buildEntryCreatedAtIso(entryDate),
+    updated_at: new Date().toISOString(),
   }
 
   const { error } = await supabase.from('journal_entries').insert(payload)
