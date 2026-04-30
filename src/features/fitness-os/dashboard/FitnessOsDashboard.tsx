@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+﻿import { useMemo, useState } from 'react'
 
 import { type FitnessDayInsight, type Workout, useFitnessDashboard } from '../api/useFitness'
 import { buildMonthGrid, formatIndiaDate, formatIndiaDateTime, getMonthLabel, shiftMonth } from '../utils/date'
@@ -109,7 +109,7 @@ function FitnessOsDashboard() {
         <article className="rounded-xl border border-red-800 bg-red-950/20 p-4 text-sm text-red-200">Failed to load Fitness dashboard.</article>
       ) : null}
 
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1.2fr_1fr]">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <article className="rounded-xl border border-slate-700 bg-slate-900 p-4">
           <div className="flex items-center justify-between">
             <div>
@@ -155,44 +155,44 @@ function FitnessOsDashboard() {
         </article>
 
         <article className="rounded-xl border border-slate-700 bg-slate-900 p-4">
-          <h2 className="text-lg font-semibold text-slate-100">Recent Workouts</h2>
-          {isLoading ? <p className="mt-3 text-sm text-slate-400">Loading recent workouts...</p> : null}
-          {!isLoading && (data?.recentWorkouts.length ?? 0) === 0 ? <p className="mt-3 text-sm text-slate-400">No workouts logged yet.</p> : null}
-          <ul className="mt-3 space-y-2">
-            {data?.recentWorkouts.slice(0, 6).map((workout) => (
-              <li key={workout.id} className="rounded-md border border-slate-700 bg-slate-800 p-2">
-                <p className="text-sm font-semibold text-slate-100">{workout.title}</p>
-                <p className="text-xs text-slate-400">
-                  {formatIndiaDate(workout.workout_date)} - {workout.duration_minutes} min
-                </p>
-              </li>
-            ))}
-          </ul>
+          <h2 className="text-lg font-semibold text-slate-100">90-Day Effort Heatmap</h2>
+          <p className="mt-1 text-xs text-slate-400">Intensity is based on session minutes per day.</p>
+          <div className="mt-4 overflow-x-auto">
+            <div className="flex gap-2">
+              <div className="grid grid-rows-7 gap-1 pt-1 text-[10px] text-slate-500">
+                {Array.from({ length: 7 }, (_, index) => {
+                  const label = heatmapWeekdayLabels.has(weekdayHeaders[index]) ? weekdayHeaders[index] : ''
+                  return <span key={weekdayHeaders[index]}>{label}</span>
+                })}
+              </div>
+              <div className="grid auto-cols-[12px] grid-flow-col grid-rows-7 gap-1">
+                {(data?.heatmapDays ?? []).map((day) => (
+                  <span
+                    key={day.date}
+                    className={`h-3 w-3 rounded-sm border ${getHeatmapLevelClass(day.minutes, maxHeatmapMinutes)}`}
+                    title={`${formatIndiaDate(day.date)} - ${day.minutes} min - ${day.workoutCount} workouts`}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
         </article>
       </div>
 
       <article className="rounded-xl border border-slate-700 bg-slate-900 p-4">
-        <h2 className="text-lg font-semibold text-slate-100">90-Day Effort Heatmap</h2>
-        <p className="mt-1 text-xs text-slate-400">Intensity is based on session minutes per day.</p>
-        <div className="mt-4 overflow-x-auto">
-          <div className="flex gap-2">
-            <div className="grid grid-rows-7 gap-1 pt-1 text-[10px] text-slate-500">
-              {Array.from({ length: 7 }, (_, index) => {
-                const label = heatmapWeekdayLabels.has(weekdayHeaders[index]) ? weekdayHeaders[index] : ''
-                return <span key={weekdayHeaders[index]}>{label}</span>
-              })}
-            </div>
-            <div className="grid auto-cols-[12px] grid-flow-col grid-rows-7 gap-1">
-              {(data?.heatmapDays ?? []).map((day) => (
-                <span
-                  key={day.date}
-                  className={`h-3 w-3 rounded-sm border ${getHeatmapLevelClass(day.minutes, maxHeatmapMinutes)}`}
-                  title={`${formatIndiaDate(day.date)} - ${day.minutes} min - ${day.workoutCount} workouts`}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
+        <h2 className="text-lg font-semibold text-slate-100">Recent Workouts</h2>
+        {isLoading ? <p className="mt-3 text-sm text-slate-400">Loading recent workouts...</p> : null}
+        {!isLoading && (data?.recentWorkouts.length ?? 0) === 0 ? <p className="mt-3 text-sm text-slate-400">No workouts logged yet.</p> : null}
+        <ul className="mt-3 space-y-2">
+          {data?.recentWorkouts.slice(0, 6).map((workout) => (
+            <li key={workout.id} className="rounded-md border border-slate-700 bg-slate-800 p-2">
+              <p className="text-sm font-semibold text-slate-100">{workout.title}</p>
+              <p className="text-xs text-slate-400">
+                {formatIndiaDate(workout.workout_date)} - {workout.duration_minutes} min
+              </p>
+            </li>
+          ))}
+        </ul>
       </article>
 
       {isCalendarOpen && data ? (

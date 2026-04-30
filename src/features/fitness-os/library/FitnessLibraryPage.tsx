@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+﻿import { useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 
 import {
@@ -64,6 +64,7 @@ function FitnessLibraryPage() {
   const [editingForm, setEditingForm] = useState<ExerciseFormState>(emptyExerciseForm)
   const [selectedMuscle, setSelectedMuscle] = useState('All')
   const [moreOpen, setMoreOpen] = useState(false)
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
 
   const muscleStats = useMemo(() => {
     const counts = new Map<string, number>()
@@ -117,6 +118,7 @@ function FitnessLibraryPage() {
       {
         onSuccess: () => {
           setForm(emptyExerciseForm)
+          setIsCreateModalOpen(false)
         },
       },
     )
@@ -156,19 +158,7 @@ function FitnessLibraryPage() {
   const mutationError = createError ?? updateError ?? deleteError
 
   return (
-    <section className="space-y-4">
-      <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
-        <h2 className="text-lg font-semibold text-slate-100">Create Exercise</h2>
-        <p className="mt-1 text-xs text-slate-400">Custom-only exercise library for quick reuse in workout logs.</p>
-        <CreateExerciseForm
-          value={form}
-          onChange={setForm}
-          onSubmit={handleCreate}
-          submitLabel="Create Exercise"
-          isSubmitting={isCreating}
-        />
-      </article>
-
+    <section className="space-y-4 pb-24">
       {mutationError ? (
         <article className="rounded-xl border border-red-800 bg-red-950/20 p-3 text-sm text-red-200">
           Library update failed: {getReadableErrorMessage(mutationError)}
@@ -295,6 +285,48 @@ function FitnessLibraryPage() {
           ))}
         </ul>
       </article>
+
+      <button
+        type="button"
+        onClick={() => setIsCreateModalOpen(true)}
+        className="fixed bottom-8 right-8 h-14 w-14 rounded-full bg-slate-900 border border-emerald-900 text-emerald-500 text-2xl flex items-center justify-center hover:bg-slate-800 transition-colors z-50 shadow-lg"
+      >
+        +
+      </button>
+
+      {isCreateModalOpen ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
+          <button
+            type="button"
+            onClick={() => setIsCreateModalOpen(false)}
+            className="absolute inset-0"
+            aria-label="Close create exercise modal"
+          />
+          <article className="relative z-10 w-full max-w-3xl rounded-xl border border-[#222222] bg-[#0a0a0a] p-4 sm:p-5">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h2 className="text-lg font-semibold text-slate-100">Create Exercise</h2>
+                <p className="mt-1 text-xs text-slate-400">Custom-only exercise library for quick reuse in workout logs.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsCreateModalOpen(false)}
+                className="rounded-md border border-[#222222] bg-black px-3 py-1 text-sm text-slate-100 hover:bg-slate-900"
+              >
+                Close
+              </button>
+            </div>
+
+            <CreateExerciseForm
+              value={form}
+              onChange={setForm}
+              onSubmit={handleCreate}
+              submitLabel="Create Exercise"
+              isSubmitting={isCreating}
+            />
+          </article>
+        </div>
+      ) : null}
     </section>
   )
 }
