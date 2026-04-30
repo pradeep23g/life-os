@@ -1,89 +1,159 @@
-# React + TypeScript + Vite
+<div align="center">
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-## Life OS local commands
+# 🧠⚙️ Life OS
+### Your Personal Intelligence Engine
 
-Run these from `C:\Users\gpk74\life-os`:
+**Not a productivity app.**  
+*A system that understands your life.*
 
-- `npm install` - install dependencies
-- `npm ci` - clean install from lockfile (reproducible setup)
-- `npm run dev` - start the dev server
-- `npm run lint` - run ESLint
-- `npm run build` - run TypeScript build + Vite build
-- `npm run preview` - preview production build
+🚀 Built with React • Supabase • Tailwind • Vite
 
-Recommended verification before commit:
+---
 
-- `npm run lint && npm run build`
+</div>
 
-Currently, two official plugins are available:
+## 🌌 What is Life OS?
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Most apps track one thing:
+- **Notes** → scattered thoughts
+- **Tasks** → endless lists
+- **Habits** → streak obsession
+- **Finance** → numbers without meaning
 
-## React Compiler
+**Life OS connects everything.**
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+It answers one brutal question:
+> *"Is my life actually improving?"*
 
-## Expanding the ESLint configuration
+This is not about productivity. This is about **awareness + control + evolution**.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+---
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## 🧩 Core Systems
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+Life is treated like an operating system with interconnected modules:
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+| System | Purpose |
+| :--- | :--- |
+| 🧠 **Mind** | Habits, goals, journaling |
+| 💪 **Body** | Fitness & physical discipline |
+| ⚡ **Execution** | Tasks, deadlines, action |
+| 📈 **Growth** | Skill & long-term progress |
+| 💸 **Finance** | Spending awareness |
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## 🖥️ Mission Control (Dashboard)
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Your entire life. One screen.
 
+- ⚡ **Instant Clarity:** What matters today, where you're slipping, what needs action.
+- 🧭 **Identity Layer:** Current focus, weekly intent, personal mantra.
+- 📊 **System Status:** Habit streaks, tasks pending, fitness activity, spending summary.
+- ➕ **Quick Actions:** Log habit, add task, journal entry, start session.
 
+---
+
+## ⚙️ The Modules
+
+### 🧠 Mind OS
+* **Habits:** Limited to 5–7 active habits. Focus on consistency > perfection. Daily / weekly / monthly tracking.
+* **Goals:** Short-term (1–3 months) • Mid-term (6–12 months) • Long-term (2–5 years).
+* **Journal:** Mood tracking, reflection system, and emotional pattern analysis (future).
+
+### 💪 Fitness OS
+* Workout logging (sets, reps, weights).
+* Weekly split tracking.
+* Exercise library *(no more random Googling mid-workout 💀)*.
+
+### ⚡ Execution Engine
+* Priority-based task system.
+* Clean workflow (**To Do → Doing → Done**).
+* Calendar + deadlines.
+* Bookmark vault *(kill mental clutter)*.
+
+### 📈 Progress Hub
+* **Long-Term:** Skill mastery tracking, project evolution, milestones.
+* **Short-Term:** Sprint-based goals, hackathons / exams / challenges.
+* **Summary:** Visual growth tracking. *No more “I feel like I did nothing” lies.*
+
+### 💸 Finance Hub
+* Expense tracking (Need vs Want).
+* Monthly breakdown.
+* Waste detection.
+* Financial awareness for students.
+
+### 🧪 Data Lab *(Coming Soon)*
+*This is where Life OS becomes dangerous 😏*
+* Habit vs productivity correlation.
+* Workout vs mood patterns.
+* Study heatmaps.
+* Weekly performance score.
+
+**You stop guessing. You start knowing.**
+
+---
+
+## 🏗 Tech Stack
+
+* **Frontend:** React • Vite • TailwindCSS • Zustand • React Query
+* **Backend:** Supabase • PostgreSQL
+* **Visualization:** Recharts
+* **Hosting:** Vercel
+
+---
+
+## 📁 Project Structure
+```text
+src/
+├── app/                  # Entry + providers + routing
+├── assets/               # Fonts, icons, styles
+├── components/           # Reusable UI components
+├── config/               # Environment configs
+├── features/             # Core modules
+│   ├── dashboard/
+│   ├── habits/
+│   ├── journal/
+│   ├── tasks/
+│   └── progress/
+├── lib/                  # Supabase + external libs
+├── store/                # Zustand global store
+├── utils/                # Helper functions
+└── types/                # Type definitions
+
+---
+
+## 🧭 Roadmap
+
+- [ ] **Phase 1 – Core System:** Dashboard, Habits, Tasks, Journal, Progress tracking.
+- [ ] **Phase 2 – Expansion:** Fitness OS, Finance OS, Basic analytics.
+- [ ] **Phase 3 – Intelligence:** AI insights, Advanced analytics, Data Lab.
+- [ ] **Phase 4 – Ecosystem:** Social features, Mobile app (PWA → APK).
+
+---
+
+## ⚠️ The Rule (Non-Negotiable)
+
+> **If logging feels heavy, the system dies.**
+
+Everything must feel like:  
+**Open → Log → Move on**
+
+---
+
+## 🧠 Philosophy & Final Vision
+
+Life OS is built on one belief: **You cannot improve what you don't understand.**
+
+This system turns your life into:  
+📊 **Data** ➔ 🧠 **Insight** ➔ ⚡ **Action**
+
+If used consistently, Life OS becomes:
+1. A mirror of your life.
+2. A record of your growth.
+3. A system for intentional living.
+
+---
+
+### ⭐ If this hits you…
+Give it a star. Or better yet — build your own version.
