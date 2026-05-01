@@ -13,6 +13,10 @@ function average(values: number[]) {
   return (values.reduce((total, value) => total + value, 0) / values.length).toFixed(1)
 }
 
+function buildSparkline(values: number[], maxValue: number) {
+  return values.map((value) => Math.max(15, Math.min(100, Math.round((value / Math.max(1, maxValue)) * 100))))
+}
+
 function MindOsDashboard() {
   const { data: habitData, isLoading: habitsLoading } = useHabitWorkspace()
   const { data: journals = [], isLoading: journalsLoading } = useJournalEntries()
@@ -66,18 +70,23 @@ function MindOsDashboard() {
   const breakOnlyMoodAverage = average(breakOnlyMoods)
   const doneOnlyJournalDays = new Set(journals.filter((entry) => doneOnlyDates.has(toIndiaDateKey(entry.created_at))).map((entry) => toIndiaDateKey(entry.created_at))).size
   const breakOnlyJournalDays = new Set(journals.filter((entry) => breakOnlyDates.has(toIndiaDateKey(entry.created_at))).map((entry) => toIndiaDateKey(entry.created_at))).size
+  const recentMoodSpark = buildSparkline(journals.slice(0, 5).reverse().map((entry) => entry.mood), 5)
+  const consistencySpark = buildSparkline(
+    [habitData?.healTokensRemaining ?? 0, habitData?.healsUsedThisMonth ?? 0, habitData?.habits.length ?? 0, habitData?.mistakes.length ?? 0, habitData?.logs.length ?? 0],
+    Math.max(1, habitData?.logs.length ?? 1),
+  )
 
   return (
     <section className="space-y-4">
-      <article className="rounded-xl border border-slate-700 bg-slate-900 p-4">
+      <article className="rounded-xl border border-slate-700 bg-slate-900 p-3">
         <p className="text-xs uppercase tracking-wide text-slate-400">Core Signals</p>
         <div className="mt-3 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-5">
-          <article className="min-h-[120px] rounded-xl border border-slate-700 bg-slate-950/70 p-3 sm:p-4">
+          <article className="min-h-[110px] rounded-xl border border-slate-700 bg-slate-950/70 p-3">
             <p className="text-xs text-slate-400 sm:text-sm">Active Habits</p>
             <p className="mt-2 text-xl font-semibold text-slate-100 sm:text-2xl">{habitsLoading ? '--' : habitData?.habits.length ?? 0}</p>
           </article>
 
-          <article className="min-h-[120px] rounded-xl border border-slate-700 bg-slate-950/70 p-3 sm:p-4">
+          <article className="min-h-[110px] rounded-xl border border-slate-700 bg-slate-950/70 p-3">
             <p className="text-xs text-slate-400 sm:text-sm">Longest Habit Streak</p>
             <p className="mt-2 text-xl font-semibold text-slate-100 sm:text-2xl">
               {habitsLoading ? '--' : `${habitData?.longestHabitStreak?.streak ?? 0} days`}
@@ -85,20 +94,30 @@ function MindOsDashboard() {
             <p className="mt-1 text-[11px] text-slate-400 sm:text-xs">{habitData?.longestHabitStreak?.title ?? 'No streaks yet'}</p>
           </article>
 
-          <article className="min-h-[120px] rounded-xl border border-slate-700 bg-slate-950/70 p-3 sm:p-4">
+          <article className="min-h-[110px] rounded-xl border border-slate-700 bg-slate-950/70 p-3">
             <p className="text-xs text-slate-400 sm:text-sm">Journal Entries</p>
             <p className="mt-2 text-xl font-semibold text-slate-100 sm:text-2xl">{journalsLoading ? '--' : journals.length}</p>
           </article>
 
-          <article className="min-h-[120px] rounded-xl border border-slate-700 bg-slate-950/70 p-3 sm:p-4">
+          <article className="min-h-[110px] rounded-xl border border-slate-700 bg-slate-950/70 p-3">
             <p className="text-xs text-slate-400 sm:text-sm">Journal Streak</p>
             <p className="mt-2 text-xl font-semibold text-slate-100 sm:text-2xl">{journalStreak} days</p>
+            <div className="mt-2 flex items-end gap-1">
+              {recentMoodSpark.map((height, index) => (
+                <span key={`mood-spark-${index}`} className="w-1.5 rounded-sm bg-slate-500/70" style={{ height: `${height * 0.26}px` }} />
+              ))}
+            </div>
           </article>
 
-          <article className="col-span-2 min-h-[120px] rounded-xl border border-slate-700 bg-slate-950/70 p-3 sm:p-4 lg:col-span-1">
+          <article className="col-span-2 min-h-[110px] rounded-xl border border-slate-700 bg-slate-950/70 p-3 lg:col-span-1">
             <p className="text-xs text-slate-400 sm:text-sm">Consistency Pulse</p>
             <p className="mt-2 text-xl font-semibold text-slate-100 sm:text-2xl">{eventsLoading ? '--' : `${eventsAnalytics?.consistencyPercent ?? 0}%`}</p>
             <p className="mt-1 text-xs text-slate-400">{eventsLoading ? 'Loading...' : `${eventsAnalytics?.activeDaysThisWeek ?? 0}/7 active days this week`}</p>
+            <div className="mt-2 flex items-end gap-1">
+              {consistencySpark.map((height, index) => (
+                <span key={`consistency-spark-${index}`} className="w-1.5 rounded-sm bg-emerald-500/70" style={{ height: `${height * 0.26}px` }} />
+              ))}
+            </div>
           </article>
         </div>
       </article>

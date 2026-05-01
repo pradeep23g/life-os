@@ -6,6 +6,7 @@ import { logEventSafe } from '../../../lib/events'
 import { supabase } from '../../../lib/supabase'
 import { emitSystemFeedback } from '../../system/feedback'
 import { systemStatusQueryKey } from '../../system/api/useSystemStatus'
+import { useEventBus } from '../../../store/useEventBus'
 import {
   addDays,
   getCurrentStreak,
@@ -194,18 +195,6 @@ function buildError(context: string, error: unknown): Error {
   return new Error(`${context} (${getErrorCode(error)}): ${getErrorMessage(error)}`)
 }
 
-function isMissingColumnError(error: unknown, columnName: string): boolean {
-  const code = getErrorCode(error).toLowerCase()
-  const message = getErrorMessage(error).toLowerCase()
-  const column = columnName.toLowerCase()
-
-  if (code === '42703' || code === 'pgrst204') {
-    return message.includes(column)
-  }
-
-  return message.includes(column) && (message.includes('does not exist') || message.includes('could not find'))
-}
-
 function isCompletionLog(habit: Habit, log: HabitLog): boolean {
   if (habit.habit_type === 'target') {
     return log.value >= habit.target_value
@@ -318,7 +307,7 @@ async function fetchHabitWorkspaceData(): Promise<HabitWorkspaceData> {
       .order('log_date', { ascending: false }),
     supabase
       .from('habit_streak_breaks')
-      .select('id, habit_id, break_date, reason, recovery_commitment, created_at, healed_at')
+      .select('id, habit_id, break_date, reason, created_at, healed_at')
       .eq('user_id', userId)
       .order('break_date', { ascending: false }),
     supabase
@@ -340,30 +329,14 @@ async function fetchHabitWorkspaceData(): Promise<HabitWorkspaceData> {
     throw buildError('Failed to fetch habit streak heals', healsResult.error)
   }
 
-  let breaks: HabitStreakBreak[] = []
-
   if (breaksResult.error) {
-    if (!isMissingColumnError(breaksResult.error, 'recovery_commitment')) {
-      throw buildError('Failed to fetch habit streak breaks', breaksResult.error)
-    }
-
-    const fallbackBreaksResult = await supabase
-      .from('habit_streak_breaks')
-      .select('id, habit_id, break_date, reason, created_at, healed_at')
-      .eq('user_id', userId)
-      .order('break_date', { ascending: false })
-
-    if (fallbackBreaksResult.error) {
-      throw buildError('Failed to fetch habit streak breaks (fallback)', fallbackBreaksResult.error)
-    }
-
-    breaks = (fallbackBreaksResult.data ?? []).map((row) => ({
-      ...row,
-      recovery_commitment: null,
-    }))
-  } else {
-    breaks = breaksResult.data ?? []
+    throw buildError('Failed to fetch habit streak breaks', breaksResult.error)
   }
+
+  const breaks: HabitStreakBreak[] = (breaksResult.data ?? []).map((row) => ({
+    ...row,
+    recovery_commitment: null,
+  }))
 
   const habits: Habit[] = (habitsResult.data ?? []).map((habit) => ({
     ...habit,
@@ -921,12 +894,16 @@ export function useMarkHabitDone() {
 
 export function useMarkHabitNotDone() {
   const queryClient = useQueryClient()
+  const emitEvent = useEventBus((state) => state.emitEvent)
 
   return useMutation({
     mutationFn: markHabitNotDone,
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: mindOsHabitWorkspaceQueryKey })
       queryClient.invalidateQueries({ queryKey: systemStatusQueryKey })
+      emitEvent('HABIT_FAILED', {
+        habitId: variables.habitId,
+      })
       emitSystemFeedback({
         title: '+1 Awareness',
         description: 'Momentum +4% — system stabilizing',

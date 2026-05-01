@@ -31,7 +31,9 @@ Run from repo root:
   - calendar modal with done/break/healed filters
 - Journal page supports:
   - modal entry creation
-  - calendar modal with hover + entry detail modal
+  - retroactive date-based entry creation (multi-entry same day)
+  - calendar modal with per-day mood aggregation + multi-entry badge
+  - date modal with read-only timeline cards and preserved text formatting
   - dashboard streak and correlation sections
 
 ### Productivity Hub
@@ -68,6 +70,27 @@ Run from repo root:
   - bucket distribution bar + legend
   - 7-day trend mini bars
 - Global timer control visible and route link works.
+
+### Finance OS
+- Finance dashboard renders:
+  - total spent
+  - money left
+  - days left
+  - daily safe limit
+  - projected monthly spend status
+  - waste card and top waste category
+- Weekly burn card renders:
+  - weekly total vs baseline
+  - 7 daily mini-bars
+  - spike coloring and projection status text
+- Quick-log modal flow:
+  - opens from FAB
+  - amount/category/need-want/note save works
+  - custom category flow works (`Other`)
+- Decision feedback loop:
+  - want spike over safe limit shows warning toast
+  - over-budget projection shows alert toast
+  - normal entry shows success toast
 
 ## 3) Data Integrity / Schema Guard
 - App remains functional if optional/new tables are not migrated yet (graceful fallbacks where defined).

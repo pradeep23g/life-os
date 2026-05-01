@@ -367,7 +367,7 @@ function JournalPage() {
               </div>
 
               <label className="block text-sm text-slate-300">
-                What went good
+                Topic of the day
                 <textarea
                   value={whatWentGood}
                   onChange={(event) => setWhatWentGood(event.target.value)}

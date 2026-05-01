@@ -63,12 +63,12 @@ function TimeOSPage() {
 
   return (
     <section className="space-y-4">
-      <TimeInsights />
-
       <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
         <h2 className="text-lg font-semibold text-slate-100">Time OS</h2>
         <p className="mt-1 text-sm text-slate-400">Track focused sessions and optionally link them to productivity tasks.</p>
       </article>
+
+      <TimeInsights />
 
       <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
         <h3 className="text-sm font-semibold text-slate-100">Active Session</h3>

@@ -1,4 +1,4 @@
-import type { MomentumAnalysis, SystemHistoryDay } from './types'
+import type { MomentumAnalysis, SystemHistoryDay, SystemSignalEvent } from './types'
 
 const MOMENTUM_ALPHA = 0.6
 const DEEP_WORK_BOOST_MINUTES = 120
@@ -56,6 +56,7 @@ function getDailyActivityValue(historyDay: SystemHistoryDay): number {
 export function analyzeMomentum(
   history: SystemHistoryDay[],
   deepWorkMinutesToday: number = 0,
+  recentEvents: SystemSignalEvent[] = [],
 ): MomentumAnalysis {
   if (!history.length) {
     return {
@@ -91,7 +92,15 @@ export function analyzeMomentum(
   const deepWorkBoost = sanitizeMinutes(deepWorkMinutesToday) > DEEP_WORK_BOOST_MINUTES
     ? DEEP_WORK_BOOST_POINTS
     : 0
-  const adjustedLatestMomentum = clampPercentage(latestMomentum + deepWorkBoost)
+  let adjustedLatestMomentum = clampPercentage(latestMomentum + deepWorkBoost)
+
+  const hasRecentPositiveEvent = recentEvents.some(
+    (event) => event.type === 'DEEP_WORK_COMPLETED' || event.type === 'WORKOUT_COMPLETED',
+  )
+  if (adjustedLatestMomentum < 20 && hasRecentPositiveEvent) {
+    const standardGain = Math.max(1, Math.round((100 - adjustedLatestMomentum) * 0.03))
+    adjustedLatestMomentum = clampPercentage(adjustedLatestMomentum + standardGain * 3)
+  }
   const previousDayMomentum = emaSeries.length > 1 ? emaSeries[emaSeries.length - 2] : latestMomentum
   const delta = adjustedLatestMomentum - previousDayMomentum
 

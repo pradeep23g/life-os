@@ -36,6 +36,7 @@ UI (Nested Routing)
 - `progress-hub` (learning growth)
 - `fitness-os` (physical effort)
 - `time-os` (focused time tracking)
+- `finance-os` (behavioral spending)
 - `system` (Brain Engine decision layer)
 
 Rule:
@@ -133,6 +134,7 @@ Current active domains emit events for core mutations:
 - productivity-hub
 - progress-hub
 - fitness-os
+- finance-os
 - mission-control/system analytics consumers
 
 Event writes are safe-wrapped so user actions are not blocked if analytics writes fail.
@@ -179,7 +181,35 @@ Every release should pass:
 
 # 11. NEXT ARCHITECTURAL PRIORITIES
 
-1. Complete Finance OS domain foundation.
-2. Expand events coverage and analytics depth.
-3. Strengthen Brain directive quality with more domain facts.
+1. Expand Finance OS beyond ledger (recurring, savings, and planning-aware summaries).
+2. Expand events coverage and analytics depth across every mutation path.
+3. Strengthen Brain directive quality with deeper cross-domain pressure signals.
 4. Keep SQL facts and TS intelligence strictly separated.
+
+---
+
+# 12. FINANCE OS ARCHITECTURE
+
+Finance OS lives in `src/features/finance-os`.
+
+Current shape:
+
+- `api/useFinance.ts`
+  - month-scoped transaction reads
+  - add transaction mutation
+  - derived finance summary contract (budget pressure + waste analytics)
+- `components/TransactionForm.tsx`
+  - quick-log, mobile-first form
+  - category support with custom override
+  - need/want flag capture
+  - decision feedback loop toasts (safe-limit and projection warnings)
+- `pages/FinanceDashboard.tsx`
+  - behavioral KPI cards
+  - weekly burn micro-bars (Tailwind-only, no chart libs)
+  - aggressive ledger badges for NEED/WANT
+
+Data contract:
+
+- primary table: `public.finance_transactions`
+- user ownership enforced by RLS
+- all derived values computed in TypeScript data layer (UI render-only)

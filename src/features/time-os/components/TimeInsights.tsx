@@ -60,15 +60,13 @@ function TimeInsights() {
         <p className="text-xs uppercase tracking-wide text-slate-400">7-Day Trend</p>
         <div className="mt-3 flex h-24 items-end gap-2">
           {(data?.sevenDayTrend ?? []).map((day) => {
-            const height = Math.max(6, Math.round((day.minutes / maxTrendMinutes) * 100))
+            const fillPercent = Math.max(6, Math.round((day.minutes / maxTrendMinutes) * 100))
 
             return (
               <div key={day.dateKey} className="flex flex-1 flex-col items-center gap-1">
-                <div
-                  className="w-full rounded-sm bg-slate-700"
-                  style={{ height: `${height}%` }}
-                  title={`${day.label}: ${day.minutes} mins`}
-                />
+                <div className="relative h-16 w-full overflow-hidden rounded-sm bg-slate-900" title={`${day.label}: ${day.minutes} mins`}>
+                  <div className="absolute bottom-0 left-0 w-full rounded-sm bg-emerald-700" style={{ height: `${fillPercent}%` }} />
+                </div>
                 <span className="text-[10px] text-slate-400">{day.label}</span>
               </div>
             )

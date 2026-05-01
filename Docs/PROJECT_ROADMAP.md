@@ -99,15 +99,30 @@ Modules:
 
 ---
 
-# PHASE 4 - FINANCE OS (NEXT MAJOR DOMAIN)
+# PHASE 4 - FINANCE OS (IMPLEMENTED V1, EXPANDING)
 
-Finance OS should remain simple and behavior-focused inside `/finance-os`.
+Finance OS is now live in `/finance-os` as a behavior-focused spending ledger.
 
-Initial scope:
+Implemented core:
 
-- expense and income tracking
-- monthly overview
-- category-level awareness summaries
+- user-scoped finance ledger (`finance_transactions`) with RLS
+- quick-log modal flow (mobile-first)
+- need vs want tracking (`is_need`)
+- monthly metrics:
+  - total spent
+  - money left
+  - daily safe limit
+  - projected monthly spend
+  - waste amount + top waste category
+- weekly burn card with 7-day micro-bars and baseline overrun feedback
+- decision feedback loop:
+  - warning/surge toasts for unsafe want spikes and budget projection risk
+
+Next expansion:
+
+- recurring expenses
+- savings/investment buckets
+- weekly/monthly trend comparisons
 
 ---
 
@@ -178,6 +193,7 @@ Next expansion:
 
 - deeper directive quality
 - broader domain intelligence inputs
+- stronger finance-aware decision pressure
 
 ---
 

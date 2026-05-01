@@ -132,7 +132,7 @@ function JournalDateModal({ selectedDate, entries, isSaving, saveError, onCreate
                     </p>
                     <div className="mt-2 space-y-2 text-sm text-slate-300 whitespace-pre-wrap">
                       <div>
-                        <p className="text-[11px] uppercase tracking-wide text-slate-500">What went good</p>
+                        <p className="text-[11px] uppercase tracking-wide text-slate-500">Topic of the day</p>
                         <p>{entry.what_went_good || 'No note added.'}</p>
                       </div>
                       <div>
@@ -175,7 +175,7 @@ function JournalDateModal({ selectedDate, entries, isSaving, saveError, onCreate
             </div>
 
             <label className="block text-sm text-slate-300">
-              What went good
+              Topic of the day
               <textarea
                 value={whatWentGood}
                 onChange={(event) => setWhatWentGood(event.target.value)}

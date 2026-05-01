@@ -4,6 +4,7 @@ import { supabase } from '../../../lib/supabase'
 import { logEventSafe } from '../../../lib/events'
 import { emitSystemFeedback } from '../../system/feedback'
 import { systemStatusQueryKey } from '../../system/api/useSystemStatus'
+import { useEventBus } from '../../../store/useEventBus'
 
 export const TIME_BUCKETS = ['Academics', 'Deep Work', 'Admin', 'Fitness', 'Learning'] as const
 
@@ -344,6 +345,7 @@ export function useStartTimer() {
 
 export function useStopTimer() {
   const queryClient = useQueryClient()
+  const emitEvent = useEventBus((state) => state.emitEvent)
 
   return useMutation({
     mutationFn: stopTimer,
@@ -366,6 +368,16 @@ export function useStopTimer() {
 
       invalidateTimeLogQueries(queryClient)
       queryClient.invalidateQueries({ queryKey: systemStatusQueryKey })
+      if (
+        eventPayload
+        && eventPayload.durationMinutes > 0
+        && (eventPayload.bucket === 'Deep Work' || eventPayload.bucket === 'Learning')
+      ) {
+        emitEvent('DEEP_WORK_COMPLETED', {
+          minutes: eventPayload.durationMinutes,
+          bucket: eventPayload.bucket,
+        })
+      }
       emitSystemFeedback({
         title: '+1 Completion',
         description: 'Session saved and linked task moved to Done',
@@ -376,6 +388,7 @@ export function useStopTimer() {
 
 export function useManualLog() {
   const queryClient = useQueryClient()
+  const emitEvent = useEventBus((state) => state.emitEvent)
 
   return useMutation({
     mutationFn: createManualLog,
@@ -396,6 +409,15 @@ export function useManualLog() {
 
       invalidateTimeLogQueries(queryClient)
       queryClient.invalidateQueries({ queryKey: systemStatusQueryKey })
+      if (
+        eventPayload.durationMinutes > 0
+        && (eventPayload.bucket === 'Deep Work' || eventPayload.bucket === 'Learning')
+      ) {
+        emitEvent('DEEP_WORK_COMPLETED', {
+          minutes: eventPayload.durationMinutes,
+          bucket: eventPayload.bucket,
+        })
+      }
       emitSystemFeedback({
         title: '+1 Time Logged',
         description: 'Manual session saved',

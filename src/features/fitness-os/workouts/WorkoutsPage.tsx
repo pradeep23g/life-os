@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 
 import ActiveWorkoutPanel from './ActiveWorkoutPanel'
 import {
@@ -20,6 +20,8 @@ function WorkoutsPage() {
 
   const { mutate: startWorkoutSession, isPending: isStarting, error: startError } = useStartWorkoutSession()
   const { mutate: endWorkoutSession, isPending: isEnding, error: endError } = useEndWorkoutSession()
+  const [sessionTitle, setSessionTitle] = useState('')
+  const [sessionType, setSessionType] = useState('')
 
   const recentCompletedWorkouts = useMemo(() => workouts.slice(0, 8), [workouts])
   const hasActiveSession = Boolean(activeWorkout)
@@ -38,14 +40,34 @@ function WorkoutsPage() {
             disabled={hasActiveSession || isStarting || isLoadingActive}
             onClick={() =>
               startWorkoutSession({
-                title: 'Live Workout Session',
-                sessionType: 'Calisthenics',
+                title: sessionTitle.trim() || 'Live Workout Session',
+                sessionType: sessionType.trim() || 'Calisthenics',
+              }, {
+                onSuccess: () => {
+                  setSessionTitle('')
+                  setSessionType('')
+                },
               })
             }
             className={`${greenReplicaButtonClass} disabled:cursor-not-allowed disabled:opacity-60`}
           >
             {isStarting ? 'Starting...' : 'Start Workout'}
           </button>
+        </div>
+
+        <div className="mt-3 grid gap-2 md:grid-cols-2">
+          <input
+            value={sessionTitle}
+            onChange={(event) => setSessionTitle(event.target.value)}
+            placeholder="Session title (e.g., Push Day)"
+            className="rounded border border-[#222222] bg-black px-3 py-2 text-sm text-slate-100"
+          />
+          <input
+            value={sessionType}
+            onChange={(event) => setSessionType(event.target.value)}
+            placeholder="Session type (e.g., Strength / Calisthenics)"
+            className="rounded border border-[#222222] bg-black px-3 py-2 text-sm text-slate-100"
+          />
         </div>
       </article>
 

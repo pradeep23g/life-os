@@ -22,6 +22,7 @@ import SystemFeedbackToast from './features/system/components/SystemFeedbackToas
 import TimeOSPage from './features/time-os/pages/TimeOSPage'
 import GlobalTimerBar from './features/time-os/components/GlobalTimerBar'
 import AppErrorBoundary from './components/AppErrorBoundary'
+import CommandPalette from './components/CommandPalette'
 import { AuthProvider, useAuth } from './lib/AuthContext'
 import Sidebar from './layout/Sidebar'
 
@@ -253,6 +254,7 @@ function AppShell() {
 
       <GlobalTimerBar />
       <SystemFeedbackToast />
+      <CommandPalette />
     </div>
   )
 }
