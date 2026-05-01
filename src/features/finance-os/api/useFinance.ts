@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { logEventSafe } from '../../../lib/events'
 import { supabase } from '../../../lib/supabase'
+import { useEventBus } from '../../../store/useEventBus'
 
 export const financeTransactionsQueryKey = ['finance-os', 'transactions', 'monthly'] as const
 
@@ -380,11 +381,18 @@ export function useTransactions() {
 
 export function useAddTransaction() {
   const queryClient = useQueryClient()
+  const emitEvent = useEventBus((state) => state.emitEvent)
 
   return useMutation({
     mutationFn: addTransaction,
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: financeTransactionsQueryKey })
+      if (!variables.isNeed) {
+        emitEvent('WANT_EXPENSE_ADDED', {
+          amount: variables.amount,
+          category: variables.category,
+        })
+      }
     },
   })
 }

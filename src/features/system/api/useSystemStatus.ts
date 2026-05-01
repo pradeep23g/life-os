@@ -1,8 +1,10 @@
+import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 
 import { supabase } from '../../../lib/supabase'
+import { useEventBus } from '../../../store/useEventBus'
 import { getSystemStatus } from '../engine/systemEngine'
-import type { CurrentDaySnapshot, SystemHistoryDay } from '../engine/types'
+import type { CurrentDaySnapshot, SystemHistoryDay, SystemSignalEvent, SystemStatus } from '../engine/types'
 
 export const systemStatusQueryKey = ['system-status'] as const
 
@@ -90,7 +92,12 @@ async function fetchSnapshotWithDeepWorkFallback() {
   }
 }
 
-async function fetchSystemStatus() {
+type RawSystemStatusData = {
+  snapshot: CurrentDaySnapshot | null
+  history: SystemHistoryDay[]
+}
+
+async function fetchSystemStatusFacts(): Promise<RawSystemStatusData> {
   const [snapshotResult, historyResult] = await Promise.all([
     fetchSnapshotWithDeepWorkFallback(),
     supabase
@@ -109,7 +116,10 @@ async function fetchSystemStatus() {
     const historyMissing = historyError ? isMissingSnapshotViewError(historyError) : false
 
     if (snapshotMissing || historyMissing) {
-      return getSystemStatus(null, [])
+      return {
+        snapshot: null,
+        history: [],
+      }
     }
 
     throw new Error(
@@ -122,12 +132,46 @@ async function fetchSystemStatus() {
     left.snapshot_date < right.snapshot_date ? -1 : left.snapshot_date > right.snapshot_date ? 1 : 0
   ))
 
-  return getSystemStatus(snapshot, history)
+  return {
+    snapshot,
+    history,
+  }
 }
 
-export function useSystemStatus() {
-  return useQuery({
+export function useSystemStatus(): {
+  data: SystemStatus
+  isLoading: boolean
+  isError: boolean
+  error: unknown
+  refetch: () => void
+} {
+  const recentEventsRaw = useEventBus((state) => state.recentEvents)
+
+  const query = useQuery<RawSystemStatusData>({
     queryKey: systemStatusQueryKey,
-    queryFn: fetchSystemStatus,
+    queryFn: fetchSystemStatusFacts,
   })
+
+  const status = useMemo(
+    () => getSystemStatus(
+      query.data?.snapshot ?? null,
+      query.data?.history ?? [],
+      recentEventsRaw.map<SystemSignalEvent>((event) => ({
+        type: event.type,
+        createdAt: event.createdAt,
+        payload: event.payload,
+      })),
+    ),
+    [query.data, recentEventsRaw],
+  )
+
+  return {
+    data: status,
+    isLoading: query.isLoading,
+    isError: query.isError,
+    error: query.error,
+    refetch: () => {
+      void query.refetch()
+    },
+  }
 }

@@ -49,6 +49,9 @@ function FinanceDashboard() {
   const weekDayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
   const weeklyBaseline = 500
   const dailyMax = 150
+  const dailySafeLimit = Math.max(0, summary?.dailySafeLimit ?? 0)
+  const thresholdPercent = Math.min((dailySafeLimit / dailyMax) * 100, 100)
+  const spendingSpark = weeklyDailyTotals.slice(2).map((value) => Math.max(16, Math.min(100, Math.round((value / Math.max(1, dailyMax)) * 100))))
 
   return (
     <section className="space-y-4 bg-black pb-24">
@@ -65,16 +68,23 @@ function FinanceDashboard() {
       </article>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
+        <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-3">
           <p className="text-xs text-slate-400">Total Spent</p>
-          <p className="mt-2 text-xl font-semibold text-slate-100">{isLoading ? '--' : formatCurrency(summary?.totalSpent ?? 0)}</p>
+          <div className="mt-2 flex items-center justify-between gap-3">
+            <p className="text-xl font-semibold text-slate-100">{isLoading ? '--' : formatCurrency(summary?.totalSpent ?? 0)}</p>
+            <div className="flex items-end gap-1">
+              {spendingSpark.map((height, index) => (
+                <span key={`spending-spark-${index}`} className="w-1.5 rounded-sm bg-emerald-500/70" style={{ height: `${height * 0.2}px` }} />
+              ))}
+            </div>
+          </div>
         </article>
-        <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
+        <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-3">
           <p className="text-xs text-slate-400">Waste This Week</p>
           <p className="mt-2 text-xl font-semibold text-red-400">{isLoading ? '--' : formatCurrency(summary?.wasteAmount ?? 0)}</p>
           <p className="mt-1 text-xs text-slate-400">Biggest waste: <span className="text-slate-200">{isLoading ? '--' : summary?.topWasteCategory ?? 'No waste yet'}</span></p>
         </article>
-        <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
+        <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-3">
           <p className="text-xs text-slate-400">Top Leak</p>
           <p className="mt-2 text-sm font-semibold text-slate-100">{isLoading ? '--' : summary?.topCategory ?? 'No spend yet'}</p>
         </article>
@@ -88,22 +98,30 @@ function FinanceDashboard() {
           </p>
         </div>
 
-        <div className="mt-4 flex items-end justify-between gap-2">
-          {weeklyDailyTotals.map((amount, index) => {
-            const fillPercent = Math.min((amount / dailyMax) * 100, 100)
-            const isSpike = amount > dailyMax
-            return (
-              <div key={`${weekDayLabels[index]}-${index}`} className="flex flex-col items-center gap-1">
-                <div className="bg-slate-900 w-4 h-16 rounded-sm relative overflow-hidden">
-                  <div
-                    className={`absolute bottom-0 left-0 w-full ${isSpike ? 'bg-red-500' : 'bg-emerald-500'}`}
-                    style={{ height: `${fillPercent}%` }}
-                  />
+        <div className="relative mt-4">
+          <div className="pointer-events-none absolute inset-x-0 h-16">
+            <div
+              className="absolute w-full border-b border-dashed border-red-900/50"
+              style={{ bottom: `${thresholdPercent}%` }}
+            />
+          </div>
+          <div className="flex items-end justify-between gap-2">
+            {weeklyDailyTotals.map((amount, index) => {
+              const fillPercent = Math.min((amount / dailyMax) * 100, 100)
+              const overSafeLimit = amount > dailySafeLimit
+              return (
+                <div key={`${weekDayLabels[index]}-${index}`} className="flex flex-col items-center gap-1">
+                  <div className="bg-slate-900 w-4 h-16 rounded-sm relative overflow-hidden">
+                    <div
+                      className={`absolute bottom-0 left-0 w-full ${overSafeLimit ? 'bg-red-500' : 'bg-emerald-500'}`}
+                      style={{ height: `${fillPercent}%` }}
+                    />
+                  </div>
+                  <p className="text-[10px] text-slate-400">{weekDayLabels[index]}</p>
                 </div>
-                <p className="text-[10px] text-slate-400">{weekDayLabels[index]}</p>
-              </div>
-            )
-          })}
+              )
+            })}
+          </div>
         </div>
         <p className={`mt-3 text-xs ${summary?.isProjectedOverBudget ? 'text-red-500 font-semibold' : 'text-slate-400'}`}>
           At this pace → {isLoading ? '--' : `${formatCurrency(summary?.projectedMonthlySpend ?? 0)}/month`}

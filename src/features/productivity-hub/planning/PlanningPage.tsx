@@ -46,6 +46,21 @@ function getReadableErrorMessage(error: unknown): string {
   return 'Unknown error'
 }
 
+function splitBulletItems(value: string): string[] {
+  return value
+    .split('\n')
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0)
+}
+
+function joinBulletItems(items: string[]): string {
+  return items.join('\n')
+}
+
+function removeBulletItem(items: string[], indexToRemove: number): string[] {
+  return items.filter((_, index) => index !== indexToRemove)
+}
+
 function PlanningPage() {
   const currentWeekStart = getWeekStartDateISO()
   const { data: plans = [], isLoading: isPlansLoading, isError: plansError, error: planningError } = usePlanning()
@@ -64,6 +79,7 @@ function PlanningPage() {
   const { mutate: upsertReview, isPending: isSavingReview, error: upsertReviewError } = useUpsertWeeklyReview(currentWeekStart)
 
   const [draftByWeek, setDraftByWeek] = useState<Record<string, string>>({})
+  const [focusInput, setFocusInput] = useState('')
   const [goalTitle, setGoalTitle] = useState('')
   const [goalDomain, setGoalDomain] = useState<GoalDomain>('productivity-hub')
   const [goalTargetDate, setGoalTargetDate] = useState('')
@@ -82,17 +98,24 @@ function PlanningPage() {
     blockers?: string
     nextAdjustments?: string
   }>({})
+  const [winsInput, setWinsInput] = useState('')
+  const [blockersInput, setBlockersInput] = useState('')
+  const [nextAdjustmentsInput, setNextAdjustmentsInput] = useState('')
 
   const existingPlan = useMemo(() => {
     return plans.find((plan) => plan.week_start_date === currentWeekStart) ?? null
   }, [plans, currentWeekStart])
 
   const focusText = draftByWeek[currentWeekStart] ?? existingPlan?.focus_text ?? ''
+  const focusItems = useMemo(() => splitBulletItems(focusText), [focusText])
   const linkedItemsCount = weeklyItems.filter((item) => Boolean(item.goal_id)).length
   const alignmentPercent = weeklyItems.length > 0 ? Math.round((linkedItemsCount / weeklyItems.length) * 100) : 0
   const reviewWins = reviewDraft.wins ?? weeklyReview?.wins ?? ''
   const reviewBlockers = reviewDraft.blockers ?? weeklyReview?.blockers ?? ''
   const reviewNextAdjustments = reviewDraft.nextAdjustments ?? weeklyReview?.next_adjustments ?? ''
+  const reviewWinsItems = useMemo(() => splitBulletItems(reviewWins), [reviewWins])
+  const reviewBlockersItems = useMemo(() => splitBulletItems(reviewBlockers), [reviewBlockers])
+  const reviewNextAdjustmentsItems = useMemo(() => splitBulletItems(reviewNextAdjustments), [reviewNextAdjustments])
 
   const handleWeeklyFocusSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -210,18 +233,47 @@ function PlanningPage() {
           <h3 className="text-lg font-semibold text-slate-100">Weekly Focus + Plan Items</h3>
 
           <form onSubmit={handleWeeklyFocusSubmit} className="mt-3 space-y-3">
-            <textarea
-              value={focusText}
-              onChange={(event) =>
+            <input
+              value={focusInput}
+              onChange={(event) => setFocusInput(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key !== 'Enter') {
+                  return
+                }
+                event.preventDefault()
+                const nextItem = focusInput.trim()
+                if (!nextItem) {
+                  return
+                }
                 setDraftByWeek((previous) => ({
                   ...previous,
-                  [currentWeekStart]: event.target.value,
+                  [currentWeekStart]: joinBulletItems([...focusItems, nextItem]),
                 }))
-              }
-              rows={5}
-              placeholder="Define this week's primary execution focus..."
+                setFocusInput('')
+              }}
+              placeholder="Add weekly focus bullet and press Enter"
               className="w-full rounded-md border border-slate-700 bg-slate-800 p-3 text-slate-100"
             />
+            <ul className="space-y-1 text-sm text-slate-200">
+              {focusItems.map((item, index) => (
+                <li key={`${item}-${index}`} className="group flex items-center justify-between gap-2">
+                  <span>[ ] {item}</span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setDraftByWeek((previous) => ({
+                        ...previous,
+                        [currentWeekStart]: joinBulletItems(removeBulletItem(focusItems, index)),
+                      }))
+                    }
+                    className="cursor-pointer text-neutral-600 opacity-0 transition-colors hover:text-red-500 group-hover:opacity-100"
+                    aria-label={`Remove focus item ${index + 1}`}
+                  >
+                    x
+                  </button>
+                </li>
+              ))}
+            </ul>
             <button
               type="submit"
               disabled={isCreatingPlan || isUpdatingPlan || !focusText.trim()}
@@ -451,47 +503,137 @@ function PlanningPage() {
             <form onSubmit={handleSaveWeeklyReview} className="mt-3 space-y-3">
               <label className="block text-xs text-slate-300">
                 Wins
-                <textarea
-                  value={reviewWins}
-                  onChange={(event) =>
+                <input
+                  value={winsInput}
+                  onChange={(event) => setWinsInput(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key !== 'Enter') {
+                      return
+                    }
+                    event.preventDefault()
+                    const nextItem = winsInput.trim()
+                    if (!nextItem) {
+                      return
+                    }
                     setReviewDraft((previous) => ({
                       ...previous,
-                      wins: event.target.value,
+                      wins: joinBulletItems([...reviewWinsItems, nextItem]),
                     }))
-                  }
-                  rows={3}
+                    setWinsInput('')
+                  }}
                   className="mt-1 w-full rounded-md border border-slate-600 bg-slate-800 p-2 text-sm text-slate-100"
+                  placeholder="Add win and press Enter"
                 />
+                <ul className="mt-2 space-y-1 text-xs text-slate-200">
+                  {reviewWinsItems.map((item, index) => (
+                    <li key={`${item}-${index}`} className="group flex items-center justify-between gap-2">
+                      <span>[ ] {item}</span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setReviewDraft((previous) => ({
+                            ...previous,
+                            wins: joinBulletItems(removeBulletItem(reviewWinsItems, index)),
+                          }))
+                        }
+                        className="cursor-pointer text-neutral-600 opacity-0 transition-colors hover:text-red-500 group-hover:opacity-100"
+                        aria-label={`Remove win item ${index + 1}`}
+                      >
+                        x
+                      </button>
+                    </li>
+                  ))}
+                </ul>
               </label>
 
               <label className="block text-xs text-slate-300">
                 Blockers
-                <textarea
-                  value={reviewBlockers}
-                  onChange={(event) =>
+                <input
+                  value={blockersInput}
+                  onChange={(event) => setBlockersInput(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key !== 'Enter') {
+                      return
+                    }
+                    event.preventDefault()
+                    const nextItem = blockersInput.trim()
+                    if (!nextItem) {
+                      return
+                    }
                     setReviewDraft((previous) => ({
                       ...previous,
-                      blockers: event.target.value,
+                      blockers: joinBulletItems([...reviewBlockersItems, nextItem]),
                     }))
-                  }
-                  rows={3}
+                    setBlockersInput('')
+                  }}
                   className="mt-1 w-full rounded-md border border-slate-600 bg-slate-800 p-2 text-sm text-slate-100"
+                  placeholder="Add blocker and press Enter"
                 />
+                <ul className="mt-2 space-y-1 text-xs text-slate-200">
+                  {reviewBlockersItems.map((item, index) => (
+                    <li key={`${item}-${index}`} className="group flex items-center justify-between gap-2">
+                      <span>[ ] {item}</span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setReviewDraft((previous) => ({
+                            ...previous,
+                            blockers: joinBulletItems(removeBulletItem(reviewBlockersItems, index)),
+                          }))
+                        }
+                        className="cursor-pointer text-neutral-600 opacity-0 transition-colors hover:text-red-500 group-hover:opacity-100"
+                        aria-label={`Remove blocker item ${index + 1}`}
+                      >
+                        x
+                      </button>
+                    </li>
+                  ))}
+                </ul>
               </label>
 
               <label className="block text-xs text-slate-300">
                 Next adjustments
-                <textarea
-                  value={reviewNextAdjustments}
-                  onChange={(event) =>
+                <input
+                  value={nextAdjustmentsInput}
+                  onChange={(event) => setNextAdjustmentsInput(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key !== 'Enter') {
+                      return
+                    }
+                    event.preventDefault()
+                    const nextItem = nextAdjustmentsInput.trim()
+                    if (!nextItem) {
+                      return
+                    }
                     setReviewDraft((previous) => ({
                       ...previous,
-                      nextAdjustments: event.target.value,
+                      nextAdjustments: joinBulletItems([...reviewNextAdjustmentsItems, nextItem]),
                     }))
-                  }
-                  rows={3}
+                    setNextAdjustmentsInput('')
+                  }}
                   className="mt-1 w-full rounded-md border border-slate-600 bg-slate-800 p-2 text-sm text-slate-100"
+                  placeholder="Add adjustment and press Enter"
                 />
+                <ul className="mt-2 space-y-1 text-xs text-slate-200">
+                  {reviewNextAdjustmentsItems.map((item, index) => (
+                    <li key={`${item}-${index}`} className="group flex items-center justify-between gap-2">
+                      <span>[ ] {item}</span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setReviewDraft((previous) => ({
+                            ...previous,
+                            nextAdjustments: joinBulletItems(removeBulletItem(reviewNextAdjustmentsItems, index)),
+                          }))
+                        }
+                        className="cursor-pointer text-neutral-600 opacity-0 transition-colors hover:text-red-500 group-hover:opacity-100"
+                        aria-label={`Remove adjustment item ${index + 1}`}
+                      >
+                        x
+                      </button>
+                    </li>
+                  ))}
+                </ul>
               </label>
 
               <button

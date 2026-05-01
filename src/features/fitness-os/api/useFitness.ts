@@ -4,6 +4,7 @@ import { addDaysToDateKey, getCurrentIndiaWeekStart, logEventSafe, toIndiaDateKe
 import { supabase } from '../../../lib/supabase'
 import { emitSystemFeedback } from '../../system/feedback'
 import { systemStatusQueryKey } from '../../system/api/useSystemStatus'
+import { useEventBus } from '../../../store/useEventBus'
 
 export const fitnessExercisesQueryKey = ['fitness-os', 'exercises'] as const
 export const fitnessWorkoutsQueryKey = ['fitness-os', 'workouts'] as const
@@ -995,6 +996,7 @@ export function useStartWorkoutSession() {
 
 export function useEndWorkoutSession() {
   const queryClient = useQueryClient()
+  const emitEvent = useEventBus((state) => state.emitEvent)
 
   return useMutation({
     mutationFn: endWorkoutSession,
@@ -1002,6 +1004,9 @@ export function useEndWorkoutSession() {
       invalidateFitnessQueries(queryClient)
       queryClient.invalidateQueries({ queryKey: fitnessWorkoutDetailQueryKey(variables.workoutId) })
       queryClient.invalidateQueries({ queryKey: systemStatusQueryKey })
+      emitEvent('WORKOUT_COMPLETED', {
+        workoutId: variables.workoutId,
+      })
     },
   })
 }

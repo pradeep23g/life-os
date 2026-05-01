@@ -1,6 +1,6 @@
 import { analyzeMomentum } from './analyzeMomentum'
 import { generateDirectives } from './generateDirectives'
-import type { CurrentDaySnapshot, IssueSeverity, SystemHistoryDay, SystemIssue, SystemStatus } from './types'
+import type { CurrentDaySnapshot, IssueSeverity, SystemHistoryDay, SystemIssue, SystemSignalEvent, SystemStatus } from './types'
 
 function isPastWednesdayInIndia() {
   const indiaNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }))
@@ -104,8 +104,9 @@ function buildMomentumExplanation(snapshot: CurrentDaySnapshot | null | undefine
 export function getSystemStatus(
   snapshot: CurrentDaySnapshot | null | undefined,
   history: SystemHistoryDay[],
+  recentEvents: SystemSignalEvent[] = [],
 ): SystemStatus {
-  const momentum = analyzeMomentum(history, snapshot?.deep_work_minutes_today ?? 0)
+  const momentum = analyzeMomentum(history, snapshot?.deep_work_minutes_today ?? 0, recentEvents)
   const directiveResult = generateDirectives(snapshot)
   const latestHistoryDate = history.length ? history[history.length - 1].snapshot_date : null
 

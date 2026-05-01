@@ -94,7 +94,8 @@ function getWeekKeys(todayDateKey: string): string[] {
 }
 
 function formatDayLabel(dateKey: string): string {
-  const date = new Date(`${dateKey}T00:00:00Z`)
+  const [year, month, day] = dateKey.split('-').map(Number)
+  const date = new Date(Date.UTC(year, month - 1, day, 12, 0, 0))
   return new Intl.DateTimeFormat('en-US', {
     timeZone: 'Asia/Kolkata',
     weekday: 'short',

@@ -1,5 +1,13 @@
 export type MomentumTrend = 'rising' | 'falling' | 'stable'
 
+export type PositiveSystemEventType = 'DEEP_WORK_COMPLETED' | 'WORKOUT_COMPLETED'
+
+export type SystemSignalEvent = {
+  type: PositiveSystemEventType | 'WANT_EXPENSE_ADDED' | 'HABIT_FAILED'
+  createdAt: string
+  payload?: Record<string, unknown>
+}
+
 export type CurrentDaySnapshot = {
   user_id: string
   pending_tasks_count: number
