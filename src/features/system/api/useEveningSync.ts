@@ -12,6 +12,13 @@ type EveningSyncPayload = {
   created_at: string
 }
 
+type QueuedSystemEvent = {
+  id: string
+  event_type: string
+  payload: Record<string, unknown> | null
+  created_at: string
+}
+
 function getErrorCode(error: unknown): string {
   if (typeof error === 'object' && error !== null && 'code' in error) {
     const code = (error as { code?: unknown }).code
@@ -51,7 +58,7 @@ function isMissingMetricsTableError(error: unknown): boolean {
 
 export function useEveningSync() {
   const { data: systemStatus } = useSystemStatus()
-  const recentEvents = useEventBus((state) => state.recentEvents)
+  const clearEvents = useEventBus((state) => state.clearEvents)
 
   const executeEveningSync = async () => {
     const {
@@ -67,11 +74,38 @@ export function useEveningSync() {
       throw new Error('User is not authenticated.')
     }
 
+    const localDate = new Date().toLocaleDateString('en-CA')
+    const dayStart = `${localDate}T00:00:00+05:30`
+    const tomorrow = new Date(`${localDate}T00:00:00+05:30`)
+    tomorrow.setUTCDate(tomorrow.getUTCDate() + 1)
+    const nextDate = tomorrow.toISOString().slice(0, 10)
+    const dayEnd = `${nextDate}T00:00:00+05:30`
+
+    const { data: queuedEvents, error: queueFetchError } = await supabase
+      .from('system_event_queue')
+      .select('id, event_type, payload, created_at')
+      .eq('user_id', user.id)
+      .gte('created_at', dayStart)
+      .lt('created_at', dayEnd)
+
+    if (queueFetchError) {
+      throw new Error(`Evening sync fetch failed: ${getErrorMessage(queueFetchError)}`)
+    }
+
+    const aggregateQueue = (queuedEvents ?? []) as QueuedSystemEvent[]
+    const deepWorkEvents = aggregateQueue.filter((event) => event.event_type === 'DEEP_WORK_COMPLETED').length
+    const workoutEvents = aggregateQueue.filter((event) => event.event_type === 'WORKOUT_COMPLETED').length
+    const habitFailEvents = aggregateQueue.filter((event) => event.event_type === 'HABIT_FAILED').length
+    const wantExpenseEvents = aggregateQueue.filter((event) => event.event_type === 'WANT_EXPENSE_ADDED').length
+
+    const momentumDelta = (deepWorkEvents * 3) + (workoutEvents * 2) - (habitFailEvents * 2) - wantExpenseEvents
+    const momentumScore = Math.max(0, Math.min(100, Math.round(systemStatus.momentum.momentum + momentumDelta)))
+
     const payload: EveningSyncPayload = {
       user_id: user.id,
-      sync_date: new Date().toLocaleDateString('en-CA'),
-      momentum_score: Math.round(systemStatus.momentum.momentum),
-      events_processed: recentEvents.length,
+      sync_date: localDate,
+      momentum_score: momentumScore,
+      events_processed: aggregateQueue.length,
       created_at: new Date().toISOString(),
     }
 
@@ -90,6 +124,17 @@ export function useEveningSync() {
 
       throw new Error(`Evening sync failed: ${getErrorMessage(error)}`)
     }
+
+    const { error: queueDeleteError } = await supabase
+      .from('system_event_queue')
+      .delete()
+      .eq('user_id', user.id)
+
+    if (queueDeleteError) {
+      throw new Error(`Evening sync flush failed: ${getErrorMessage(queueDeleteError)}`)
+    }
+
+    clearEvents()
 
     return {
       skipped: false,
