@@ -40,7 +40,6 @@ function SystemStatusCard() {
   const { data, isLoading, isError, error } = useSystemStatus()
   const { mutate: executeEveningSync, isPending: isSyncing } = useEveningSync()
   const pendingEventsCount = useEventBus((state) => state.recentEvents.length)
-  const clearEvents = useEventBus((state) => state.clearEvents)
   const [syncToast, setSyncToast] = useState<string | null>(null)
 
   if (isLoading) {
@@ -126,7 +125,6 @@ function SystemStatusCard() {
           onClick={() =>
             executeEveningSync(undefined, {
               onSuccess: () => {
-                clearEvents()
                 setSyncToast('System synced. Memory flushed. Rest well.')
                 setTimeout(() => setSyncToast(null), 3200)
               },

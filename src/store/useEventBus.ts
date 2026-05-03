@@ -1,5 +1,7 @@
 import { create } from 'zustand'
 
+import { supabase } from '../lib/supabase'
+
 export type EventBusType =
   | 'DEEP_WORK_COMPLETED'
   | 'WANT_EXPENSE_ADDED'
@@ -29,21 +31,43 @@ function createEventId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
 }
 
+async function queueEventInBackground(event: EventBusEvent) {
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser()
+
+  if (authError || !user) {
+    return
+  }
+
+  const { error } = await supabase.from('system_event_queue').insert({
+    user_id: user.id,
+    event_type: event.type,
+    payload: event.payload,
+    created_at: event.createdAt,
+  })
+
+  if (error) {
+    console.warn('[event-bus] queue insert failed', error)
+  }
+}
+
 export const useEventBus = create<EventBusState>((set) => ({
   recentEvents: [],
-  emitEvent: (type, payload = {}) =>
-    set((state) => {
-      const next: EventBusEvent = {
-        id: createEventId(),
-        type,
-        payload,
-        createdAt: new Date().toISOString(),
-      }
+  emitEvent: (type, payload = {}) => {
+    const next: EventBusEvent = {
+      id: createEventId(),
+      type,
+      payload,
+      createdAt: new Date().toISOString(),
+    }
 
-      return {
-        recentEvents: [next, ...state.recentEvents].slice(0, MAX_RECENT_EVENTS),
-      }
-    }),
+    set((state) => ({
+      recentEvents: [next, ...state.recentEvents].slice(0, MAX_RECENT_EVENTS),
+    }))
+
+    void queueEventInBackground(next)
+  },
   clearEvents: () => set({ recentEvents: [] }),
 }))
-
