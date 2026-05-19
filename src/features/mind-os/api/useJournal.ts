@@ -15,6 +15,7 @@ export type JournalEntry = {
   what_you_learned: string | null
   brief_about_day: string | null
   created_at: string
+  updated_at: string
 }
 
 type CreateJournalEntryInput = {
@@ -31,7 +32,15 @@ function buildEntryCreatedAtIso(entryDate: string): string {
     throw new Error('Invalid journal entry date. Expected YYYY-MM-DD.')
   }
 
-  return `${trimmed}T12:00:00+05:30`
+  const nowInIndia = new Date().toLocaleTimeString('en-GB', {
+    timeZone: 'Asia/Kolkata',
+    hour12: false,
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  })
+
+  return `${trimmed}T${nowInIndia}+05:30`
 }
 
 function getErrorMessage(error: unknown): string {
@@ -64,10 +73,27 @@ function buildError(context: string, error: unknown): Error {
   return new Error(`${context} (${getErrorCode(error)}): ${getErrorMessage(error)}`)
 }
 
+async function requireUserId() {
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser()
+
+  if (error) {
+    throw buildError('Auth check failed', error)
+  }
+
+  if (!user) {
+    throw new Error('User is not authenticated.')
+  }
+
+  return user.id
+}
+
 async function fetchJournalEntries(): Promise<JournalEntry[]> {
   const { data, error } = await supabase
     .from('journal_entries')
-    .select('id, mood, what_went_good, what_you_learned, brief_about_day, created_at')
+    .select('id, mood, what_went_good, what_you_learned, brief_about_day, created_at, updated_at')
     .is('deleted_at', null)
     .order('created_at', { ascending: false })
 
@@ -77,6 +103,21 @@ async function fetchJournalEntries(): Promise<JournalEntry[]> {
   }
 
   return data ?? []
+}
+
+async function deleteJournalEntry(id: string): Promise<void> {
+  const userId = await requireUserId()
+  const now = new Date().toISOString()
+
+  const { error } = await supabase
+    .from('journal_entries')
+    .update({ deleted_at: now, updated_at: now })
+    .eq('id', id)
+    .eq('user_id', userId)
+
+  if (error) {
+    throw buildError('Delete failed', error)
+  }
 }
 
 async function insertJournalEntry({
@@ -165,6 +206,18 @@ export function useCreateJournalEntry() {
     },
     onError: (error) => {
       console.error('[useJournal] mutation failed', error)
+    },
+  })
+}
+
+export function useDeleteJournalEntry() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: deleteJournalEntry,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: mindOsJournalsQueryKey })
+      queryClient.invalidateQueries({ queryKey: systemStatusQueryKey })
     },
   })
 }

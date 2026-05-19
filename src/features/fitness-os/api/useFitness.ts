@@ -398,7 +398,11 @@ async function fetchWorkoutDetail(workoutId: string): Promise<WorkoutDetail | nu
   }
 
   const logs = ((logsData ?? []) as ExerciseLogRow[]).map((row) => {
-    const exercise = Array.isArray(row.fitness_exercises) ? row.fitness_exercises[0] : null
+    const exerciseRelation = row.fitness_exercises as
+      | Array<{ name: string; default_unit: string | null; deleted_at: string | null }>
+      | { name: string; default_unit: string | null; deleted_at: string | null }
+      | null
+    const exercise = Array.isArray(exerciseRelation) ? exerciseRelation[0] : exerciseRelation
 
     return {
     id: row.id,

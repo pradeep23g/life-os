@@ -157,19 +157,19 @@ function FitnessOsDashboard() {
         <article className="rounded-xl border border-slate-700 bg-slate-900 p-4">
           <h2 className="text-lg font-semibold text-slate-100">90-Day Effort Heatmap</h2>
           <p className="mt-1 text-xs text-slate-400">Intensity is based on session minutes per day.</p>
-          <div className="mt-4 overflow-x-auto">
-            <div className="flex gap-2">
+          <div className="mt-4 w-full overflow-x-auto snap-x">
+            <div className="flex min-w-max gap-3 snap-start">
               <div className="grid grid-rows-7 gap-1 pt-1 text-[10px] text-slate-500">
                 {Array.from({ length: 7 }, (_, index) => {
                   const label = heatmapWeekdayLabels.has(weekdayHeaders[index]) ? weekdayHeaders[index] : ''
                   return <span key={weekdayHeaders[index]}>{label}</span>
                 })}
               </div>
-              <div className="grid auto-cols-[12px] grid-flow-col grid-rows-7 gap-1">
+              <div className="grid auto-cols-[18px] grid-flow-col grid-rows-7 gap-2">
                 {(data?.heatmapDays ?? []).map((day) => (
                   <span
                     key={day.date}
-                    className={`h-3 w-3 rounded-sm border ${getHeatmapLevelClass(day.minutes, maxHeatmapMinutes)}`}
+                    className={`h-[18px] w-[18px] rounded-sm border ${getHeatmapLevelClass(day.minutes, maxHeatmapMinutes)}`}
                     title={`${formatIndiaDate(day.date)} - ${day.minutes} min - ${day.workoutCount} workouts`}
                   />
                 ))}

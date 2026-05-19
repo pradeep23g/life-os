@@ -1,17 +1,30 @@
-import { useMemo, useState } from 'react'
+﻿import { useMemo, useState } from 'react'
 
 import ActiveWorkoutPanel from './ActiveWorkoutPanel'
 import {
   useActiveWorkout,
+  useDeleteWorkout,
   useEndWorkoutSession,
   useFitnessExercises,
   useStartWorkoutSession,
+  useWorkoutDetail,
   useWorkouts,
 } from '../api/useFitness'
 import { formatIndiaDate } from '../utils/date'
 
 const greenReplicaButtonClass =
   'border border-emerald-900 text-emerald-500 hover:bg-emerald-950/30 transition-colors rounded px-4 py-2'
+
+function TrashIcon({ className = 'h-4 w-4' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true">
+      <path d="M4 7h16" strokeLinecap="round" />
+      <path d="M10 3h4a1 1 0 011 1v2H9V4a1 1 0 011-1z" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M7 7l1 13a1 1 0 001 1h6a1 1 0 001-1l1-13" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M10 11v6M14 11v6" strokeLinecap="round" />
+    </svg>
+  )
+}
 
 function WorkoutsPage() {
   const { data: activeWorkout, isLoading: isLoadingActive, error: activeError } = useActiveWorkout()
@@ -20,8 +33,11 @@ function WorkoutsPage() {
 
   const { mutate: startWorkoutSession, isPending: isStarting, error: startError } = useStartWorkoutSession()
   const { mutate: endWorkoutSession, isPending: isEnding, error: endError } = useEndWorkoutSession()
+  const { mutate: deleteWorkout, isPending: isDeletingWorkout } = useDeleteWorkout()
   const [sessionTitle, setSessionTitle] = useState('')
   const [sessionType, setSessionType] = useState('')
+  const [expandedWorkoutId, setExpandedWorkoutId] = useState<string | null>(null)
+  const { data: expandedWorkoutDetail } = useWorkoutDetail(expandedWorkoutId)
 
   const recentCompletedWorkouts = useMemo(() => workouts.slice(0, 8), [workouts])
   const hasActiveSession = Boolean(activeWorkout)
@@ -39,15 +55,18 @@ function WorkoutsPage() {
             type="button"
             disabled={hasActiveSession || isStarting || isLoadingActive}
             onClick={() =>
-              startWorkoutSession({
-                title: sessionTitle.trim() || 'Live Workout Session',
-                sessionType: sessionType.trim() || 'Calisthenics',
-              }, {
-                onSuccess: () => {
-                  setSessionTitle('')
-                  setSessionType('')
+              startWorkoutSession(
+                {
+                  title: sessionTitle.trim() || 'Live Workout Session',
+                  sessionType: sessionType.trim() || 'Calisthenics',
                 },
-              })
+                {
+                  onSuccess: () => {
+                    setSessionTitle('')
+                    setSessionType('')
+                  },
+                },
+              )
             }
             className={`${greenReplicaButtonClass} disabled:cursor-not-allowed disabled:opacity-60`}
           >
@@ -119,17 +138,61 @@ function WorkoutsPage() {
 
         {!workoutsLoading && !workoutsError && recentCompletedWorkouts.length > 0 ? (
           <ul className="mt-3 space-y-2">
-            {recentCompletedWorkouts.map((workout) => (
-              <li key={workout.id} className="rounded-md border border-[#222222] bg-black p-3">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-sm font-semibold text-slate-100">{workout.title}</p>
-                  <p className="text-sm text-slate-200">{workout.duration_minutes} min</p>
-                </div>
-                <p className="mt-1 text-xs text-slate-400">
-                  {formatIndiaDate(workout.workout_date)} • {workout.session_type || 'General'}
-                </p>
-              </li>
-            ))}
+            {recentCompletedWorkouts.map((workout) => {
+              const isExpanded = expandedWorkoutId === workout.id
+              return (
+                <li key={workout.id} className="rounded-md border border-[#222222] bg-black p-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="text-sm font-semibold text-slate-100">{workout.title}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm text-slate-200">{workout.duration_minutes} min</p>
+                      <button
+                        type="button"
+                        onClick={() => setExpandedWorkoutId(isExpanded ? null : workout.id)}
+                        className="rounded border border-[#222222] px-2 py-1 text-xs text-slate-300 hover:bg-[#111111]"
+                      >
+                        {isExpanded ? 'Hide' : 'Details'}
+                      </button>
+                      <button
+                        type="button"
+                        disabled={isDeletingWorkout}
+                        onClick={() => {
+                          const confirmed = window.confirm(`Delete workout "${workout.title}"?`)
+                          if (!confirmed) return
+                          deleteWorkout({ id: workout.id })
+                          if (expandedWorkoutId === workout.id) {
+                            setExpandedWorkoutId(null)
+                          }
+                        }}
+                        className="p-3 text-neutral-600 transition-colors hover:text-red-500 sm:p-2"
+                        aria-label="Delete workout"
+                      >
+                        <TrashIcon />
+                      </button>
+                    </div>
+                  </div>
+                  <p className="mt-1 text-xs text-slate-400">
+                    {formatIndiaDate(workout.workout_date)} • {workout.session_type || 'General'}
+                  </p>
+
+                  {isExpanded ? (
+                    <div className="mt-3 rounded-md border border-[#222222] bg-[#111111] p-2">
+                      {(expandedWorkoutDetail?.logs ?? []).length === 0 ? (
+                        <p className="text-xs text-slate-400">No exercise logs captured.</p>
+                      ) : (
+                        <ul className="space-y-1">
+                          {(expandedWorkoutDetail?.logs ?? []).map((log) => (
+                            <li key={log.id} className="text-xs text-slate-300">
+                              {log.exercise_name}: {log.sets ?? 1} set, {log.reps_total ?? 0} reps
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  ) : null}
+                </li>
+              )
+            })}
           </ul>
         ) : null}
       </article>
@@ -142,3 +205,4 @@ function WorkoutsPage() {
 }
 
 export default WorkoutsPage
+

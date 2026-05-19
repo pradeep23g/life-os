@@ -1,7 +1,7 @@
 ﻿import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 
-import { useCreateJournalEntry, useJournalEntries } from '../api/useJournal'
+import { useCreateJournalEntry, useDeleteJournalEntry, useJournalEntries } from '../api/useJournal'
 import JournalDateModal from './JournalDateModal'
 import {
   buildMonthGrid,
@@ -118,9 +118,21 @@ function CloseIcon({ className = 'h-5 w-5' }: { className?: string }) {
   )
 }
 
+function TrashIcon({ className = 'h-4 w-4' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true">
+      <path d="M4 7h16" strokeLinecap="round" />
+      <path d="M10 3h4a1 1 0 011 1v2H9V4a1 1 0 011-1z" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M7 7l1 13a1 1 0 001 1h6a1 1 0 001-1l1-13" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M10 11v6M14 11v6" strokeLinecap="round" />
+    </svg>
+  )
+}
+
 function JournalPage() {
   const { data: entries = [], isLoading, isError } = useJournalEntries()
   const { mutate: createEntry, isPending, error: createError } = useCreateJournalEntry()
+  const { mutate: deleteEntry, isPending: isDeletingEntry } = useDeleteJournalEntry()
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [mood, setMood] = useState<number>(3)
@@ -296,21 +308,36 @@ function JournalPage() {
         {!isLoading && !isError && entries.length === 0 ? <p className="mt-3 text-sm text-slate-400">No journal entries yet.</p> : null}
 
         <ul className="mt-3 space-y-3">
-          {entries.slice(0, 10).map((entry) => (
-            <li key={entry.id} className="rounded-lg border border-[#222222] bg-black p-3">
-              <p className="text-sm text-slate-300">
-                {moodToEmoji(entry.mood)} {formatIndiaDateTime(entry.created_at)}
-              </p>
-              <p className="mt-1 text-sm text-slate-200">{entry.what_went_good || 'No note added.'}</p>
-            </li>
-          ))}
+            {entries.slice(0, 10).map((entry) => (
+              <li key={entry.id} className="group rounded-lg border border-[#222222] bg-black p-3">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-sm text-slate-300">
+                    {moodToEmoji(entry.mood)} {formatIndiaDateTime(entry.updated_at || entry.created_at)}
+                  </p>
+                  <button
+                    type="button"
+                    disabled={isDeletingEntry}
+                    onClick={() => {
+                      const confirmed = window.confirm('Delete this journal entry?')
+                      if (!confirmed) return
+                      deleteEntry(entry.id)
+                    }}
+                    className="p-3 text-neutral-600 opacity-100 transition-colors hover:text-red-500 sm:p-2 sm:opacity-0 sm:group-hover:opacity-100"
+                    aria-label="Delete journal entry"
+                  >
+                    <TrashIcon />
+                  </button>
+                </div>
+                <p className="mt-1 text-sm text-slate-200">{entry.what_went_good || 'No note added.'}</p>
+              </li>
+            ))}
         </ul>
       </article>
 
       <button
         type="button"
         onClick={() => setIsCreateModalOpen(true)}
-        className="fixed bottom-5 right-5 z-30 inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-[#222222] bg-[#0a0a0a] text-slate-100 shadow-xl shadow-black/60 transition hover:bg-[#222222]"
+        className="fixed bottom-6 right-6 z-30 inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-[#222222] bg-[#0a0a0a] text-slate-100 shadow-xl shadow-black/60 transition hover:bg-[#222222]"
         aria-label="Create journal entry"
       >
         <PenIcon />
@@ -325,7 +352,7 @@ function JournalPage() {
             aria-label="Close journal entry modal"
           />
 
-          <article className="relative z-10 h-[88vh] w-[96vw] max-w-4xl overflow-auto rounded-xl border border-[#222222] bg-[#0a0a0a] p-4 sm:p-6">
+          <article className="relative z-10 h-[88vh] w-[90%] max-w-4xl overflow-auto rounded-xl border border-[#222222] bg-[#0a0a0a] p-4 sm:p-6">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h2 className="text-xl font-semibold text-slate-100">New Journal Entry</h2>
@@ -495,6 +522,8 @@ function JournalPage() {
           isSaving={isPending}
           saveError={createError}
           onCreateEntry={createEntry}
+          onDeleteEntry={(id) => deleteEntry(id)}
+          isDeleting={isDeletingEntry}
           onClose={() => setSelectedDate(null)}
         />
       ) : null}

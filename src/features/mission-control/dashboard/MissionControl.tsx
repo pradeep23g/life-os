@@ -111,6 +111,23 @@ function MissionControl() {
 
   return (
     <section className="space-y-4 bg-[#000000]">
+      <header className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
+        <h1 className="text-2xl font-semibold text-slate-100">Mission Control</h1>
+        <p className="mt-1 text-sm text-slate-300">Live summaries across Life OS modules.</p>
+      </header>
+
+      <p className="text-sm font-semibold text-slate-300">System Metrics (Detailed View)</p>
+
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-8">
+        {stats.map((stat) => (
+          <article key={stat.label} className="min-h-[120px] rounded-xl border border-[#222222] bg-[#0a0a0a] p-3 sm:p-4">
+            <p className="text-xs text-slate-300 sm:text-sm">{stat.label}</p>
+            <p className="mt-2 text-xl font-semibold text-slate-100 sm:text-2xl">{stat.value}</p>
+            {stat.detail ? <p className="mt-1 text-[11px] text-slate-400 sm:text-xs">{stat.detail}</p> : null}
+          </article>
+        ))}
+      </div>
+
       <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
         <h2 className="text-base font-semibold text-slate-100">Mind OS Snapshot</h2>
         <p className="mt-1 text-xs text-slate-400">Core mental system status</p>
@@ -135,23 +152,6 @@ function MissionControl() {
       </article>
 
       <SystemStatusCard />
-
-      <header className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
-        <h1 className="text-2xl font-semibold text-slate-100">Mission Control</h1>
-        <p className="mt-1 text-sm text-slate-300">Live summaries across Life OS modules.</p>
-      </header>
-
-      <p className="text-sm font-semibold text-slate-300">System Metrics (Detailed View)</p>
-
-      <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-8">
-        {stats.map((stat) => (
-          <article key={stat.label} className="min-h-[120px] rounded-xl border border-[#222222] bg-[#0a0a0a] p-3 sm:p-4">
-            <p className="text-xs text-slate-300 sm:text-sm">{stat.label}</p>
-            <p className="mt-2 text-xl font-semibold text-slate-100 sm:text-2xl">{stat.value}</p>
-            {stat.detail ? <p className="mt-1 text-[11px] text-slate-400 sm:text-xs">{stat.detail}</p> : null}
-          </article>
-        ))}
-      </div>
     </section>
   )
 }

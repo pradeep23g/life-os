@@ -49,6 +49,10 @@ type TimeLoggedEventPayload = {
   durationMinutes: number
 }
 
+type DeleteTimeLogInput = {
+  id: string
+}
+
 const timeLogsBaseQueryKey = ['time-os', 'time-logs'] as const
 export const timeLogsActiveQueryKey = [...timeLogsBaseQueryKey, 'active'] as const
 export const timeLogsCompletedQueryKey = [...timeLogsBaseQueryKey, 'completed'] as const
@@ -304,6 +308,19 @@ async function createManualLog({ taskId, bucket, description, startTime, endTime
   }
 }
 
+async function deleteTimeLog({ id }: DeleteTimeLogInput): Promise<void> {
+  const userId = await requireUserId()
+  const { error } = await supabase
+    .from('time_logs')
+    .delete()
+    .eq('id', id)
+    .eq('user_id', userId)
+
+  if (error) {
+    throw buildError('Failed to delete time log', error)
+  }
+}
+
 function invalidateTimeLogQueries(queryClient: ReturnType<typeof useQueryClient>) {
   queryClient.invalidateQueries({ queryKey: timeLogsBaseQueryKey })
   queryClient.invalidateQueries({ queryKey: timeLogsActiveQueryKey })
@@ -422,6 +439,17 @@ export function useManualLog() {
         title: '+1 Time Logged',
         description: 'Manual session saved',
       })
+    },
+  })
+}
+
+export function useDeleteTimeLog() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: deleteTimeLog,
+    onSuccess: () => {
+      invalidateTimeLogQueries(queryClient)
     },
   })
 }

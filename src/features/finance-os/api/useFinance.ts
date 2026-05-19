@@ -48,6 +48,10 @@ type AddTransactionInput = {
   note?: string
 }
 
+type DeleteTransactionInput = {
+  id: string
+}
+
 function getErrorMessage(error: unknown): string {
   if (error instanceof Error && error.message) {
     return error.message
@@ -372,6 +376,19 @@ async function addTransaction({ amount, category, isNeed, note }: AddTransaction
   })
 }
 
+async function deleteTransaction({ id }: DeleteTransactionInput): Promise<void> {
+  const userId = await requireUserId()
+  const { error } = await supabase
+    .from('finance_transactions')
+    .delete()
+    .eq('id', id)
+    .eq('user_id', userId)
+
+  if (error) {
+    throw buildError('Failed to delete finance transaction', error)
+  }
+}
+
 export function useTransactions() {
   return useQuery({
     queryKey: financeTransactionsQueryKey,
@@ -393,6 +410,17 @@ export function useAddTransaction() {
           category: variables.category,
         })
       }
+    },
+  })
+}
+
+export function useDeleteTransaction() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: deleteTransaction,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: financeTransactionsQueryKey })
     },
   })
 }

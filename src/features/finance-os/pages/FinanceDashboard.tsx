@@ -1,6 +1,6 @@
 ﻿import { useMemo, useState } from 'react'
 
-import { useAddTransaction, useTransactions } from '../api/useFinance'
+import { useAddTransaction, useDeleteTransaction, useTransactions } from '../api/useFinance'
 import TransactionForm from '../components/TransactionForm'
 
 function formatCurrency(amount: number) {
@@ -40,6 +40,7 @@ function getReadableErrorMessage(error: unknown): string {
 function FinanceDashboard() {
   const { data, isLoading, isError, error } = useTransactions()
   const { mutate: addTransaction, isPending, error: addError } = useAddTransaction()
+  const { mutate: deleteTransaction, isPending: isDeletingTransaction } = useDeleteTransaction()
   const [isModalOpen, setIsModalOpen] = useState(false)
 
   const summary = data?.summary
@@ -67,28 +68,31 @@ function FinanceDashboard() {
         </p>
       </article>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-3">
-          <p className="text-xs text-slate-400">Total Spent</p>
-          <div className="mt-2 flex items-center justify-between gap-3">
-            <p className="text-xl font-semibold text-slate-100">{isLoading ? '--' : formatCurrency(summary?.totalSpent ?? 0)}</p>
-            <div className="flex items-end gap-1">
-              {spendingSpark.map((height, index) => (
-                <span key={`spending-spark-${index}`} className="w-1.5 rounded-sm bg-emerald-500/70" style={{ height: `${height * 0.2}px` }} />
-              ))}
+      <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-3">
+        <p className="text-xs uppercase tracking-wide text-slate-400">Spending Snapshot</p>
+        <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div className="rounded-lg border border-[#222222] bg-black p-3">
+            <p className="text-xs text-slate-400">Total Spent</p>
+            <div className="mt-2 flex items-center justify-between gap-3">
+              <p className="text-xl font-semibold text-slate-100">{isLoading ? '--' : formatCurrency(summary?.totalSpent ?? 0)}</p>
+              <div className="flex items-end gap-1">
+                {spendingSpark.map((height, index) => (
+                  <span key={`spending-spark-${index}`} className="w-1.5 rounded-sm bg-emerald-500/70" style={{ height: `${height * 0.2}px` }} />
+                ))}
+              </div>
             </div>
           </div>
-        </article>
-        <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-3">
-          <p className="text-xs text-slate-400">Waste This Week</p>
-          <p className="mt-2 text-xl font-semibold text-red-400">{isLoading ? '--' : formatCurrency(summary?.wasteAmount ?? 0)}</p>
-          <p className="mt-1 text-xs text-slate-400">Biggest waste: <span className="text-slate-200">{isLoading ? '--' : summary?.topWasteCategory ?? 'No waste yet'}</span></p>
-        </article>
-        <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-3">
-          <p className="text-xs text-slate-400">Top Leak</p>
-          <p className="mt-2 text-sm font-semibold text-slate-100">{isLoading ? '--' : summary?.topCategory ?? 'No spend yet'}</p>
-        </article>
-      </div>
+          <div className="rounded-lg border border-[#222222] bg-black p-3">
+            <p className="text-xs text-slate-400">Waste This Week</p>
+            <p className="mt-2 text-xl font-semibold text-red-400">{isLoading ? '--' : formatCurrency(summary?.wasteAmount ?? 0)}</p>
+            <p className="mt-1 text-xs text-slate-400">Biggest waste: <span className="text-slate-200">{isLoading ? '--' : summary?.topWasteCategory ?? 'No waste yet'}</span></p>
+          </div>
+          <div className="rounded-lg border border-[#222222] bg-black p-3">
+            <p className="text-xs text-slate-400">Top Leak</p>
+            <p className="mt-2 text-sm font-semibold text-slate-100">{isLoading ? '--' : summary?.topCategory ?? 'No spend yet'}</p>
+          </div>
+        </div>
+      </article>
 
       <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
         <div className="flex items-center justify-between gap-3">
@@ -139,7 +143,7 @@ function FinanceDashboard() {
         {!isLoading && !isError && recentTransactions.length > 0 ? (
           <ul className="mt-3 space-y-2">
             {recentTransactions.map((item) => (
-              <li key={item.id} className="rounded-md border border-[#222222] bg-black p-3">
+              <li key={item.id} className="group rounded-md border border-[#222222] bg-black p-3">
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <span className={`h-2 w-2 rounded-full ${item.is_need ? 'bg-emerald-500' : 'bg-rose-500'}`} />
@@ -150,6 +154,19 @@ function FinanceDashboard() {
                     <span className={`px-2 rounded text-xs ${item.is_need ? 'bg-emerald-900/50 text-emerald-400' : 'bg-red-900/50 text-red-400'}`}>
                       [{item.is_need ? 'NEED' : 'WANT'}]
                     </span>
+                    <button
+                      type="button"
+                      disabled={isDeletingTransaction}
+                      onClick={() => {
+                        const confirmed = window.confirm('Delete this transaction?')
+                        if (!confirmed) return
+                        deleteTransaction({ id: item.id })
+                      }}
+                      className="p-3 text-neutral-600 opacity-100 transition-colors hover:text-red-500 sm:p-2 sm:opacity-0 sm:group-hover:opacity-100"
+                      aria-label="Delete transaction"
+                    >
+                      ×
+                    </button>
                   </div>
                 </div>
                 <p className="mt-1 text-xs text-slate-400">{formatDateTime(item.created_at)}</p>
@@ -163,7 +180,7 @@ function FinanceDashboard() {
       <button
         type="button"
         onClick={() => setIsModalOpen(true)}
-        className="fixed bottom-8 right-8 z-50 h-14 w-14 rounded-full border border-emerald-900 bg-[#0a0a0a] text-2xl text-emerald-500 shadow-lg transition-colors hover:bg-slate-900"
+        className="fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full border border-emerald-900 bg-[#0a0a0a] text-2xl text-emerald-500 shadow-lg transition-colors hover:bg-slate-900"
         aria-label="Add transaction"
       >
         +
@@ -172,7 +189,7 @@ function FinanceDashboard() {
       {isModalOpen ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
           <button type="button" onClick={() => setIsModalOpen(false)} className="absolute inset-0" aria-label="Close transaction modal" />
-          <article className="relative z-10 w-full max-w-md rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
+          <article className="relative z-10 max-h-[88vh] w-[90%] max-w-md overflow-y-auto rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
             <div className="mb-3 flex items-center justify-between gap-3">
               <h2 className="text-lg font-semibold text-slate-100">Quick Log</h2>
               <button

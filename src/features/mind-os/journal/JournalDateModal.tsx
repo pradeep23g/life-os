@@ -15,6 +15,17 @@ const moodOptions = [
 const greenReplicaButtonClass =
   'border border-emerald-900 text-emerald-500 hover:bg-emerald-950/30 transition-colors rounded px-4 py-2'
 
+function TrashIcon({ className = 'h-4 w-4' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true">
+      <path d="M4 7h16" strokeLinecap="round" />
+      <path d="M10 3h4a1 1 0 011 1v2H9V4a1 1 0 011-1z" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M7 7l1 13a1 1 0 001 1h6a1 1 0 001-1l1-13" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M10 11v6M14 11v6" strokeLinecap="round" />
+    </svg>
+  )
+}
+
 function getReadableErrorMessage(error: unknown): string {
   if (error instanceof Error && error.message) {
     return error.message
@@ -59,10 +70,12 @@ type JournalDateModalProps = {
   isSaving: boolean
   saveError: unknown
   onCreateEntry: (payload: CreatePayload, callbacks: { onSuccess: () => void }) => void
+  onDeleteEntry: (id: string) => void
+  isDeleting: boolean
   onClose: () => void
 }
 
-function JournalDateModal({ selectedDate, entries, isSaving, saveError, onCreateEntry, onClose }: JournalDateModalProps) {
+function JournalDateModal({ selectedDate, entries, isSaving, saveError, onCreateEntry, onDeleteEntry, isDeleting, onClose }: JournalDateModalProps) {
   const [isCreateMode, setIsCreateMode] = useState(false)
   const [mood, setMood] = useState<number>(3)
   const [whatWentGood, setWhatWentGood] = useState('')
@@ -127,9 +140,24 @@ function JournalDateModal({ selectedDate, entries, isSaving, saveError, onCreate
               ) : (
                 entriesForDate.map((entry) => (
                   <article key={entry.id} className="rounded border border-[#222222] bg-black p-3">
-                    <p className="text-sm text-slate-300">
-                      {moodToEmoji(entry.mood)} {formatIndiaDateTime(entry.created_at)}
-                    </p>
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-sm text-slate-300">
+                        {moodToEmoji(entry.mood)} {formatIndiaDateTime(entry.updated_at || entry.created_at)}
+                      </p>
+                      <button
+                        type="button"
+                        disabled={isDeleting}
+                        onClick={() => {
+                          const confirmed = window.confirm('Delete this journal entry?')
+                          if (!confirmed) return
+                          onDeleteEntry(entry.id)
+                        }}
+                        className="p-3 text-neutral-600 transition-colors hover:text-red-500 sm:p-2"
+                        aria-label="Delete journal entry"
+                      >
+                        <TrashIcon />
+                      </button>
+                    </div>
                     <div className="mt-2 space-y-2 text-sm text-slate-300 whitespace-pre-wrap">
                       <div>
                         <p className="text-[11px] uppercase tracking-wide text-slate-500">Topic of the day</p>

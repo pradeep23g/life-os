@@ -266,7 +266,7 @@ function PlanningPage() {
                         [currentWeekStart]: joinBulletItems(removeBulletItem(focusItems, index)),
                       }))
                     }
-                    className="cursor-pointer text-neutral-600 opacity-0 transition-colors hover:text-red-500 group-hover:opacity-100"
+                    className="cursor-pointer p-3 text-neutral-600 opacity-100 transition-colors hover:text-red-500 sm:p-2 sm:opacity-0 sm:group-hover:opacity-100"
                     aria-label={`Remove focus item ${index + 1}`}
                   >
                     x
@@ -536,7 +536,7 @@ function PlanningPage() {
                             wins: joinBulletItems(removeBulletItem(reviewWinsItems, index)),
                           }))
                         }
-                        className="cursor-pointer text-neutral-600 opacity-0 transition-colors hover:text-red-500 group-hover:opacity-100"
+                        className="cursor-pointer p-3 text-neutral-600 opacity-100 transition-colors hover:text-red-500 sm:p-2 sm:opacity-0 sm:group-hover:opacity-100"
                         aria-label={`Remove win item ${index + 1}`}
                       >
                         x
@@ -581,7 +581,7 @@ function PlanningPage() {
                             blockers: joinBulletItems(removeBulletItem(reviewBlockersItems, index)),
                           }))
                         }
-                        className="cursor-pointer text-neutral-600 opacity-0 transition-colors hover:text-red-500 group-hover:opacity-100"
+                        className="cursor-pointer p-3 text-neutral-600 opacity-100 transition-colors hover:text-red-500 sm:p-2 sm:opacity-0 sm:group-hover:opacity-100"
                         aria-label={`Remove blocker item ${index + 1}`}
                       >
                         x
@@ -626,7 +626,7 @@ function PlanningPage() {
                             nextAdjustments: joinBulletItems(removeBulletItem(reviewNextAdjustmentsItems, index)),
                           }))
                         }
-                        className="cursor-pointer text-neutral-600 opacity-0 transition-colors hover:text-red-500 group-hover:opacity-100"
+                        className="cursor-pointer p-3 text-neutral-600 opacity-100 transition-colors hover:text-red-500 sm:p-2 sm:opacity-0 sm:group-hover:opacity-100"
                         aria-label={`Remove adjustment item ${index + 1}`}
                       >
                         x

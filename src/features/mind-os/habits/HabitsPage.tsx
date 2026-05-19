@@ -7,6 +7,7 @@ import {
   type HabitWithStats,
   useAdjustHabitCount,
   useCreateHabit,
+  useDeleteHabit,
   useHabitWorkspace,
   useHealHabitBreak,
   useMarkHabitDone,
@@ -139,6 +140,7 @@ function HabitsPage() {
     error: updateRecoveryCommitmentError,
   } = useUpdateRecoveryCommitment()
   const { mutate: healBreak, isPending: isHealingBreak, error: healBreakError } = useHealHabitBreak()
+  const { mutate: deleteHabit, isPending: isDeletingHabit, error: deleteHabitError } = useDeleteHabit()
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [title, setTitle] = useState('')
@@ -482,6 +484,19 @@ function HabitsPage() {
                   </div>
 
                   <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      disabled={isDeletingHabit}
+                      onClick={() => {
+                        const confirmed = window.confirm(`Delete habit "${habit.title}"?`)
+                        if (!confirmed) return
+                        deleteHabit({ habitId: habit.id })
+                      }}
+                      className="text-neutral-600 transition-colors hover:text-red-500"
+                      aria-label={`Delete ${habit.title}`}
+                    >
+                      ×
+                    </button>
                     <span className={`rounded-md border px-2 py-0.5 text-[11px] ${tone.statusBadge}`}>
                       {habit.completedToday ? 'Completed' : 'Pending'}
                     </span>
@@ -852,6 +867,9 @@ function HabitsPage() {
           ) : null}
           {healBreakError ? (
             <p className="mt-2 text-sm text-red-400">Failed to heal break: {getReadableErrorMessage(healBreakError)}</p>
+          ) : null}
+          {deleteHabitError ? (
+            <p className="mt-2 text-sm text-red-400">Failed to delete habit: {getReadableErrorMessage(deleteHabitError)}</p>
           ) : null}
         </article>
 

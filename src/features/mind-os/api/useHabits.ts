@@ -156,6 +156,10 @@ type HealHabitBreakInput = {
   reason: string
 }
 
+type DeleteHabitInput = {
+  habitId: string
+}
+
 type HabitCounter = {
   habitId: string
   count: number
@@ -811,6 +815,22 @@ async function healHabitBreak({ breakId, habitId, reason }: HealHabitBreakInput)
   })
 }
 
+async function deleteHabit({ habitId }: DeleteHabitInput): Promise<void> {
+  const userId = await requireUserId()
+  const now = new Date().toISOString()
+
+  const { error } = await supabase
+    .from('habits')
+    .update({ deleted_at: now, updated_at: now })
+    .eq('id', habitId)
+    .eq('user_id', userId)
+    .is('deleted_at', null)
+
+  if (error) {
+    throw buildError('Failed to delete habit', error)
+  }
+}
+
 export function useHabits() {
   return useQuery({
     queryKey: mindOsHabitsQueryKey,
@@ -1004,6 +1024,19 @@ export function useHealHabitBreak() {
         title: '+1 Awareness',
         description: 'Momentum +4% — system stabilizing',
       })
+    },
+  })
+}
+
+export function useDeleteHabit() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: deleteHabit,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: mindOsHabitsQueryKey })
+      queryClient.invalidateQueries({ queryKey: mindOsHabitWorkspaceQueryKey })
+      queryClient.invalidateQueries({ queryKey: systemStatusQueryKey })
     },
   })
 }
