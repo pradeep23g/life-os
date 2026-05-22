@@ -1,4 +1,5 @@
 ﻿import { useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 import { type FitnessDayInsight, type Workout, useFitnessDashboard } from '../api/useFitness'
 import { buildMonthGrid, formatIndiaDate, formatIndiaDateTime, getMonthLabel, shiftMonth } from '../utils/date'
@@ -53,6 +54,7 @@ function getDailyInsight(workoutsByDate: Record<string, Workout[]>, dateKey: str
 }
 
 function FitnessOsDashboard() {
+  const navigate = useNavigate()
   const { data, isLoading, isError } = useFitnessDashboard()
   const [isCalendarOpen, setIsCalendarOpen] = useState(false)
   const [calendarMonth, setCalendarMonth] = useState(() => new Date())
@@ -285,7 +287,16 @@ function FitnessOsDashboard() {
                       <ul className="mt-3 space-y-2">
                         {selectedDayWorkouts.map((workout) => (
                           <li key={workout.id} className="rounded-md border border-slate-700 bg-slate-900 p-2">
-                            <p className="text-sm font-semibold text-slate-100">{workout.title}</p>
+                            <div className="flex items-start justify-between gap-2">
+                              <p className="text-sm font-semibold text-slate-100">{workout.title}</p>
+                              <button
+                                type="button"
+                                onClick={() => navigate(`/fitness-os/workouts?date=${selectedDateKey}`)}
+                                className="rounded border border-slate-600 px-2 py-1 text-[11px] text-slate-200 hover:bg-slate-800"
+                              >
+                                View workout
+                              </button>
+                            </div>
                             <p className="text-xs text-slate-400">{workout.session_type || 'General session'}</p>
                             <p className="text-xs text-slate-400">
                               {workout.duration_minutes} min • {formatIndiaDateTime(workout.created_at)}
@@ -307,3 +318,4 @@ function FitnessOsDashboard() {
 }
 
 export default FitnessOsDashboard
+

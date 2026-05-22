@@ -2,6 +2,7 @@ import { useEventsAnalytics } from '../../../lib/useEventsAnalytics'
 import { useFitnessWeeklySummary } from '../../fitness-os/api/useFitness'
 import { useHabitWorkspace } from '../../mind-os/api/useHabits'
 import { useJournal } from '../../mind-os/api/useJournal'
+import EndOfDayCard from '../components/EndOfDayCard'
 import { useChallenges, useMilestones } from '../../progress-hub/api/useProgress'
 import { useTasks } from '../../productivity-hub/api/useTasks'
 import SystemStatusCard from '../../system/components/SystemStatusCard'
@@ -116,6 +117,10 @@ function MissionControl() {
         <p className="mt-1 text-sm text-slate-300">Live summaries across Life OS modules.</p>
       </header>
 
+      <SystemStatusCard />
+
+      <EndOfDayCard />
+
       <p className="text-sm font-semibold text-slate-300">System Metrics (Detailed View)</p>
 
       <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-8">
@@ -151,7 +156,6 @@ function MissionControl() {
         </div>
       </article>
 
-      <SystemStatusCard />
     </section>
   )
 }

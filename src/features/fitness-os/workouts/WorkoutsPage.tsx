@@ -1,4 +1,5 @@
 ﻿import { useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 
 import ActiveWorkoutPanel from './ActiveWorkoutPanel'
 import {
@@ -27,6 +28,7 @@ function TrashIcon({ className = 'h-4 w-4' }: { className?: string }) {
 }
 
 function WorkoutsPage() {
+  const [searchParams] = useSearchParams()
   const { data: activeWorkout, isLoading: isLoadingActive, error: activeError } = useActiveWorkout()
   const { data: exercises = [], isLoading: exercisesLoading } = useFitnessExercises()
   const { data: workouts = [], isLoading: workoutsLoading, error: workoutsError } = useWorkouts()
@@ -40,6 +42,11 @@ function WorkoutsPage() {
   const { data: expandedWorkoutDetail } = useWorkoutDetail(expandedWorkoutId)
 
   const recentCompletedWorkouts = useMemo(() => workouts.slice(0, 8), [workouts])
+  const selectedDate = searchParams.get('date') ?? ''
+  const workoutsForSelectedDate = useMemo(
+    () => (selectedDate ? workouts.filter((workout) => workout.workout_date === selectedDate) : []),
+    [selectedDate, workouts],
+  )
   const hasActiveSession = Boolean(activeWorkout)
 
   return (
@@ -124,6 +131,27 @@ function WorkoutsPage() {
         </article>
       )}
 
+
+      {selectedDate ? (
+        <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
+          <h3 className="text-lg font-semibold text-slate-100">Workouts on {formatIndiaDate(selectedDate)}</h3>
+          {workoutsForSelectedDate.length === 0 ? (
+            <p className="mt-2 text-sm text-slate-400">No workouts logged for this date.</p>
+          ) : (
+            <ul className="mt-3 space-y-2">
+              {workoutsForSelectedDate.map((workout) => (
+                <li key={`day-${workout.id}`} className="rounded-md border border-[#222222] bg-black p-3">
+                  <p className="text-sm font-semibold text-slate-100">{workout.title}</p>
+                  <p className="mt-1 text-xs text-slate-400">
+                    {workout.duration_minutes} min • {workout.session_type || 'General'}
+                  </p>
+                  {workout.notes ? <p className="mt-1 text-xs text-slate-300">{workout.notes}</p> : null}
+                </li>
+              ))}
+            </ul>
+          )}
+        </article>
+      ) : null}
       <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
         <h3 className="text-lg font-semibold text-slate-100">Recent Completed Sessions</h3>
         <p className="mt-1 text-sm text-slate-400">Latest saved sessions with duration and type.</p>
@@ -205,4 +233,5 @@ function WorkoutsPage() {
 }
 
 export default WorkoutsPage
+
 

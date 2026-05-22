@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 
+import { emitSystemFeedback } from '../../system/feedback'
+import { useDocumentPiP } from '../../../hooks/useDocumentPiP'
 import { useTasks } from '../../productivity-hub/api/useTasks'
+import PiPTimer from '../components/PiPTimer'
 import TimeInsights from '../components/TimeInsights'
 import {
   TIME_BUCKETS,
@@ -60,6 +63,8 @@ function TimeOSPage() {
   const [now, setNow] = useState(() => Date.now())
   const [isLogModalOpen, setIsLogModalOpen] = useState(false)
   const [logTab, setLogTab] = useState<'live' | 'manual'>('live')
+  const [isPipPaused, setIsPipPaused] = useState(false)
+  const { pipWindow, openPiP } = useDocumentPiP()
 
   useEffect(() => {
     if (!activeTimer) {
@@ -67,13 +72,15 @@ function TimeOSPage() {
     }
 
     const timerId = window.setInterval(() => {
-      setNow(Date.now())
+      if (!isPipPaused) {
+        setNow(Date.now())
+      }
     }, 1000)
 
     return () => {
       window.clearInterval(timerId)
     }
-  }, [activeTimer])
+  }, [activeTimer, isPipPaused])
 
   const elapsedLabel = useMemo(() => {
     if (!activeTimer) {
@@ -100,14 +107,34 @@ function TimeOSPage() {
               {activeTimer.bucket} | {elapsedLabel}
             </p>
             {activeTimer.description ? <p className="text-xs text-slate-400">{activeTimer.description}</p> : null}
-            <button
-              type="button"
-              onClick={() => stopTimer()}
-              disabled={isStopping}
-              className="rounded-md border border-[#222222] bg-black px-3 py-2 text-sm text-slate-100 hover:bg-slate-950 disabled:opacity-60"
-            >
-              {isStopping ? 'Stopping...' : 'Stop Timer'}
-            </button>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={async () => {
+                  const opened = await openPiP(300, 200)
+                  if (!opened) {
+                    emitSystemFeedback({
+                      title: 'PiP unavailable',
+                      description: 'documentPictureInPicture is not supported in this browser.',
+                    })
+                  }
+                }}
+                className="rounded-md border border-[#222222] bg-black px-3 py-2 text-sm text-slate-100 hover:bg-slate-950"
+              >
+                Pop Out
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsPipPaused(false)
+                  stopTimer()
+                }}
+                disabled={isStopping}
+                className="rounded-md border border-[#222222] bg-black px-3 py-2 text-sm text-slate-100 hover:bg-slate-950 disabled:opacity-60"
+              >
+                {isStopping ? 'Stopping...' : 'Stop Timer'}
+              </button>
+            </div>
           </div>
         ) : (
           <p className="mt-2 text-sm text-slate-400">No active timer running.</p>
@@ -305,6 +332,21 @@ function TimeOSPage() {
             )}
           </article>
         </div>
+      ) : null}
+
+      {activeTimer && pipWindow ? (
+        <PiPTimer
+          pipWindow={pipWindow}
+          bucket={activeTimer.bucket}
+          elapsedLabel={elapsedLabel}
+          isPaused={isPipPaused}
+          isStopping={isStopping}
+          onTogglePause={() => setIsPipPaused((previous) => !previous)}
+          onStop={() => {
+            setIsPipPaused(false)
+            stopTimer()
+          }}
+        />
       ) : null}
     </section>
   )
