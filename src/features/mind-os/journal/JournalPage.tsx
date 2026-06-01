@@ -308,7 +308,7 @@ function JournalPage() {
         {!isLoading && !isError && entries.length === 0 ? <p className="mt-3 text-sm text-slate-400">No journal entries yet.</p> : null}
 
         <ul className="mt-3 space-y-3">
-            {entries.slice(0, 10).map((entry) => (
+            {entries.slice(0, 5).map((entry) => (
               <li key={entry.id} className="group rounded-lg border border-[#222222] bg-black p-3">
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-sm text-slate-300">

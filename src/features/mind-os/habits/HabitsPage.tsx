@@ -161,6 +161,7 @@ function HabitsPage() {
     break: true,
     healed: true,
   })
+  const [isRecentMistakesOpen, setIsRecentMistakesOpen] = useState(false)
   const [calendarCountInput, setCalendarCountInput] = useState('0')
 
   const [undoToast, setUndoToast] = useState<UndoToast | null>(null)
@@ -225,6 +226,24 @@ function HabitsPage() {
     const today = getTodayIndiaDateKey()
     return Array.from({ length: 7 }, (_, index) => addDays(today, index - 6))
   }, [])
+
+  const defaultMistakes = useMemo(() => {
+    if (!data) {
+      return []
+    }
+
+    return data.mistakes.filter((mistake) => !mistake.isHealed).slice(0, 5)
+  }, [data])
+
+  const recentFiveDayMistakes = useMemo(() => {
+    if (!data) {
+      return []
+    }
+
+    const today = getTodayIndiaDateKey()
+    const cutoff = addDays(today, -4)
+    return data.mistakes.filter((mistake) => mistake.break_date >= cutoff && mistake.break_date <= today)
+  }, [data])
 
   const calendarCompletionDates = useMemo(() => {
     if (!selectedHabit) {
@@ -702,8 +721,9 @@ function HabitsPage() {
           {data.mistakes.length === 0 ? (
             <p className="mt-3 text-sm text-slate-400">No streak losses recorded yet.</p>
           ) : (
-            <ul className="mt-3 space-y-3">
-              {data.mistakes.map((mistake) => {
+            <>
+              <ul className="mt-3 space-y-3">
+                {defaultMistakes.map((mistake) => {
                 const reasonValue = mistakeReasonDrafts[mistake.id] ?? mistake.reason ?? ''
                 const healValue = healReasonDrafts[mistake.id] ?? ''
                 const recoveryValue = recoveryDrafts[mistake.id] ?? mistake.recovery_commitment ?? ''
@@ -854,9 +874,23 @@ function HabitsPage() {
                       {isHealingBreak ? 'Healing...' : 'Heal this break'}
                     </button>
                   </li>
-                )
-              })}
-            </ul>
+                  )
+                })}
+              </ul>
+
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs">
+                <p className="text-slate-400">
+                  Showing up to 5 open streak losses.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setIsRecentMistakesOpen(true)}
+                  className="rounded-md border border-slate-600 px-3 py-1 text-slate-200 hover:bg-slate-700"
+                >
+                  View missed habits (last 5 days)
+                </button>
+              </div>
+            </>
           )}
 
           {updateBreakReasonError ? (
@@ -900,6 +934,49 @@ function HabitsPage() {
           )}
         </article>
       </section>
+
+      {isRecentMistakesOpen ? (
+        <div className="fixed inset-0 z-40 flex items-center justify-center p-3">
+          <button
+            type="button"
+            onClick={() => setIsRecentMistakesOpen(false)}
+            className="absolute inset-0 bg-slate-950/85"
+            aria-label="Close missed habits modal"
+          />
+
+          <article className="relative z-10 max-h-[85vh] w-[96vw] max-w-3xl overflow-auto rounded-xl border border-slate-700 bg-slate-900 p-4 sm:p-6">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h3 className="text-lg font-semibold text-slate-100">Missed Habits (Last 5 Days)</h3>
+                <p className="text-xs text-slate-400">Full list of streak losses recorded in the past 5 days.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsRecentMistakesOpen(false)}
+                className="rounded-md border border-slate-600 px-2 py-1 text-sm text-slate-100 hover:bg-slate-700"
+              >
+                Close
+              </button>
+            </div>
+
+            {recentFiveDayMistakes.length === 0 ? (
+              <p className="mt-4 text-sm text-slate-400">No missed habits in the last 5 days.</p>
+            ) : (
+              <ul className="mt-4 space-y-2">
+                {recentFiveDayMistakes.map((mistake) => (
+                  <li key={`recent-${mistake.id}`} className="rounded-md border border-slate-700 bg-slate-800 p-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-sm font-semibold text-slate-100">{mistake.habitTitle}</p>
+                      <span className="text-xs text-slate-400">{formatIndiaDate(mistake.break_date)}</span>
+                    </div>
+                    <p className="mt-1 text-xs text-slate-300">{mistake.reason || 'No reason added.'}</p>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </article>
+        </div>
+      ) : null}
 
       <button
         type="button"
