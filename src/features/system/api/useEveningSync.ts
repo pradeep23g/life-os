@@ -19,6 +19,25 @@ type QueuedSystemEvent = {
   created_at: string
 }
 
+function getIndiaDateKey(date = new Date()): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Kolkata',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(date)
+}
+
+function addDays(dateKey: string, days: number): string {
+  const [year, month, day] = dateKey.split('-').map(Number)
+  const base = new Date(Date.UTC(year, month - 1, day, 12, 0, 0))
+  base.setUTCDate(base.getUTCDate() + days)
+  const nextYear = base.getUTCFullYear()
+  const nextMonth = String(base.getUTCMonth() + 1).padStart(2, '0')
+  const nextDay = String(base.getUTCDate()).padStart(2, '0')
+  return `${nextYear}-${nextMonth}-${nextDay}`
+}
+
 function getErrorCode(error: unknown): string {
   if (typeof error === 'object' && error !== null && 'code' in error) {
     const code = (error as { code?: unknown }).code
@@ -74,12 +93,9 @@ export function useEveningSync() {
       throw new Error('User is not authenticated.')
     }
 
-    const localDate = new Date().toLocaleDateString('en-CA')
+    const localDate = getIndiaDateKey()
     const dayStart = `${localDate}T00:00:00+05:30`
-    const tomorrow = new Date(`${localDate}T00:00:00+05:30`)
-    tomorrow.setUTCDate(tomorrow.getUTCDate() + 1)
-    const nextDate = tomorrow.toISOString().slice(0, 10)
-    const dayEnd = `${nextDate}T00:00:00+05:30`
+    const dayEnd = `${addDays(localDate, 1)}T00:00:00+05:30`
 
     const { data: queuedEvents, error: queueFetchError } = await supabase
       .from('system_event_queue')
@@ -125,10 +141,22 @@ export function useEveningSync() {
       throw new Error(`Evening sync failed: ${getErrorMessage(error)}`)
     }
 
+    const processedEventIds = aggregateQueue.map((event) => event.id)
+
+    if (processedEventIds.length === 0) {
+      clearEvents()
+
+      return {
+        skipped: false,
+        payload,
+      }
+    }
+
     const { error: queueDeleteError } = await supabase
       .from('system_event_queue')
       .delete()
       .eq('user_id', user.id)
+      .in('id', processedEventIds)
 
     if (queueDeleteError) {
       throw new Error(`Evening sync flush failed: ${getErrorMessage(queueDeleteError)}`)

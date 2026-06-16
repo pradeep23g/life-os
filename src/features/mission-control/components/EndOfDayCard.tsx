@@ -2,14 +2,13 @@ import { useMemo, useState } from 'react'
 
 import { useQueryClient } from '@tanstack/react-query'
 
-import { supabase } from '../../../lib/supabase'
 import {
   mindOsHabitsQueryKey,
   useHabitWorkspace,
   useHabits,
   useMarkHabitDone,
 } from '../../mind-os/api/useHabits'
-import { mindOsJournalsQueryKey, useJournalEntries } from '../../mind-os/api/useJournal'
+import { useCreateJournalEntry, useJournalEntries } from '../../mind-os/api/useJournal'
 import { systemStatusQueryKey } from '../../system/api/useSystemStatus'
 
 function toIndiaDateKey(value: string | Date): string {
@@ -24,7 +23,7 @@ function toIndiaDateKey(value: string | Date): string {
 
 function addDays(dateKey: string, days: number): string {
   const [year, month, day] = dateKey.split('-').map(Number)
-  const base = new Date(Date.UTC(year, month - 1, day))
+  const base = new Date(Date.UTC(year, month - 1, day, 12, 0, 0))
   base.setUTCDate(base.getUTCDate() + days)
   const y = base.getUTCFullYear()
   const m = String(base.getUTCMonth() + 1).padStart(2, '0')
@@ -58,11 +57,11 @@ function getIndiaWeekDateKeysMondayStart() {
 }
 
 const moodOptions = [
-  { value: 1, emoji: '😞' },
-  { value: 2, emoji: '😐' },
-  { value: 3, emoji: '🙂' },
-  { value: 4, emoji: '😄' },
-  { value: 5, emoji: '🔥' },
+  { value: 1, emoji: '\u{1F61E}' },
+  { value: 2, emoji: '\u{1F610}' },
+  { value: 3, emoji: '\u{1F642}' },
+  { value: 4, emoji: '\u{1F604}' },
+  { value: 5, emoji: '\u{1F525}' },
 ] as const
 
 export default function EndOfDayCard() {
@@ -70,11 +69,11 @@ export default function EndOfDayCard() {
   const { data: habits = [] } = useHabits()
   const { data: workspace } = useHabitWorkspace()
   const { data: journals = [] } = useJournalEntries()
+  const { mutateAsync: createJournalEntry, isPending: isSavingCheckIn } = useCreateJournalEntry()
   const { mutateAsync: markHabitDone, isPending: isMarkingHabitDone } = useMarkHabitDone()
 
   const [selectedMood, setSelectedMood] = useState<number>(3)
   const [note, setNote] = useState('')
-  const [isSavingCheckIn, setIsSavingCheckIn] = useState(false)
   const [saveMessage, setSaveMessage] = useState('')
   const [saveError, setSaveError] = useState('')
 
@@ -109,45 +108,20 @@ export default function EndOfDayCard() {
   async function handleSaveCheckIn() {
     setSaveError('')
     setSaveMessage('')
-    setIsSavingCheckIn(true)
 
     try {
-      const {
-        data: { user },
-        error: authError,
-      } = await supabase.auth.getUser()
-
-      if (authError) {
-        throw authError
-      }
-
-      if (!user) {
-        throw new Error('User not authenticated.')
-      }
-
-      const { error } = await supabase.from('journal_entries').insert({
-        user_id: user.id,
+      await createJournalEntry({
+        entryDate: getIndiaTodayDateKey(),
         mood: selectedMood,
-        went_well: note.trim(),
-        went_wrong: '',
-        lesson_learned: '',
+        whatWentGood: '',
+        whatYouLearned: '',
+        briefAboutDay: note.trim(),
       })
 
-      if (error) {
-        throw error
-      }
-
       setNote('')
-      setSaveMessage('Logged ✓')
-
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: mindOsJournalsQueryKey }),
-        queryClient.invalidateQueries({ queryKey: systemStatusQueryKey }),
-      ])
+      setSaveMessage('Logged')
     } catch (error) {
       setSaveError(error instanceof Error ? error.message : 'Failed to save check-in.')
-    } finally {
-      setIsSavingCheckIn(false)
     }
   }
 

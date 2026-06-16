@@ -3,6 +3,7 @@ import type { FormEvent } from 'react'
 
 import type { FinanceSummary } from '../api/useFinance'
 import { getProjectedMonthlySpendAfter } from '../api/useFinance'
+import { FINANCE_OS_MONTHLY_BUDGET } from '../config'
 import { emitSystemFeedback } from '../../system/feedback'
 
 const categories = ['Food', 'Travel', 'Academics', 'Social', 'Misc'] as const
@@ -77,7 +78,7 @@ function TransactionForm({ isSaving, error, summary, onSubmit }: TransactionForm
         onSuccess: () => {
           const safeLimit = summary?.dailySafeLimit ?? Number.POSITIVE_INFINITY
           const projectedAfter = summary ? getProjectedMonthlySpendAfter(summary, submittedAmount) : 0
-          const monthlyBudget = summary?.monthlyBudget ?? 2000
+          const monthlyBudget = summary?.monthlyBudget ?? FINANCE_OS_MONTHLY_BUDGET
 
           const brokeSafeLimit = !submittedIsNeed && submittedAmount > safeLimit
           const projectedOverBudget = summary ? projectedAfter > monthlyBudget : false

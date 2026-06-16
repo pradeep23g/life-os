@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { logEventSafe } from '../../../lib/events'
 import { supabase } from '../../../lib/supabase'
 import { useEventBus } from '../../../store/useEventBus'
+import { FINANCE_OS_MONTHLY_BUDGET } from '../config'
 
 export const financeTransactionsQueryKey = ['finance-os', 'transactions', 'monthly'] as const
 
@@ -202,7 +203,7 @@ function getIndiaWeekRange() {
 }
 
 function buildFinanceSummary(transactions: FinanceTransaction[]): FinanceSummary {
-  const monthlyBudget = 2000
+  const monthlyBudget = FINANCE_OS_MONTHLY_BUDGET
   let totalSpent = 0
   let needsTotal = 0
   let wantsTotal = 0
