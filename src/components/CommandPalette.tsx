@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom'
 import { useAddTransaction } from '../features/finance-os/api/useFinance'
 import { useCreateTask } from '../features/productivity-hub/api/useTasks'
 import { emitSystemFeedback } from '../features/system/feedback'
-import { useEventBus } from '../store/useEventBus'
 
 type ParsedCommand =
   | {
@@ -80,7 +79,6 @@ function CommandPalette() {
   const [inputValue, setInputValue] = useState('')
   const createTask = useCreateTask()
   const addTransaction = useAddTransaction()
-  const emitEvent = useEventBus((state) => state.emitEvent)
 
   const parsed = useMemo(() => parseCommand(inputValue), [inputValue])
   const isSubmitting = createTask.isPending || addTransaction.isPending
@@ -128,12 +126,6 @@ function CommandPalette() {
         },
         {
           onSuccess: () => {
-            if (!parsed.isNeed) {
-              emitEvent('WANT_EXPENSE_ADDED', {
-                amount: parsed.amount,
-                note: parsed.note,
-              })
-            }
             emitSystemFeedback({
               title: 'Command complete',
               description: parsed.label,
@@ -220,4 +212,3 @@ function CommandPalette() {
 }
 
 export default CommandPalette
-

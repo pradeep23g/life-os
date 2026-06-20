@@ -1,6 +1,7 @@
 ﻿import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { logEventSafe } from '../../../lib/events'
+import { MIND_JOURNAL_ENTRY_DELETED } from '../../../lib/eventTaxonomy'
 import { supabase } from '../../../lib/supabase'
 import { systemStatusQueryKey } from '../../system/api/useSystemStatus'
 import { emitSystemFeedback } from '../../system/feedback'
@@ -105,7 +106,7 @@ async function fetchJournalEntries(): Promise<JournalEntry[]> {
   return data ?? []
 }
 
-async function deleteJournalEntry(id: string): Promise<void> {
+async function deleteJournalEntry(id: string): Promise<{ id: string; userId: string }> {
   const userId = await requireUserId()
   const now = new Date().toISOString()
 
@@ -117,6 +118,11 @@ async function deleteJournalEntry(id: string): Promise<void> {
 
   if (error) {
     throw buildError('Delete failed', error)
+  }
+
+  return {
+    id,
+    userId,
   }
 }
 
@@ -215,7 +221,17 @@ export function useDeleteJournalEntry() {
 
   return useMutation({
     mutationFn: deleteJournalEntry,
-    onSuccess: () => {
+    onSuccess: (deletedEntry) => {
+      void logEventSafe({
+        userId: deletedEntry.userId,
+        domain: 'mind-os',
+        entityType: 'journal_entry',
+        entityId: deletedEntry.id,
+        eventType: MIND_JOURNAL_ENTRY_DELETED,
+        payload: {
+          journal_entry_id: deletedEntry.id,
+        },
+      })
       queryClient.invalidateQueries({ queryKey: mindOsJournalsQueryKey })
       queryClient.invalidateQueries({ queryKey: systemStatusQueryKey })
     },

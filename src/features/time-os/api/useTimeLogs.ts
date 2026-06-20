@@ -2,6 +2,11 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { supabase } from '../../../lib/supabase'
 import { logEventSafe } from '../../../lib/events'
+import {
+  PRODUCTIVITY_TASK_STATUS_CHANGED,
+  TIME_TIME_LOG_DELETED,
+  TIME_TIME_LOG_STARTED,
+} from '../../../lib/eventTaxonomy'
 import { emitSystemFeedback } from '../../system/feedback'
 import { systemStatusQueryKey } from '../../system/api/useSystemStatus'
 import { useEventBus } from '../../../store/useEventBus'
@@ -184,11 +189,13 @@ async function fetchCompletedTimeLogs(): Promise<CompletedTimeLog[]> {
 }
 
 async function setTaskStatusFromTimer(userId: string, taskId: string, status: 'Doing' | 'Done') {
+  const updatedAt = new Date().toISOString()
+
   const { error } = await supabase
     .from('tasks')
     .update({
       status,
-      updated_at: new Date().toISOString(),
+      updated_at: updatedAt,
     })
     .eq('id', taskId)
     .eq('user_id', userId)
@@ -197,6 +204,21 @@ async function setTaskStatusFromTimer(userId: string, taskId: string, status: 'D
   if (error) {
     throw buildError(`Failed to set linked task to ${status}`, error)
   }
+
+  await logEventSafe({
+    userId,
+    domain: 'productivity-hub',
+    entityType: 'task',
+    entityId: taskId,
+    eventType: 'task_status_updated',
+    payload: {
+      status,
+      taxonomy_type: PRODUCTIVITY_TASK_STATUS_CHANGED,
+      source: 'time-os',
+      updated_at: updatedAt,
+    },
+    createdAt: updatedAt,
+  })
 }
 
 async function startTimer({ taskId, bucket, description }: StartTimerInput): Promise<void> {
@@ -207,18 +229,39 @@ async function startTimer({ taskId, bucket, description }: StartTimerInput): Pro
     throw new Error('An active timer is already running. Stop it before starting a new session.')
   }
 
-  const { error } = await supabase.from('time_logs').insert({
-    user_id: userId,
-    task_id: taskId ?? null,
-    bucket,
-    description: description?.trim() || null,
-    start_time: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  })
+  const startTime = new Date().toISOString()
+  const { data, error } = await supabase
+    .from('time_logs')
+    .insert({
+      user_id: userId,
+      task_id: taskId ?? null,
+      bucket,
+      description: description?.trim() || null,
+      start_time: startTime,
+      updated_at: startTime,
+    })
+    .select('id')
+    .single()
 
   if (error) {
     throw buildError('Failed to start timer', error)
   }
+
+  await logEventSafe({
+    userId,
+    domain: 'time-os',
+    entityType: 'time_log',
+    entityId: data.id,
+    eventType: TIME_TIME_LOG_STARTED,
+    payload: {
+      time_log_id: data.id,
+      task_id: taskId ?? null,
+      bucket,
+      source: 'start_timer',
+      started_at: startTime,
+    },
+    createdAt: startTime,
+  })
 
   if (taskId) {
     await setTaskStatusFromTimer(userId, taskId, 'Doing')
@@ -308,7 +351,7 @@ async function createManualLog({ taskId, bucket, description, startTime, endTime
   }
 }
 
-async function deleteTimeLog({ id }: DeleteTimeLogInput): Promise<void> {
+async function deleteTimeLog({ id }: DeleteTimeLogInput): Promise<DeleteTimeLogInput & { userId: string }> {
   const userId = await requireUserId()
   const { error } = await supabase
     .from('time_logs')
@@ -318,6 +361,11 @@ async function deleteTimeLog({ id }: DeleteTimeLogInput): Promise<void> {
 
   if (error) {
     throw buildError('Failed to delete time log', error)
+  }
+
+  return {
+    id,
+    userId,
   }
 }
 
@@ -448,7 +496,17 @@ export function useDeleteTimeLog() {
 
   return useMutation({
     mutationFn: deleteTimeLog,
-    onSuccess: () => {
+    onSuccess: (deletedTimeLog) => {
+      void logEventSafe({
+        userId: deletedTimeLog.userId,
+        domain: 'time-os',
+        entityType: 'time_log',
+        entityId: deletedTimeLog.id,
+        eventType: TIME_TIME_LOG_DELETED,
+        payload: {
+          time_log_id: deletedTimeLog.id,
+        },
+      })
       invalidateTimeLogQueries(queryClient)
     },
   })

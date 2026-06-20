@@ -1,0 +1,73 @@
+export const EVENT_TYPES = {
+  MIND_HABIT_CREATED: 'mind.habit.created',
+  MIND_HABIT_COMPLETED: 'mind.habit.completed',
+  MIND_HABIT_COUNT_ADJUSTED: 'mind.habit.count_adjusted',
+  MIND_HABIT_UNCOMPLETED: 'mind.habit.uncompleted',
+  MIND_HABIT_DELETED: 'mind.habit.deleted',
+  MIND_HABIT_BREAK_HEALED: 'mind.habit_break.healed',
+  MIND_JOURNAL_ENTRY_CREATED: 'mind.journal_entry.created',
+  MIND_JOURNAL_ENTRY_DELETED: 'mind.journal_entry.deleted',
+
+  PRODUCTIVITY_TASK_CREATED: 'productivity.task.created',
+  PRODUCTIVITY_TASK_STATUS_CHANGED: 'productivity.task.status_changed',
+  PRODUCTIVITY_WEEKLY_PLAN_CREATED: 'productivity.weekly_plan.created',
+  PRODUCTIVITY_WEEKLY_PLAN_UPDATED: 'productivity.weekly_plan.updated',
+  PRODUCTIVITY_GOAL_CREATED: 'productivity.goal.created',
+  PRODUCTIVITY_GOAL_STATUS_CHANGED: 'productivity.goal.status_changed',
+  PRODUCTIVITY_WEEKLY_PLAN_ITEM_CREATED: 'productivity.weekly_plan_item.created',
+  PRODUCTIVITY_WEEKLY_PLAN_ITEM_UPDATED: 'productivity.weekly_plan_item.updated',
+  PRODUCTIVITY_WEEKLY_REVIEW_UPSERTED: 'productivity.weekly_review.upserted',
+
+  PROGRESS_PROGRAMMING_SKILL_CREATED: 'progress.programming_skill.created',
+  PROGRESS_PROGRAMMING_SKILL_LEVEL_CHANGED: 'progress.programming_skill.level_changed',
+  PROGRESS_PROGRAMMING_PROJECT_COUNT_INCREMENTED: 'progress.programming_skill.project_count_incremented',
+  PROGRESS_MILESTONE_CREATED: 'progress.milestone.created',
+  PROGRESS_MILESTONE_COMPLETED: 'progress.milestone.completed',
+  PROGRESS_MILESTONE_REOPENED: 'progress.milestone.reopened',
+  PROGRESS_CHALLENGE_CREATED: 'progress.challenge.created',
+  PROGRESS_CHALLENGE_STATUS_CHANGED: 'progress.challenge.status_changed',
+  PROGRESS_PERSONAL_SKILL_CREATED: 'progress.personal_skill.created',
+  PROGRESS_PERSONAL_SKILL_LEVEL_CHANGED: 'progress.personal_skill.level_changed',
+  PROGRESS_PERSONAL_SKILL_PROJECT_COUNT_INCREMENTED: 'progress.personal_skill.project_count_incremented',
+  PROGRESS_PERSONAL_SKILL_PROGRESS_INCREMENTED: 'progress.personal_skill.progress_incremented',
+
+  FITNESS_WORKOUT_CREATED: 'fitness.workout.created',
+  FITNESS_WORKOUT_STARTED: 'fitness.workout.started',
+  FITNESS_WORKOUT_COMPLETED: 'fitness.workout.completed',
+  FITNESS_WORKOUT_UPDATED: 'fitness.workout.updated',
+  FITNESS_WORKOUT_DELETED: 'fitness.workout.deleted',
+  FITNESS_EXERCISE_CREATED: 'fitness.exercise.created',
+  FITNESS_EXERCISE_UPDATED: 'fitness.exercise.updated',
+  FITNESS_EXERCISE_DELETED: 'fitness.exercise.deleted',
+  FITNESS_EXERCISE_LOG_CREATED: 'fitness.exercise_log.created',
+  FITNESS_EXERCISE_LOG_UPDATED: 'fitness.exercise_log.updated',
+  FITNESS_EXERCISE_LOG_DELETED: 'fitness.exercise_log.deleted',
+
+  TIME_SESSION_STARTED: 'time.session.started',
+  TIME_SESSION_LOGGED: 'time.session.logged',
+  TIME_SESSION_DELETED: 'time.session.deleted',
+  TIME_TIME_LOG_STARTED: 'time.time_log.started',
+  TIME_TIME_LOG_DELETED: 'time.time_log.deleted',
+
+  FINANCE_TRANSACTION_CREATED: 'finance.transaction.created',
+  FINANCE_TRANSACTION_DELETED: 'finance.transaction.deleted',
+
+  SYSTEM_EVENING_SYNC_COMPLETED: 'system.evening_sync.completed',
+} as const
+
+export const {
+  MIND_HABIT_COMPLETED,
+  MIND_HABIT_COUNT_ADJUSTED,
+  MIND_HABIT_DELETED,
+  MIND_JOURNAL_ENTRY_DELETED,
+  PRODUCTIVITY_TASK_CREATED,
+  PRODUCTIVITY_TASK_STATUS_CHANGED,
+  FITNESS_WORKOUT_DELETED,
+  TIME_TIME_LOG_STARTED,
+  TIME_TIME_LOG_DELETED,
+  TIME_SESSION_LOGGED,
+  FINANCE_TRANSACTION_CREATED,
+  FINANCE_TRANSACTION_DELETED,
+} = EVENT_TYPES
+
+export type LifeOsEventType = (typeof EVENT_TYPES)[keyof typeof EVENT_TYPES]

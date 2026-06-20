@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { logEventSafe } from '../../../lib/events'
+import { FINANCE_TRANSACTION_DELETED } from '../../../lib/eventTaxonomy'
 import { supabase } from '../../../lib/supabase'
 import { useEventBus } from '../../../store/useEventBus'
 import { FINANCE_OS_MONTHLY_BUDGET } from '../config'
@@ -377,7 +378,7 @@ async function addTransaction({ amount, category, isNeed, note }: AddTransaction
   })
 }
 
-async function deleteTransaction({ id }: DeleteTransactionInput): Promise<void> {
+async function deleteTransaction({ id }: DeleteTransactionInput): Promise<DeleteTransactionInput & { userId: string }> {
   const userId = await requireUserId()
   const { error } = await supabase
     .from('finance_transactions')
@@ -387,6 +388,11 @@ async function deleteTransaction({ id }: DeleteTransactionInput): Promise<void> 
 
   if (error) {
     throw buildError('Failed to delete finance transaction', error)
+  }
+
+  return {
+    id,
+    userId,
   }
 }
 
@@ -420,7 +426,17 @@ export function useDeleteTransaction() {
 
   return useMutation({
     mutationFn: deleteTransaction,
-    onSuccess: () => {
+    onSuccess: (deletedTransaction) => {
+      void logEventSafe({
+        userId: deletedTransaction.userId,
+        domain: 'finance-os',
+        entityType: 'finance_transaction',
+        entityId: deletedTransaction.id,
+        eventType: FINANCE_TRANSACTION_DELETED,
+        payload: {
+          transaction_id: deletedTransaction.id,
+        },
+      })
       queryClient.invalidateQueries({ queryKey: financeTransactionsQueryKey })
     },
   })

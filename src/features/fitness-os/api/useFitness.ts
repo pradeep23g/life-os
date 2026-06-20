@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { addDaysToDateKey, getCurrentIndiaWeekStart, logEventSafe, toIndiaDateKey } from '../../../lib/events'
+import { FITNESS_WORKOUT_DELETED } from '../../../lib/eventTaxonomy'
 import { supabase } from '../../../lib/supabase'
 import { emitSystemFeedback } from '../../system/feedback'
 import { systemStatusQueryKey } from '../../system/api/useSystemStatus'
@@ -699,7 +700,12 @@ async function deleteWorkout({ id }: DeleteWorkoutInput): Promise<void> {
     domain: 'fitness-os',
     entityType: 'workout',
     entityId: id,
-    eventType: 'workout_deleted',
+    eventType: FITNESS_WORKOUT_DELETED,
+    payload: {
+      workout_id: id,
+      deleted_at: now,
+      child_exercise_logs_soft_deleted: !logsError,
+    },
   })
 }
 

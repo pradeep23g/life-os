@@ -64,7 +64,26 @@ ALTER TABLE tasks
 ADD COLUMN deadline TIMESTAMP;
 Never modify the database manually without documenting the change.
 
-RULE 3 — SUPABASE CONSOLE SQL MUST BE SAFE
+---
+
+## RULE 3 - THE OBSERVABILITY MANDATE
+
+Every user action that changes system state MUST either:
+
+1. emit a durable event to `public.events` using `logEventSafe` and the established taxonomy in `src/lib/eventTaxonomy.ts`, or
+2. be explicitly documented as a non-analytical system operation in `Docs/EVENT_TAXONOMY.md`.
+
+Durable event names must follow:
+
+```text
+domain.entity.action
+```
+
+Event payloads must include relational IDs such as `task_id`, `habit_id`, `journal_entry_id`, `time_log_id`, `transaction_id`, or `workout_id`. Status/value changes must include previous and next values when available.
+
+Transient `system_event_queue` signals are not a substitute for durable analytics events.
+
+RULE 4 — SUPABASE CONSOLE SQL MUST BE SAFE
 When writing SQL for the Supabase console:
 
 Always verify:

@@ -9,6 +9,7 @@ import FitnessOsDashboard from './features/fitness-os/pages/Dashboard'
 import FitnessLibraryPage from './features/fitness-os/pages/Library'
 import WorkoutsPage from './features/fitness-os/workouts/WorkoutsPage'
 import FinanceDashboard from './features/finance-os/pages/FinanceDashboard'
+import DataLabPage from './features/data-lab/pages/DataLabPage'
 import MissionControl from './features/mission-control/dashboard/MissionControl'
 import ChallengesPage from './features/progress-hub/challenges/ChallengesPage'
 import ProgressHubDashboard from './features/progress-hub/dashboard/ProgressHubDashboard'
@@ -93,6 +94,10 @@ function getShellTitle(pathname: string) {
 
   if (pathname.startsWith('/finance-os')) {
     return 'Finance OS'
+  }
+
+  if (pathname.startsWith('/data-lab')) {
+    return 'Data Lab'
   }
 
   return 'Life OS'
@@ -365,6 +370,7 @@ function App() {
 
               <Route path="time-os" element={<TimeOSPage />} />
               <Route path="finance-os" element={<FinanceDashboard />} />
+              <Route path="data-lab" element={<DataLabPage />} />
 
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>

@@ -3,6 +3,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { logEventSafe } from '../../../lib/events'
+import {
+  MIND_HABIT_COUNT_ADJUSTED,
+  MIND_HABIT_DELETED,
+} from '../../../lib/eventTaxonomy'
 import { supabase } from '../../../lib/supabase'
 import { emitSystemFeedback } from '../../system/feedback'
 import { systemStatusQueryKey } from '../../system/api/useSystemStatus'
@@ -681,6 +685,22 @@ async function adjustHabitCount({ habitId, delta, struggleNote }: AdjustHabitCou
       throw buildError('Failed to clear habit count', error)
     }
 
+    await logEventSafe({
+      userId,
+      domain: 'mind-os',
+      entityType: 'habit_log',
+      entityId: habitId,
+      eventType: MIND_HABIT_COUNT_ADJUSTED,
+      payload: {
+        habit_id: habitId,
+        log_date: todayDateKey,
+        previous_value: currentValue,
+        next_value: nextValue,
+        delta: nextValue - currentValue,
+        cleared: true,
+      },
+    })
+
     return
   }
 
@@ -704,12 +724,30 @@ async function adjustHabitCount({ habitId, delta, struggleNote }: AdjustHabitCou
   if (error) {
     throw buildError('Failed to update habit count', error)
   }
+
+  await logEventSafe({
+    userId,
+    domain: 'mind-os',
+    entityType: 'habit_log',
+    entityId: habitId,
+    eventType: MIND_HABIT_COUNT_ADJUSTED,
+    payload: {
+      habit_id: habitId,
+      log_date: todayDateKey,
+      previous_value: currentValue,
+      next_value: nextValue,
+      delta: nextValue - currentValue,
+      cleared: false,
+    },
+  })
 }
 
 async function setHabitCountForToday({ habitId, value }: SetHabitCountForTodayInput): Promise<void> {
   const normalizedValue = Math.max(0, Math.floor(value))
   const userId = await requireUserId()
+  const todayDateKey = getTodayIndiaDateKey()
   const existingLog = await fetchTodayHabitLog(userId, habitId)
+  const currentValue = Math.max(0, Math.floor(existingLog?.value ?? 0))
 
   if (normalizedValue === 0) {
     if (!existingLog?.id) {
@@ -726,6 +764,22 @@ async function setHabitCountForToday({ habitId, value }: SetHabitCountForTodayIn
       throw buildError('Failed to clear habit count', error)
     }
 
+    await logEventSafe({
+      userId,
+      domain: 'mind-os',
+      entityType: 'habit_log',
+      entityId: habitId,
+      eventType: MIND_HABIT_COUNT_ADJUSTED,
+      payload: {
+        habit_id: habitId,
+        log_date: todayDateKey,
+        previous_value: currentValue,
+        next_value: normalizedValue,
+        delta: normalizedValue - currentValue,
+        cleared: true,
+      },
+    })
+
     return
   }
 
@@ -734,7 +788,7 @@ async function setHabitCountForToday({ habitId, value }: SetHabitCountForTodayIn
       habit_id: habitId,
       user_id: userId,
       value: normalizedValue,
-      log_date: getTodayIndiaDateKey(),
+      log_date: todayDateKey,
       logged_at: new Date().toISOString(),
       struggle_note: existingLog?.struggle_note ?? null,
     },
@@ -746,6 +800,22 @@ async function setHabitCountForToday({ habitId, value }: SetHabitCountForTodayIn
   if (error) {
     throw buildError('Failed to set habit count for today', error)
   }
+
+  await logEventSafe({
+    userId,
+    domain: 'mind-os',
+    entityType: 'habit_log',
+    entityId: habitId,
+    eventType: MIND_HABIT_COUNT_ADJUSTED,
+    payload: {
+      habit_id: habitId,
+      log_date: todayDateKey,
+      previous_value: currentValue,
+      next_value: normalizedValue,
+      delta: normalizedValue - currentValue,
+      cleared: false,
+    },
+  })
 }
 
 async function updateHabitBreakReason({ breakId, reason }: UpdateHabitBreakReasonInput): Promise<void> {
@@ -829,6 +899,18 @@ async function deleteHabit({ habitId }: DeleteHabitInput): Promise<void> {
   if (error) {
     throw buildError('Failed to delete habit', error)
   }
+
+  await logEventSafe({
+    userId,
+    domain: 'mind-os',
+    entityType: 'habit',
+    entityId: habitId,
+    eventType: MIND_HABIT_DELETED,
+    payload: {
+      habit_id: habitId,
+      deleted_at: now,
+    },
+  })
 }
 
 export function useHabits() {

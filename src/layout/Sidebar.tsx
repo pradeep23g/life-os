@@ -85,6 +85,16 @@ function FinanceIcon({ className = 'h-5 w-5' }: IconProps) {
   )
 }
 
+function DataLabIcon({ className = 'h-5 w-5' }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true">
+      <path d="M9 4h6" strokeLinecap="round" />
+      <path d="M10 4v5l-4 7a3 3 0 002.6 4.5h6.8A3 3 0 0018 16l-4-7V4" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M9 14h6" strokeLinecap="round" />
+    </svg>
+  )
+}
+
 function SignOutIcon({ className = 'h-5 w-5' }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true">
@@ -114,6 +124,7 @@ const navItems = [
   { to: '/productivity-hub', label: 'Productivity Hub', Icon: ProductivityIcon },
   { to: '/time-os', label: 'Time OS', Icon: TimeOsIcon },
   { to: '/finance-os', label: 'Finance OS', Icon: FinanceIcon },
+  { to: '/data-lab', label: 'Data Lab', Icon: DataLabIcon },
   { to: '/fitness-os', label: 'Fitness OS', Icon: FitnessIcon },
   { to: '/progress-hub', label: 'Progress Hub', Icon: ProgressIcon },
 ] as const
