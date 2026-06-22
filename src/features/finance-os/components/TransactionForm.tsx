@@ -1,32 +1,29 @@
 import { useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 
-import type { FinanceSummary } from '../api/useFinance'
-import { getProjectedMonthlySpendAfter } from '../api/useFinance'
-import { FINANCE_OS_MONTHLY_BUDGET } from '../config'
+import type { FinanceTransactionType } from '../api/useFinance'
 import { emitSystemFeedback } from '../../system/feedback'
 
-const categories = ['Food', 'Travel', 'Academics', 'Social', 'Misc'] as const
+const expenseCategories = ['Need', 'Want'] as const
+const incomeSources = ['Pocket Money', 'Gift', 'Rollover'] as const
 
 type TransactionFormValues = {
   amount: string
+  transactionType: FinanceTransactionType
   category: string
-  customCategory: string
-  isNeed: boolean
   note: string
 }
 
 type TransactionFormPayload = {
   amount: number
   category: string
-  isNeed: boolean
+  transactionType: FinanceTransactionType
   note: string
 }
 
 type TransactionFormProps = {
   isSaving: boolean
   error: unknown
-  summary?: FinanceSummary
   onSubmit: (payload: TransactionFormPayload, callbacks: { onSuccess: () => void }) => void
 }
 
@@ -45,19 +42,27 @@ function getReadableErrorMessage(error: unknown): string {
   return 'Failed to add transaction.'
 }
 
-function TransactionForm({ isSaving, error, summary, onSubmit }: TransactionFormProps) {
+function TransactionForm({ isSaving, error, onSubmit }: TransactionFormProps) {
   const [values, setValues] = useState<TransactionFormValues>({
     amount: '',
-    category: 'Food',
-    customCategory: '',
-    isNeed: true,
+    transactionType: 'EXPENSE',
+    category: 'Need',
     note: '',
   })
 
   const parsedAmount = useMemo(() => Number.parseFloat(values.amount), [values.amount])
   const isAmountValid = Number.isFinite(parsedAmount) && parsedAmount > 0
-  const resolvedCategory = values.category === 'Other' ? values.customCategory.trim() : values.category
-  const isCategoryValid = resolvedCategory.length > 0
+  const isCategoryValid = values.category.trim().length > 0
+
+  const visibleCategories = values.transactionType === 'EXPENSE' ? expenseCategories : incomeSources
+
+  const handleTransactionTypeChange = (transactionType: FinanceTransactionType) => {
+    setValues((previous) => ({
+      ...previous,
+      transactionType,
+      category: transactionType === 'EXPENSE' ? 'Need' : 'Pocket Money',
+    }))
+  }
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -65,50 +70,28 @@ function TransactionForm({ isSaving, error, summary, onSubmit }: TransactionForm
       return
     }
 
-    const submittedAmount = parsedAmount
-    const submittedIsNeed = values.isNeed
+    const transactionType = values.transactionType
+    const category = values.category
+    const amount = parsedAmount
+
     onSubmit(
       {
-        amount: submittedAmount,
-        category: resolvedCategory,
-        isNeed: submittedIsNeed,
+        amount,
+        category,
+        transactionType,
         note: values.note,
       },
       {
         onSuccess: () => {
-          const safeLimit = summary?.dailySafeLimit ?? Number.POSITIVE_INFINITY
-          const projectedAfter = summary ? getProjectedMonthlySpendAfter(summary, submittedAmount) : 0
-          const monthlyBudget = summary?.monthlyBudget ?? FINANCE_OS_MONTHLY_BUDGET
-
-          const brokeSafeLimit = !submittedIsNeed && submittedAmount > safeLimit
-          const projectedOverBudget = summary ? projectedAfter > monthlyBudget : false
-
-          if (brokeSafeLimit) {
-            emitSystemFeedback({
-              title: `⚠️ ₹${submittedAmount.toFixed(2)} Want logged.`,
-              description: `You just broke your safe limit of ₹${safeLimit.toFixed(2)}/day. Pull back.`,
-            })
-          }
-
-          if (projectedOverBudget) {
-            emitSystemFeedback({
-              title: '🚨 System Alert',
-              description: 'Current pacing will exceed monthly budget.',
-            })
-          }
-
-          if (!brokeSafeLimit && !projectedOverBudget) {
-            emitSystemFeedback({
-              title: 'Transaction logged.',
-              description: 'Spending recorded within current control range.',
-            })
-          }
+          emitSystemFeedback({
+            title: transactionType === 'INCOME' ? 'Income logged.' : 'Expense logged.',
+            description: `${category} recorded for INR ${amount.toFixed(2)}.`,
+          })
 
           setValues({
             amount: '',
-            category: 'Food',
-            customCategory: '',
-            isNeed: true,
+            transactionType: 'EXPENSE',
+            category: 'Need',
             note: '',
           })
         },
@@ -117,79 +100,86 @@ function TransactionForm({ isSaving, error, summary, onSubmit }: TransactionForm
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <label className="block">
-        <span className="text-xs text-slate-400">Amount</span>
-        <input
-          type="text"
-          inputMode="decimal"
-          pattern="^\d*([.]\d{0,2})?$"
-          value={values.amount}
-          onChange={(event) => setValues((previous) => ({ ...previous, amount: event.target.value }))}
-          placeholder="0.00"
-          className="mt-1 w-full rounded-lg border border-[#222222] bg-black px-3 py-3 text-2xl font-semibold text-slate-100 outline-none placeholder:text-slate-500 focus:border-emerald-900"
-        />
-      </label>
-
-      <label className="block">
-        <span className="text-xs text-slate-400">Category</span>
-        <select
-          value={values.category}
-          onChange={(event) => setValues((previous) => ({ ...previous, category: event.target.value }))}
-          className="mt-1 w-full rounded-lg border border-[#222222] bg-black px-3 py-2.5 text-sm text-slate-100 outline-none focus:border-emerald-900"
-        >
-          {categories.map((category) => (
-            <option key={category} value={category}>
-              {category}
-            </option>
-          ))}
-          <option value="Other">Other</option>
-        </select>
-      </label>
-
-      {values.category === 'Other' ? (
-        <label className="block">
-          <span className="text-xs text-slate-400">Custom Category</span>
-          <input
-            value={values.customCategory}
-            onChange={(event) => setValues((previous) => ({ ...previous, customCategory: event.target.value }))}
-            placeholder="Type your category"
-            className="mt-1 w-full rounded-lg border border-[#222222] bg-black px-3 py-2.5 text-sm text-slate-100 outline-none placeholder:text-slate-500 focus:border-emerald-900"
-          />
-        </label>
-      ) : null}
-
-      <div className="rounded-lg border border-[#222222] bg-black p-2">
-        <p className="text-xs text-slate-400">Spend Type</p>
+    <form onSubmit={handleSubmit} className="space-y-4 font-mono">
+      <div className="border border-[#222222] bg-black p-2">
+        <p className="text-[11px] uppercase tracking-[0.2em] text-zinc-500">Mode</p>
         <div className="mt-2 grid grid-cols-2 gap-2">
           <button
             type="button"
-            onClick={() => setValues((previous) => ({ ...previous, isNeed: true }))}
-            className={`rounded-md border px-3 py-2 text-sm transition-colors ${
-              values.isNeed ? 'border-emerald-900 text-emerald-500 bg-emerald-950/20' : 'border-[#222222] text-slate-300 hover:bg-[#111111]'
+            aria-pressed={values.transactionType === 'EXPENSE'}
+            onClick={() => handleTransactionTypeChange('EXPENSE')}
+            className={`border px-3 py-3 text-xs uppercase tracking-[0.2em] transition-colors ${
+              values.transactionType === 'EXPENSE'
+                ? 'border-red-900 bg-[#140606] text-red-300'
+                : 'border-[#222222] bg-[#0a0a0a] text-zinc-300 hover:bg-[#111111]'
             }`}
           >
-            Need
+            Log Expense
           </button>
           <button
             type="button"
-            onClick={() => setValues((previous) => ({ ...previous, isNeed: false }))}
-            className={`rounded-md border px-3 py-2 text-sm transition-colors ${
-              !values.isNeed ? 'border-rose-900 text-rose-400 bg-rose-950/20' : 'border-[#222222] text-slate-300 hover:bg-[#111111]'
+            aria-pressed={values.transactionType === 'INCOME'}
+            onClick={() => handleTransactionTypeChange('INCOME')}
+            className={`border px-3 py-3 text-xs uppercase tracking-[0.2em] transition-colors ${
+              values.transactionType === 'INCOME'
+                ? 'border-emerald-900 bg-[#06110a] text-emerald-300'
+                : 'border-[#222222] bg-[#0a0a0a] text-zinc-300 hover:bg-[#111111]'
             }`}
           >
-            Want
+            Log Income
           </button>
         </div>
       </div>
 
       <label className="block">
-        <span className="text-xs text-slate-400">Note</span>
+        <span className="text-[11px] uppercase tracking-[0.2em] text-zinc-500">Amount</span>
+        <input
+          type="text"
+          inputMode="decimal"
+          pattern="^\\d*([.]\\d{0,2})?$"
+          value={values.amount}
+          onChange={(event) => setValues((previous) => ({ ...previous, amount: event.target.value }))}
+          placeholder="0.00"
+          className="mt-1 w-full border border-[#222222] bg-black px-3 py-3 text-2xl text-zinc-100 outline-none placeholder:text-zinc-600 focus:border-zinc-100"
+        />
+      </label>
+
+      <div className="border border-[#222222] bg-black p-2">
+        <p className="text-[11px] uppercase tracking-[0.2em] text-zinc-500">
+          {values.transactionType === 'EXPENSE' ? 'Spend Type' : 'Source'}
+        </p>
+        <div className={`mt-2 grid gap-2 ${values.transactionType === 'EXPENSE' ? 'grid-cols-2' : 'grid-cols-1 sm:grid-cols-3'}`}>
+          {visibleCategories.map((option) => {
+            const isSelected = values.category === option
+            const selectedClass =
+              values.transactionType === 'EXPENSE'
+                ? 'border-red-900 bg-[#140606] text-red-300'
+                : 'border-emerald-900 bg-[#06110a] text-emerald-300'
+
+            return (
+              <button
+                key={option}
+                type="button"
+                aria-pressed={isSelected}
+                onClick={() => setValues((previous) => ({ ...previous, category: option }))}
+                className={`border px-3 py-3 text-xs uppercase tracking-[0.2em] transition-colors ${
+                  isSelected ? selectedClass : 'border-[#222222] bg-[#0a0a0a] text-zinc-300 hover:bg-[#111111]'
+                }`}
+              >
+                {option}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      <label className="block">
+        <span className="text-[11px] uppercase tracking-[0.2em] text-zinc-500">Note</span>
         <input
           value={values.note}
           onChange={(event) => setValues((previous) => ({ ...previous, note: event.target.value }))}
-          placeholder="UPI ref / context"
-          className="mt-1 w-full rounded-lg border border-[#222222] bg-black px-3 py-2.5 text-sm text-slate-100 outline-none placeholder:text-slate-500 focus:border-emerald-900"
+          placeholder={values.transactionType === 'INCOME' ? 'Source detail / context' : 'Vendor / context'}
+          className="mt-1 w-full border border-[#222222] bg-black px-3 py-2.5 text-sm text-zinc-100 outline-none placeholder:text-zinc-600 focus:border-zinc-100"
         />
       </label>
 
@@ -198,9 +188,9 @@ function TransactionForm({ isSaving, error, summary, onSubmit }: TransactionForm
       <button
         type="submit"
         disabled={!isAmountValid || !isCategoryValid || isSaving}
-        className="w-full border border-emerald-900 text-emerald-500 hover:bg-emerald-950/30 transition-colors rounded px-4 py-2 disabled:opacity-60"
+        className="w-full border border-[#222222] bg-black px-4 py-3 text-xs uppercase tracking-[0.2em] text-zinc-100 transition-colors hover:bg-[#111111] disabled:opacity-60"
       >
-        {isSaving ? 'Saving...' : 'Save Transaction'}
+        {isSaving ? 'Saving...' : `Save ${values.transactionType === 'INCOME' ? 'Income' : 'Expense'}`}
       </button>
     </form>
   )

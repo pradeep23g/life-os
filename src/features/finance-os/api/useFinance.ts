@@ -4,38 +4,35 @@ import { logEventSafe } from '../../../lib/events'
 import { FINANCE_TRANSACTION_DELETED } from '../../../lib/eventTaxonomy'
 import { supabase } from '../../../lib/supabase'
 import { useEventBus } from '../../../store/useEventBus'
-import { FINANCE_OS_MONTHLY_BUDGET } from '../config'
+import { getIndiaMonthKey } from '../../mind-os/utils/date'
 
 export const financeTransactionsQueryKey = ['finance-os', 'transactions', 'monthly'] as const
+const TRANSACTION_TABLE_CANDIDATES = ['transactions', 'finance_transactions'] as const
+
+type TransactionTableName = (typeof TRANSACTION_TABLE_CANDIDATES)[number]
+type TransactionRow = Record<string, unknown>
+type TransactionInsertAttempt = {
+  table: TransactionTableName
+  payload: Record<string, unknown>
+}
+
+export type FinanceTransactionType = 'INCOME' | 'EXPENSE'
 
 export type FinanceTransaction = {
   id: string
   user_id: string
   amount: number
   category: string
-  is_need: boolean
+  transaction_type: FinanceTransactionType
   note: string | null
   created_at: string
 }
 
 export type FinanceSummary = {
-  monthlyBudget: number
+  totalAvailable: number
   totalSpent: number
-  needsTotal: number
-  wantsTotal: number
-  topCategory: string
-  weeklySpent: number
-  weeklyDailyTotals: number[]
-  daysLeftInMonth: number
-  moneyLeft: number
-  dailySafeLimit: number
-  projectedMonthlySpend: number
-  wasteAmount: number
-  topWasteCategory: string
-  isProjectedOverBudget: boolean
-  isMoneyLeftNegative: boolean
-  isDailySafeLimitNegative: boolean
-  projectionMultiplier: number
+  walletBalance: number
+  progressPercentage: number
 }
 
 export type FinanceTransactionsResult = {
@@ -46,7 +43,7 @@ export type FinanceTransactionsResult = {
 type AddTransactionInput = {
   amount: number
   category: string
-  isNeed: boolean
+  transactionType: FinanceTransactionType
   note?: string
 }
 
@@ -96,194 +93,98 @@ function isMissingRelationError(error: unknown, relationName: string): boolean {
   return message.includes(relation) && message.includes('does not exist')
 }
 
-function getCurrentMonthRange() {
-  const now = new Date()
-  const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1, 0, 0, 0))
-  const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1, 0, 0, 0))
-  return {
-    startIso: start.toISOString(),
-    endIso: end.toISOString(),
-  }
-}
+function isMissingColumnError(error: unknown, columnName: string): boolean {
+  const code = getErrorCode(error).toLowerCase()
+  const message = getErrorMessage(error).toLowerCase()
+  const column = columnName.toLowerCase()
 
-function getIndiaMonthMeta() {
-  const now = new Date()
-  const formatter = new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'Asia/Kolkata',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  })
-  const parts = formatter.formatToParts(now)
-  const year = Number(parts.find((part) => part.type === 'year')?.value ?? '1970')
-  const month = Number(parts.find((part) => part.type === 'month')?.value ?? '1')
-  const day = Number(parts.find((part) => part.type === 'day')?.value ?? '1')
-  const totalDaysInMonth = new Date(year, month, 0).getDate()
-  const daysPassed = Math.min(totalDaysInMonth, Math.max(1, day))
-  const daysLeftInMonth = Math.max(0, totalDaysInMonth - day)
-
-  return {
-    totalDaysInMonth,
-    daysPassed,
-    daysLeftInMonth,
-  }
-}
-
-function getIndiaWeekdayIndex(dateValue: string): number {
-  const weekdayName = new Intl.DateTimeFormat('en-US', {
-    weekday: 'short',
-    timeZone: 'Asia/Kolkata',
-  }).format(new Date(dateValue))
-
-  const weekdayMap: Record<string, number> = {
-    Mon: 0,
-    Tue: 1,
-    Wed: 2,
-    Thu: 3,
-    Fri: 4,
-    Sat: 5,
-    Sun: 6,
+  if (code === '42703' || code === 'pgrst204') {
+    return message.includes(column)
   }
 
-  return weekdayMap[weekdayName] ?? 0
+  return message.includes(column) && (message.includes('does not exist') || message.includes('could not find'))
 }
 
-function getIndiaDateKey(dateValue: string): string {
-  const parts = new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'Asia/Kolkata',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).formatToParts(new Date(dateValue))
-
-  const year = parts.find((part) => part.type === 'year')?.value ?? '0000'
-  const month = parts.find((part) => part.type === 'month')?.value ?? '01'
-  const day = parts.find((part) => part.type === 'day')?.value ?? '01'
-  return `${year}-${month}-${day}`
+function getCurrentMonthKey(): string {
+  return getIndiaMonthKey(new Date())
 }
 
-function getIndiaWeekRange() {
-  const now = new Date()
-  const weekdayName = new Intl.DateTimeFormat('en-US', {
-    weekday: 'short',
-    timeZone: 'Asia/Kolkata',
-  }).format(now)
-
-  const weekdayMap: Record<string, number> = {
-    Mon: 0,
-    Tue: 1,
-    Wed: 2,
-    Thu: 3,
-    Fri: 4,
-    Sat: 5,
-    Sun: 6,
+function getStringValue(row: TransactionRow, key: string): string | null {
+  const value = row[key]
+  if (typeof value !== 'string') {
+    return null
   }
-  const offsetFromMonday = weekdayMap[weekdayName] ?? 0
 
-  const indiaDateParts = new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'Asia/Kolkata',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).formatToParts(now)
+  const normalized = value.trim()
+  return normalized.length > 0 ? normalized : null
+}
 
-  const year = Number(indiaDateParts.find((part) => part.type === 'year')?.value ?? '1970')
-  const month = Number(indiaDateParts.find((part) => part.type === 'month')?.value ?? '01')
-  const day = Number(indiaDateParts.find((part) => part.type === 'day')?.value ?? '01')
+function normalizeTransactionType(row: TransactionRow): FinanceTransactionType {
+  const rawType = getStringValue(row, 'transaction_type') ?? getStringValue(row, 'type') ?? 'EXPENSE'
+  return rawType.toUpperCase() === 'INCOME' ? 'INCOME' : 'EXPENSE'
+}
 
-  const todayIndiaUtcNoon = new Date(Date.UTC(year, month - 1, day, 12, 0, 0))
-  const weekStart = new Date(todayIndiaUtcNoon)
-  weekStart.setUTCDate(weekStart.getUTCDate() - offsetFromMonday)
-  const weekEnd = new Date(weekStart)
-  weekEnd.setUTCDate(weekEnd.getUTCDate() + 6)
+function normalizeTransaction(row: TransactionRow): FinanceTransaction | null {
+  const id = getStringValue(row, 'id')
+  const userId = getStringValue(row, 'user_id')
+  const createdAt = getStringValue(row, 'created_at') ?? getStringValue(row, 'timestamp')
+
+  if (!id || !userId || !createdAt) {
+    return null
+  }
+
+  const numericAmount = Number(row.amount)
+  if (!Number.isFinite(numericAmount)) {
+    return null
+  }
 
   return {
-    startKey: getIndiaDateKey(weekStart.toISOString()),
-    endKey: getIndiaDateKey(weekEnd.toISOString()),
+    id,
+    user_id: userId,
+    amount: Math.max(0, numericAmount),
+    category: getStringValue(row, 'category') ?? 'Uncategorized',
+    transaction_type: normalizeTransactionType(row),
+    note: getStringValue(row, 'note'),
+    created_at: createdAt,
   }
 }
 
 function buildFinanceSummary(transactions: FinanceTransaction[]): FinanceSummary {
-  const monthlyBudget = FINANCE_OS_MONTHLY_BUDGET
+  let totalAvailable = 0
   let totalSpent = 0
-  let needsTotal = 0
-  let wantsTotal = 0
-  const categorySpend = new Map<string, number>()
-  const wasteCategorySpend = new Map<string, number>()
-  const weeklyDailyTotals = [0, 0, 0, 0, 0, 0, 0]
-  const weekRange = getIndiaWeekRange()
-  const monthMeta = getIndiaMonthMeta()
 
   for (const transaction of transactions) {
     const amount = Math.max(0, transaction.amount)
-    totalSpent += amount
-
-    if (transaction.is_need) {
-      needsTotal += amount
+    if (transaction.transaction_type === 'INCOME') {
+      totalAvailable += amount
     } else {
-      wantsTotal += amount
-      const normalizedWasteCategory = transaction.category.trim() || 'Misc'
-      wasteCategorySpend.set(normalizedWasteCategory, (wasteCategorySpend.get(normalizedWasteCategory) ?? 0) + amount)
-    }
-
-    const normalizedCategory = transaction.category.trim() || 'Misc'
-    categorySpend.set(normalizedCategory, (categorySpend.get(normalizedCategory) ?? 0) + amount)
-
-    const transactionDateKey = getIndiaDateKey(transaction.created_at)
-    if (transactionDateKey >= weekRange.startKey && transactionDateKey <= weekRange.endKey) {
-      const dayIndex = getIndiaWeekdayIndex(transaction.created_at)
-      weeklyDailyTotals[dayIndex] += amount
+      totalSpent += amount
     }
   }
 
-  let topCategory = 'No spend yet'
-  let topCategoryAmount = 0
-  for (const [category, amount] of categorySpend.entries()) {
-    if (amount > topCategoryAmount) {
-      topCategoryAmount = amount
-      topCategory = category
-    }
-  }
-
-  let topWasteCategory = 'No waste yet'
-  let topWasteAmount = 0
-  for (const [category, amount] of wasteCategorySpend.entries()) {
-    if (amount > topWasteAmount) {
-      topWasteAmount = amount
-      topWasteCategory = category
-    }
-  }
-
-  const moneyLeft = monthlyBudget - totalSpent
-  const safeDivisor = Math.max(1, monthMeta.daysLeftInMonth)
-  const dailySafeLimit = moneyLeft / safeDivisor
-  const projectionMultiplier = monthMeta.totalDaysInMonth / Math.max(1, monthMeta.daysPassed)
-  const projectedMonthlySpend = totalSpent * projectionMultiplier
+  const walletBalance = totalAvailable - totalSpent
+  const progressPercentage = totalAvailable > 0 ? (totalSpent / totalAvailable) * 100 : 0
 
   return {
-    monthlyBudget,
+    totalAvailable,
     totalSpent,
-    needsTotal,
-    wantsTotal,
-    topCategory,
-    weeklySpent: weeklyDailyTotals.reduce((total, value) => total + value, 0),
-    weeklyDailyTotals,
-    daysLeftInMonth: monthMeta.daysLeftInMonth,
-    moneyLeft,
-    dailySafeLimit,
-    projectedMonthlySpend,
-    wasteAmount: wantsTotal,
-    topWasteCategory,
-    isProjectedOverBudget: projectedMonthlySpend > monthlyBudget,
-    isMoneyLeftNegative: moneyLeft < 0,
-    isDailySafeLimitNegative: dailySafeLimit < 0,
-    projectionMultiplier,
+    walletBalance,
+    progressPercentage,
   }
 }
 
-export function getProjectedMonthlySpendAfter(summary: FinanceSummary, transactionAmount: number): number {
-  const normalizedAmount = Number.isFinite(transactionAmount) ? Math.max(0, transactionAmount) : 0
-  return summary.projectedMonthlySpend + normalizedAmount * summary.projectionMultiplier
+async function fetchRowsFromTable(table: TransactionTableName): Promise<TransactionRow[]> {
+  const { data, error } = await supabase.from(table).select('*')
+
+  if (error) {
+    if (isMissingRelationError(error, table)) {
+      return []
+    }
+
+    throw buildError(`Failed to fetch finance transactions from ${table}`, error)
+  }
+
+  return ((data ?? []) as TransactionRow[])
 }
 
 async function requireUserId() {
@@ -304,29 +205,29 @@ async function requireUserId() {
 }
 
 async function fetchTransactions(): Promise<FinanceTransactionsResult> {
-  const { startIso, endIso } = getCurrentMonthRange()
-  const { data, error } = await supabase
-    .from('finance_transactions')
-    .select('id, user_id, amount, category, is_need, note, created_at')
-    .gte('created_at', startIso)
-    .lt('created_at', endIso)
-    .order('created_at', { ascending: false })
+  const currentMonthKey = getCurrentMonthKey()
+  const rowsById = new Map<string, FinanceTransaction>()
 
-  if (error) {
-    if (isMissingRelationError(error, 'finance_transactions')) {
-      return {
-        transactions: [],
-        summary: buildFinanceSummary([]),
+  for (const table of TRANSACTION_TABLE_CANDIDATES) {
+    const rows = await fetchRowsFromTable(table)
+
+    for (const row of rows) {
+      const transaction = normalizeTransaction(row)
+      if (!transaction || getIndiaMonthKey(transaction.created_at) !== currentMonthKey) {
+        continue
       }
-    }
 
-    throw buildError('Failed to fetch finance transactions', error)
+      rowsById.set(transaction.id, transaction)
+    }
   }
 
-  const transactions: FinanceTransaction[] = (data ?? []).map((row) => ({
-    ...row,
-    amount: Number(row.amount),
-  }))
+  const transactions = [...rowsById.values()].sort((left, right) => {
+    if (left.created_at === right.created_at) {
+      return left.id.localeCompare(right.id)
+    }
+
+    return left.created_at < right.created_at ? 1 : -1
+  })
 
   return {
     transactions,
@@ -334,10 +235,31 @@ async function fetchTransactions(): Promise<FinanceTransactionsResult> {
   }
 }
 
-async function addTransaction({ amount, category, isNeed, note }: AddTransactionInput): Promise<void> {
+async function insertTransactionAttempt(attempt: TransactionInsertAttempt): Promise<string | null> {
+  const { data, error } = await supabase.from(attempt.table).insert(attempt.payload).select('id').single()
+
+  if (error) {
+    const missingColumnNames = ['transaction_type', 'created_at', 'note', 'type', 'timestamp', 'is_need']
+    const isRecoverableSchemaError =
+      isMissingRelationError(error, attempt.table) || missingColumnNames.some((columnName) => isMissingColumnError(error, columnName))
+
+    if (isRecoverableSchemaError) {
+      return null
+    }
+
+    throw buildError(`Failed to add finance transaction via ${attempt.table}`, error)
+  }
+
+  return data.id
+}
+
+async function addTransaction({ amount, category, transactionType, note }: AddTransactionInput): Promise<void> {
   const userId = await requireUserId()
   const normalizedAmount = Number.isFinite(amount) ? Math.round(Math.max(0, amount) * 100) / 100 : 0
   const normalizedCategory = category.trim()
+  const normalizedTransactionType = transactionType.toUpperCase() === 'INCOME' ? 'INCOME' : 'EXPENSE'
+  const createdAt = new Date().toISOString()
+  const trimmedNote = note?.trim() || null
 
   if (normalizedAmount <= 0) {
     throw new Error('Amount must be greater than 0.')
@@ -347,47 +269,120 @@ async function addTransaction({ amount, category, isNeed, note }: AddTransaction
     throw new Error('Category is required.')
   }
 
-  const { data, error } = await supabase
-    .from('finance_transactions')
-    .insert({
-      user_id: userId,
-      amount: normalizedAmount,
-      category: normalizedCategory,
-      is_need: isNeed,
-      note: note?.trim() || null,
-      created_at: new Date().toISOString(),
-    })
-    .select('id')
-    .single()
+  const attempts: TransactionInsertAttempt[] = [
+    {
+      table: 'transactions',
+      payload: {
+        user_id: userId,
+        amount: normalizedAmount,
+        category: normalizedCategory,
+        transaction_type: normalizedTransactionType,
+        note: trimmedNote,
+        created_at: createdAt,
+      },
+    },
+    {
+      table: 'transactions',
+      payload: {
+        user_id: userId,
+        amount: normalizedAmount,
+        category: normalizedCategory,
+        transaction_type: normalizedTransactionType,
+        created_at: createdAt,
+      },
+    },
+    {
+      table: 'transactions',
+      payload: {
+        user_id: userId,
+        amount: normalizedAmount,
+        category: normalizedCategory,
+        type: normalizedTransactionType.toLowerCase(),
+        timestamp: createdAt,
+      },
+    },
+    {
+      table: 'finance_transactions',
+      payload: {
+        user_id: userId,
+        amount: normalizedAmount,
+        category: normalizedCategory,
+        transaction_type: normalizedTransactionType,
+        note: trimmedNote,
+        created_at: createdAt,
+      },
+    },
+    {
+      table: 'finance_transactions',
+      payload: {
+        user_id: userId,
+        amount: normalizedAmount,
+        category: normalizedCategory,
+        transaction_type: normalizedTransactionType,
+        created_at: createdAt,
+      },
+    },
+    {
+      table: 'finance_transactions',
+      payload: {
+        user_id: userId,
+        amount: normalizedAmount,
+        category: normalizedCategory,
+        is_need: normalizedCategory === 'Need',
+        note: trimmedNote,
+        created_at: createdAt,
+      },
+    },
+  ]
 
-  if (error) {
-    throw buildError('Failed to add finance transaction', error)
+  let insertedId: string | null = null
+  for (const attempt of attempts) {
+    insertedId = await insertTransactionAttempt(attempt)
+    if (insertedId) {
+      break
+    }
+  }
+
+  if (!insertedId) {
+    throw new Error('Failed to add finance transaction because no compatible transaction table schema was found.')
   }
 
   await logEventSafe({
     userId,
     domain: 'finance-os',
     entityType: 'finance_transaction',
-    entityId: data.id,
+    entityId: insertedId,
     eventType: 'FINANCE_TRANSACTION_LOGGED',
     payload: {
       amount: normalizedAmount,
       category: normalizedCategory,
-      isNeed,
+      transactionType: normalizedTransactionType,
     },
   })
 }
 
 async function deleteTransaction({ id }: DeleteTransactionInput): Promise<DeleteTransactionInput & { userId: string }> {
   const userId = await requireUserId()
-  const { error } = await supabase
-    .from('finance_transactions')
-    .delete()
-    .eq('id', id)
-    .eq('user_id', userId)
 
-  if (error) {
-    throw buildError('Failed to delete finance transaction', error)
+  for (const table of TRANSACTION_TABLE_CANDIDATES) {
+    const { data, error } = await supabase
+      .from(table)
+      .delete()
+      .eq('id', id)
+      .eq('user_id', userId)
+      .select('id')
+
+    if (error) {
+      if (isMissingRelationError(error, table)) {
+        continue
+      }
+
+      throw buildError(`Failed to delete finance transaction from ${table}`, error)
+    }
+
+    if ((data ?? []).length > 0) {
+      break
+    }
   }
 
   return {
@@ -411,7 +406,7 @@ export function useAddTransaction() {
     mutationFn: addTransaction,
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: financeTransactionsQueryKey })
-      if (!variables.isNeed) {
+      if (variables.transactionType === 'EXPENSE' && variables.category === 'Want') {
         emitEvent('WANT_EXPENSE_ADDED', {
           amount: variables.amount,
           category: variables.category,

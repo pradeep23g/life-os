@@ -9,7 +9,7 @@ type ParsedCommand =
   | {
       kind: 'finance'
       amount: number
-      isNeed: boolean
+      category: 'Need' | 'Want'
       note: string
       label: string
     }
@@ -42,13 +42,13 @@ function parseCommand(rawInput: string): ParsedCommand {
       return { kind: 'invalid', reason: 'Amount must be greater than 0.' }
     }
 
-    const isNeed = spendType === 'need'
+    const category = spendType === 'need' ? 'Need' : 'Want'
     return {
       kind: 'finance',
       amount,
-      isNeed,
+      category,
       note,
-      label: `Log ₹${Math.round(amount)} as ${isNeed ? 'NEED' : 'WANT'}${note ? ` for ${note}` : ''}`,
+      label: `Log INR ${Math.round(amount)} as EXPENSE / ${category.toUpperCase()}${note ? ` for ${note}` : ''}`,
     }
   }
 
@@ -120,8 +120,8 @@ function CommandPalette() {
       addTransaction.mutate(
         {
           amount: parsed.amount,
-          category: 'Misc',
-          isNeed: parsed.isNeed,
+          category: parsed.category,
+          transactionType: 'EXPENSE',
           note: parsed.note,
         },
         {
