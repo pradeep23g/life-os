@@ -31,18 +31,18 @@ function getReadableErrorMessage(error: unknown): string {
 
 function getCalendarCellTone(hasIncome: boolean, hasExpense: boolean) {
   if (hasIncome && hasExpense) {
-    return 'border-[#3a3a3a] bg-[#050505] text-zinc-100'
+    return 'border-slate-600 bg-slate-900 text-slate-100'
   }
 
   if (hasIncome) {
-    return 'border-emerald-950 bg-[#06110a] text-emerald-100'
+    return 'border-emerald-500/40 bg-emerald-500/10 text-emerald-100'
   }
 
   if (hasExpense) {
-    return 'border-red-950 bg-[#140606] text-red-100'
+    return 'border-rose-500/40 bg-rose-500/10 text-rose-100'
   }
 
-  return 'border-[#222222] bg-[#0a0a0a] text-zinc-400'
+  return 'border-[#222222] bg-[#0a0a0a] text-slate-400'
 }
 
 function FinanceDashboard() {
@@ -81,29 +81,29 @@ function FinanceDashboard() {
   const clampedProgressWidth = Math.max(0, Math.min(summary?.progressPercentage ?? 0, 100))
 
   return (
-    <section className="space-y-4 bg-black pb-24 font-mono text-zinc-100">
-      <article className="border border-[#222222] bg-[#0a0a0a] p-4">
+    <section className="space-y-4 bg-black pb-24">
+      <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-[11px] uppercase tracking-[0.25em] text-zinc-500">Finance OS</p>
-            <h1 className="mt-2 text-2xl uppercase tracking-[0.16em] text-zinc-100">{monthLabel}</h1>
-            <p className="mt-2 text-sm text-zinc-400">Bidirectional wallet ledger for the current month. Income builds the wallet. Expenses consume it.</p>
+            <p className="text-sm text-slate-400">Finance OS</p>
+            <h1 className="mt-2 text-2xl font-semibold text-slate-100">{monthLabel}</h1>
+            <p className="mt-2 text-sm text-slate-400">Bidirectional wallet ledger for the current month. Income builds the wallet. Expenses consume it.</p>
           </div>
-          <div className="border border-[#222222] bg-black px-3 py-2 text-right">
-            <p className="text-[11px] uppercase tracking-[0.2em] text-zinc-500">Spend Ratio</p>
-            <p className="mt-1 text-lg text-zinc-100">{isLoading ? '--' : `${(summary?.progressPercentage ?? 0).toFixed(1)}%`}</p>
+          <div className="rounded-lg border border-[#222222] bg-black px-3 py-2 text-right">
+            <p className="text-xs text-slate-400">Spend Ratio</p>
+            <p className="mt-1 text-lg font-semibold text-slate-100">{isLoading ? '--' : `${(summary?.progressPercentage ?? 0).toFixed(1)}%`}</p>
           </div>
         </div>
 
-        <div className="mt-4 h-3 border border-[#222222] bg-black">
+        <div className="mt-4 h-3 overflow-hidden rounded-full border border-[#222222] bg-black">
           <div
-            className="h-full bg-red-900"
+            className="h-full bg-rose-500/80"
             style={{
               width: `${clampedProgressWidth}%`,
             }}
           />
         </div>
-        <p className="mt-2 text-xs text-zinc-500">
+        <p className="mt-2 text-xs text-slate-400">
           {isLoading
             ? 'Calculating monthly ledger state...'
             : (summary?.totalAvailable ?? 0) > 0
@@ -113,44 +113,44 @@ function FinanceDashboard() {
       </article>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <article className="border border-[#222222] bg-[#0a0a0a] p-4">
-          <p className="text-[11px] uppercase tracking-[0.2em] text-zinc-500">Total Available</p>
-          <p className="mt-3 text-2xl text-emerald-300">{isLoading ? '--' : formatCurrency(summary?.totalAvailable ?? 0)}</p>
+        <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
+          <p className="text-xs text-slate-400">Total Available</p>
+          <p className="mt-3 text-2xl font-semibold text-emerald-300">{isLoading ? '--' : formatCurrency(summary?.totalAvailable ?? 0)}</p>
         </article>
-        <article className="border border-[#222222] bg-[#0a0a0a] p-4">
-          <p className="text-[11px] uppercase tracking-[0.2em] text-zinc-500">Total Spent</p>
-          <p className="mt-3 text-2xl text-red-300">{isLoading ? '--' : formatCurrency(summary?.totalSpent ?? 0)}</p>
+        <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
+          <p className="text-xs text-slate-400">Total Spent</p>
+          <p className="mt-3 text-2xl font-semibold text-rose-300">{isLoading ? '--' : formatCurrency(summary?.totalSpent ?? 0)}</p>
         </article>
-        <article className="border border-[#222222] bg-[#0a0a0a] p-4">
-          <p className="text-[11px] uppercase tracking-[0.2em] text-zinc-500">Wallet Balance</p>
-          <p className={`mt-3 text-2xl ${((summary?.walletBalance ?? 0) < 0) ? 'text-red-300' : 'text-zinc-100'}`}>
+        <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
+          <p className="text-xs text-slate-400">Wallet Balance</p>
+          <p className={`mt-3 text-2xl font-semibold ${((summary?.walletBalance ?? 0) < 0) ? 'text-rose-300' : 'text-slate-100'}`}>
             {isLoading ? '--' : formatCurrency(summary?.walletBalance ?? 0)}
           </p>
         </article>
-        <article className="border border-[#222222] bg-[#0a0a0a] p-4">
-          <p className="text-[11px] uppercase tracking-[0.2em] text-zinc-500">Transactions</p>
-          <p className="mt-3 text-2xl text-zinc-100">{isLoading ? '--' : data?.transactions.length ?? 0}</p>
+        <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
+          <p className="text-xs text-slate-400">Transactions</p>
+          <p className="mt-3 text-2xl font-semibold text-slate-100">{isLoading ? '--' : data?.transactions.length ?? 0}</p>
         </article>
       </div>
 
-      <article className="border border-[#222222] bg-[#0a0a0a] p-4">
+      <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-lg uppercase tracking-[0.16em] text-zinc-100">Monthly Calendar</h2>
-            <p className="mt-1 text-xs text-zinc-500">Green marks income days. Red marks expense days. Click a day to filter the ledger below.</p>
+            <h2 className="text-lg font-semibold text-slate-100">Monthly Calendar</h2>
+            <p className="mt-1 text-xs text-slate-400">Green marks income days. Red marks expense days. Click a day to filter the ledger below.</p>
           </div>
           {selectedDateKey ? (
             <button
               type="button"
               onClick={() => setSelectedDateKey(null)}
-              className="border border-[#222222] bg-black px-3 py-2 text-xs uppercase tracking-[0.2em] text-zinc-200 hover:bg-[#111111]"
+              className="rounded-md border border-[#222222] bg-black px-3 py-1.5 text-sm text-slate-200 hover:bg-[#111111]"
             >
               Clear Filter
             </button>
           ) : null}
         </div>
 
-        <div className="mt-4 grid grid-cols-7 gap-2 text-center text-[11px] uppercase tracking-[0.16em] text-zinc-500">
+        <div className="mt-4 grid grid-cols-7 gap-2 text-center text-[11px] text-slate-500">
           {weekdayHeaders.map((weekday) => (
             <p key={weekday}>{weekday}</p>
           ))}
@@ -174,18 +174,18 @@ function FinanceDashboard() {
                 key={day.dateKey}
                 type="button"
                 onClick={() => setSelectedDateKey((previous) => (previous === day.dateKey ? null : day.dateKey))}
-                className={`relative min-h-[108px] border p-2 text-left transition-colors ${getCalendarCellTone(hasIncome, hasExpense)} ${
+                className={`relative min-h-[108px] rounded-md border p-2 text-left transition-colors ${getCalendarCellTone(hasIncome, hasExpense)} ${
                   day.inCurrentMonth ? '' : 'opacity-35'
-                } ${isSelected ? 'outline outline-1 outline-zinc-100' : ''}`}
+                } ${isSelected ? 'ring-1 ring-slate-300/70' : ''}`}
               >
-                <p className="text-sm">{day.day}</p>
+                <p className="text-sm font-semibold">{day.day}</p>
                 <div className="mt-5 space-y-1 text-[10px] leading-4">
                   {hasIncome ? <p className="text-emerald-300">+ {formatCurrency(incomeTotal)}</p> : <p className="text-transparent">.</p>}
-                  {hasExpense ? <p className="text-red-300">- {formatCurrency(expenseTotal)}</p> : <p className="text-transparent">.</p>}
+                  {hasExpense ? <p className="text-rose-300">- {formatCurrency(expenseTotal)}</p> : <p className="text-transparent">.</p>}
                 </div>
                 <div className="absolute bottom-2 right-2 flex items-center gap-1">
                   {hasIncome ? <span className="h-2 w-2 border border-emerald-500 bg-emerald-500" /> : null}
-                  {hasExpense ? <span className="h-2 w-2 border border-red-500 bg-red-500" /> : null}
+                  {hasExpense ? <span className="h-2 w-2 border border-rose-500 bg-rose-500" /> : null}
                 </div>
               </button>
             )
@@ -193,21 +193,21 @@ function FinanceDashboard() {
         </div>
       </article>
 
-      <article className="border border-[#222222] bg-[#0a0a0a] p-4">
+      <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-lg uppercase tracking-[0.16em] text-zinc-100">Recent Transactions</h2>
-            <p className="mt-1 text-xs text-zinc-500">
+            <h2 className="text-lg font-semibold text-slate-100">Recent Transactions</h2>
+            <p className="mt-1 text-xs text-slate-400">
               {selectedDateLabel ? `Filtered to ${selectedDateLabel}. Click the same day again or clear the filter to return to the full month.` : 'Showing all transactions logged this month.'}
             </p>
           </div>
-          {selectedDateLabel ? <p className="text-xs uppercase tracking-[0.2em] text-zinc-300">{selectedDateLabel}</p> : null}
+          {selectedDateLabel ? <p className="text-xs text-slate-300">{selectedDateLabel}</p> : null}
         </div>
 
-        {isLoading ? <p className="mt-4 text-sm text-zinc-500">Loading transactions...</p> : null}
+        {isLoading ? <p className="mt-4 text-sm text-slate-400">Loading transactions...</p> : null}
         {isError ? <p className="mt-4 text-sm text-red-400">{getReadableErrorMessage(error)}</p> : null}
         {!isLoading && !isError && visibleTransactions.length === 0 ? (
-          <p className="mt-4 text-sm text-zinc-500">{selectedDateKey ? 'No transactions logged for this date.' : 'No transactions logged this month yet.'}</p>
+          <p className="mt-4 text-sm text-slate-400">{selectedDateKey ? 'No transactions logged for this date.' : 'No transactions logged this month yet.'}</p>
         ) : null}
 
         {!isLoading && !isError && visibleTransactions.length > 0 ? (
@@ -216,26 +216,26 @@ function FinanceDashboard() {
               const isIncome = item.transaction_type === 'INCOME'
 
               return (
-                <li key={item.id} className="group border border-[#222222] bg-black p-3">
+                <li key={item.id} className="group rounded-md border border-[#222222] bg-black p-3">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
                         <span className={`h-2 w-2 border ${isIncome ? 'border-emerald-500 bg-emerald-500' : 'border-red-500 bg-red-500'}`} />
-                        <p className="text-sm uppercase tracking-[0.16em] text-zinc-100">{item.category}</p>
+                        <p className="text-sm font-medium text-slate-100">{item.category}</p>
                         <span
-                          className={`border px-2 py-0.5 text-[10px] uppercase tracking-[0.16em] ${
-                            isIncome ? 'border-emerald-900 bg-[#06110a] text-emerald-300' : 'border-red-900 bg-[#140606] text-red-300'
+                          className={`rounded px-2 py-0.5 text-[10px] ${
+                            isIncome ? 'border border-emerald-900 bg-emerald-950/20 text-emerald-300' : 'border border-rose-900 bg-rose-950/20 text-rose-300'
                           }`}
                         >
                           {item.transaction_type}
                         </span>
                       </div>
-                      <p className="mt-2 text-xs text-zinc-500">{formatIndiaDateTime(item.created_at)}</p>
-                      {item.note ? <p className="mt-2 text-xs text-zinc-300">{item.note}</p> : null}
+                      <p className="mt-2 text-xs text-slate-400">{formatIndiaDateTime(item.created_at)}</p>
+                      {item.note ? <p className="mt-2 text-xs text-slate-300">{item.note}</p> : null}
                     </div>
 
                     <div className="flex items-start gap-2">
-                      <p className={`text-sm ${isIncome ? 'text-emerald-300' : 'text-red-300'}`}>
+                      <p className={`text-sm font-semibold ${isIncome ? 'text-emerald-300' : 'text-rose-300'}`}>
                         {isIncome ? '+' : '-'} {formatCurrency(item.amount)}
                       </p>
                       <button
@@ -249,7 +249,7 @@ function FinanceDashboard() {
 
                           deleteTransaction({ id: item.id })
                         }}
-                        className="border border-transparent px-2 py-1 text-sm text-zinc-600 transition-colors hover:border-[#222222] hover:text-red-400"
+                        className="border border-transparent px-2 py-1 text-sm text-neutral-600 transition-colors hover:text-red-500"
                         aria-label="Delete transaction"
                       >
                         X
@@ -266,7 +266,7 @@ function FinanceDashboard() {
       <button
         type="button"
         onClick={() => setIsModalOpen(true)}
-        className="fixed bottom-6 right-6 z-50 h-14 w-14 border border-[#222222] bg-[#0a0a0a] text-3xl text-zinc-100 transition-colors hover:bg-[#111111]"
+        className="fixed bottom-6 right-6 z-50 h-14 w-14 rounded-2xl border border-[#222222] bg-[#0a0a0a] text-2xl text-slate-100 shadow-xl shadow-black/60 transition hover:bg-[#222222]"
         aria-label="Add transaction"
       >
         +
@@ -275,13 +275,13 @@ function FinanceDashboard() {
       {isModalOpen ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
           <button type="button" onClick={() => setIsModalOpen(false)} className="absolute inset-0" aria-label="Close transaction modal" />
-          <article className="relative z-10 max-h-[88vh] w-[92%] max-w-md overflow-y-auto border border-[#222222] bg-[#0a0a0a] p-4 font-mono">
+          <article className="relative z-10 max-h-[88vh] w-[92%] max-w-md overflow-y-auto rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
             <div className="mb-3 flex items-center justify-between gap-3">
-              <h2 className="text-lg uppercase tracking-[0.16em] text-zinc-100">Quick Log</h2>
+              <h2 className="text-lg font-semibold text-slate-100">Quick Log</h2>
               <button
                 type="button"
                 onClick={() => setIsModalOpen(false)}
-                className="border border-[#222222] bg-black px-3 py-2 text-xs uppercase tracking-[0.2em] text-zinc-200 hover:bg-[#111111]"
+                className="rounded border border-[#222222] bg-black px-3 py-1 text-sm text-slate-200 hover:bg-[#111111]"
               >
                 Close
               </button>

@@ -322,7 +322,10 @@ async function addTransaction({ amount, category, transactionType, note }: AddTr
         created_at: createdAt,
       },
     },
-    {
+  ]
+
+  if (normalizedTransactionType === 'EXPENSE') {
+    attempts.push({
       table: 'finance_transactions',
       payload: {
         user_id: userId,
@@ -332,8 +335,8 @@ async function addTransaction({ amount, category, transactionType, note }: AddTr
         note: trimmedNote,
         created_at: createdAt,
       },
-    },
-  ]
+    })
+  }
 
   let insertedId: string | null = null
   for (const attempt of attempts) {
@@ -344,6 +347,10 @@ async function addTransaction({ amount, category, transactionType, note }: AddTr
   }
 
   if (!insertedId) {
+    if (normalizedTransactionType === 'INCOME') {
+      throw new Error('Income logging requires a transaction_type column in Supabase. Your current finance table schema is still on the legacy expense-only shape.')
+    }
+
     throw new Error('Failed to add finance transaction because no compatible transaction table schema was found.')
   }
 
