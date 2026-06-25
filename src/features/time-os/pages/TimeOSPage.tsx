@@ -90,6 +90,8 @@ function TimeOSPage() {
     return formatElapsed(now - new Date(activeTimer.start_time).getTime())
   }, [activeTimer, now])
 
+  const linkableTasks = useMemo(() => tasks.filter((task) => !task.is_completed), [tasks])
+
   return (
     <section className="space-y-4">
       <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
@@ -259,7 +261,7 @@ function TimeOSPage() {
                     className="rounded-md border border-[#222222] bg-black p-2 text-sm text-slate-100"
                   >
                     <option value="">Link task (optional)</option>
-                    {tasks.map((task) => (
+                    {linkableTasks.map((task) => (
                       <option key={task.id} value={task.id}>
                         {task.title}
                       </option>

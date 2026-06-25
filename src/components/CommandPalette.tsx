@@ -142,7 +142,8 @@ function CommandPalette() {
       createTask.mutate(
         {
           title: parsed.title,
-          priority: 'Medium',
+          deadlineType: 'no_deadline',
+          deadlineDate: null,
         },
         {
           onSuccess: () => {

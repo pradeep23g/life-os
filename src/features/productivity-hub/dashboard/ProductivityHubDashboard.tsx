@@ -6,9 +6,9 @@ function ProductivityHubDashboard() {
   const currentWeekStart = getWeekStartDateISO()
   const { data: weeklyItems = [] } = useWeeklyPlanItems(currentWeekStart)
 
-  const todoCount = tasks.filter((task) => task.status === 'To Do').length
-  const doingCount = tasks.filter((task) => task.status === 'Doing').length
-  const doneCount = tasks.filter((task) => task.status === 'Done').length
+  const pendingCount = tasks.filter((task) => !task.is_completed).length
+  const dueCount = tasks.filter((task) => !task.is_completed && task.deadline_type === 'specific_date').length
+  const completedCount = tasks.filter((task) => task.is_completed).length
   const linkedItems = weeklyItems.filter((item) => Boolean(item.goal_id)).length
   const alignmentRatio = weeklyItems.length > 0 ? `${linkedItems}/${weeklyItems.length}` : '0/0'
   const alignmentPercent = weeklyItems.length > 0 ? Math.round((linkedItems / weeklyItems.length) * 100) : 0
@@ -16,18 +16,18 @@ function ProductivityHubDashboard() {
   return (
     <section className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
       <article className="min-h-[120px] rounded-xl border border-slate-700 bg-surface p-3 sm:p-4">
-        <p className="text-xs text-slate-300 sm:text-sm">Tasks in To Do</p>
-        <p className="mt-2 text-xl font-semibold text-slate-100 sm:text-2xl">{isLoading ? '--' : todoCount}</p>
+        <p className="text-xs text-slate-300 sm:text-sm">Pending Tasks</p>
+        <p className="mt-2 text-xl font-semibold text-slate-100 sm:text-2xl">{isLoading ? '--' : pendingCount}</p>
       </article>
 
       <article className="min-h-[120px] rounded-xl border border-slate-700 bg-surface p-3 sm:p-4">
-        <p className="text-xs text-slate-300 sm:text-sm">Tasks in Doing</p>
-        <p className="mt-2 text-xl font-semibold text-slate-100 sm:text-2xl">{isLoading ? '--' : doingCount}</p>
+        <p className="text-xs text-slate-300 sm:text-sm">Scheduled Deadlines</p>
+        <p className="mt-2 text-xl font-semibold text-slate-100 sm:text-2xl">{isLoading ? '--' : dueCount}</p>
       </article>
 
       <article className="min-h-[120px] rounded-xl border border-slate-700 bg-surface p-3 sm:p-4">
-        <p className="text-xs text-slate-300 sm:text-sm">Tasks Done</p>
-        <p className="mt-2 text-xl font-semibold text-slate-100 sm:text-2xl">{isLoading ? '--' : doneCount}</p>
+        <p className="text-xs text-slate-300 sm:text-sm">Tasks Completed</p>
+        <p className="mt-2 text-xl font-semibold text-slate-100 sm:text-2xl">{isLoading ? '--' : completedCount}</p>
       </article>
 
       <article className="col-span-2 min-h-[120px] rounded-xl border border-slate-700 bg-surface p-3 sm:p-4 md:col-span-1">

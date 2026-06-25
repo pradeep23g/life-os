@@ -188,13 +188,13 @@ async function fetchCompletedTimeLogs(): Promise<CompletedTimeLog[]> {
   })
 }
 
-async function setTaskStatusFromTimer(userId: string, taskId: string, status: 'Doing' | 'Done') {
+async function setTaskCompletionFromTimer(userId: string, taskId: string, isCompleted: boolean) {
   const updatedAt = new Date().toISOString()
 
   const { error } = await supabase
     .from('tasks')
     .update({
-      status,
+      is_completed: isCompleted,
       updated_at: updatedAt,
     })
     .eq('id', taskId)
@@ -202,7 +202,7 @@ async function setTaskStatusFromTimer(userId: string, taskId: string, status: 'D
     .is('deleted_at', null)
 
   if (error) {
-    throw buildError(`Failed to set linked task to ${status}`, error)
+    throw buildError(`Failed to set linked task completion to ${isCompleted}`, error)
   }
 
   await logEventSafe({
@@ -212,7 +212,8 @@ async function setTaskStatusFromTimer(userId: string, taskId: string, status: 'D
     entityId: taskId,
     eventType: 'task_status_updated',
     payload: {
-      status,
+      is_completed: isCompleted,
+      status: isCompleted ? 'Done' : 'Open',
       taxonomy_type: PRODUCTIVITY_TASK_STATUS_CHANGED,
       source: 'time-os',
       updated_at: updatedAt,
@@ -263,9 +264,6 @@ async function startTimer({ taskId, bucket, description }: StartTimerInput): Pro
     createdAt: startTime,
   })
 
-  if (taskId) {
-    await setTaskStatusFromTimer(userId, taskId, 'Doing')
-  }
 }
 
 async function stopTimer(): Promise<TimeLoggedEventPayload | null> {
@@ -296,7 +294,7 @@ async function stopTimer(): Promise<TimeLoggedEventPayload | null> {
   }
 
   if (activeTimer.task_id) {
-    await setTaskStatusFromTimer(userId, activeTimer.task_id, 'Done')
+    await setTaskCompletionFromTimer(userId, activeTimer.task_id, true)
   }
 
   return {
@@ -402,7 +400,7 @@ export function useStartTimer() {
       invalidateTimeLogQueries(queryClient)
       emitSystemFeedback({
         title: '+1 Focus',
-        description: 'Linked task moved to Doing',
+        description: 'Focus session started',
       })
     },
   })
@@ -445,7 +443,7 @@ export function useStopTimer() {
       }
       emitSystemFeedback({
         title: '+1 Completion',
-        description: 'Session saved and linked task moved to Done',
+        description: 'Session saved and linked task marked complete',
       })
     },
   })

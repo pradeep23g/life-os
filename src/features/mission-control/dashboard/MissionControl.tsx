@@ -58,7 +58,7 @@ function MissionControl() {
 
   const activeHabits = habitData?.habits.length ?? 0
   const longestHabitStreak = habitData?.longestHabitStreak
-  const pendingTasks = tasks.filter((task) => task.status !== 'Done').length
+  const pendingTasks = tasks.filter((task) => !task.is_completed).length
   const averageMood = journals.length
     ? (journals.reduce((sum, entry) => sum + entry.mood, 0) / journals.length).toFixed(1)
     : '0.0'

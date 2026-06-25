@@ -1,21 +1,21 @@
-﻿import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { logEventSafe } from '../../../lib/events'
 import { supabase } from '../../../lib/supabase'
-import { emitSystemFeedback } from '../../system/feedback'
 import { systemStatusQueryKey } from '../../system/api/useSystemStatus'
+import { emitSystemFeedback } from '../../system/feedback'
 
 export const productivityTasksQueryKey = ['productivity-hub', 'tasks'] as const
 
-export type TaskPriority = 'Low' | 'Medium' | 'High'
-export type TaskStatus = 'To Do' | 'Doing' | 'Done'
+export type TaskDeadlineType = 'same_day' | 'no_deadline' | 'specific_date'
 
 export type Task = {
   id: string
   user_id: string
   title: string
-  priority: TaskPriority
-  status: TaskStatus
+  deadline_type: TaskDeadlineType
+  deadline_date: string | null
+  is_completed: boolean
   created_at: string
   updated_at: string
   deleted_at: string | null
@@ -23,12 +23,17 @@ export type Task = {
 
 type CreateTaskInput = {
   title: string
-  priority: TaskPriority
+  deadlineType: TaskDeadlineType
+  deadlineDate: string | null
 }
 
-type UpdateTaskStatusInput = {
+type ToggleTaskCompletionInput = {
   id: string
-  status: TaskStatus
+  isCompleted: boolean
+}
+
+type DeleteTaskInput = {
+  id: string
 }
 
 function extractErrorMessage(error: unknown): string {
@@ -46,10 +51,23 @@ function extractErrorMessage(error: unknown): string {
   return 'Unknown error'
 }
 
+function normalizeDeadlineDate(deadlineType: TaskDeadlineType, deadlineDate: string | null): string | null {
+  if (deadlineType !== 'specific_date') {
+    return null
+  }
+
+  const normalized = deadlineDate?.trim() ?? ''
+  if (!normalized) {
+    throw new Error('A specific deadline date is required.')
+  }
+
+  return normalized
+}
+
 async function fetchTasks(): Promise<Task[]> {
   const { data, error } = await supabase
     .from('tasks')
-    .select('id, user_id, title, priority, status, created_at, updated_at, deleted_at')
+    .select('id, user_id, title, deadline_type, deadline_date, is_completed, created_at, updated_at, deleted_at')
     .is('deleted_at', null)
     .order('created_at', { ascending: false })
 
@@ -79,16 +97,23 @@ async function requireUserId() {
   return user.id
 }
 
-async function createTask({ title, priority }: CreateTaskInput): Promise<void> {
+async function createTask({ title, deadlineType, deadlineDate }: CreateTaskInput): Promise<void> {
   const userId = await requireUserId()
+  const normalizedTitle = title.trim()
+  const resolvedDeadlineDate = normalizeDeadlineDate(deadlineType, deadlineDate)
+
+  if (!normalizedTitle) {
+    throw new Error('Task title is required.')
+  }
 
   const { data, error } = await supabase
     .from('tasks')
     .insert({
       user_id: userId,
-      title,
-      priority,
-      status: 'To Do',
+      title: normalizedTitle,
+      deadline_type: deadlineType,
+      deadline_date: resolvedDeadlineDate,
+      is_completed: false,
     })
     .select('id')
     .single()
@@ -105,23 +130,29 @@ async function createTask({ title, priority }: CreateTaskInput): Promise<void> {
     entityId: data.id,
     eventType: 'task_created',
     payload: {
-      priority,
+      deadline_type: deadlineType,
+      deadline_date: resolvedDeadlineDate,
+      is_completed: false,
     },
   })
 }
 
-async function updateTaskStatus({ id, status }: UpdateTaskStatusInput): Promise<void> {
+async function toggleTaskCompletion({ id, isCompleted }: ToggleTaskCompletionInput): Promise<void> {
   const userId = await requireUserId()
+  const updatedAt = new Date().toISOString()
 
   const { error } = await supabase
     .from('tasks')
-    .update({ status, updated_at: new Date().toISOString() })
+    .update({
+      is_completed: isCompleted,
+      updated_at: updatedAt,
+    })
     .eq('id', id)
     .eq('user_id', userId)
     .is('deleted_at', null)
 
   if (error) {
-    console.error('[useTasks] Failed to update task status', error)
+    console.error('[useTasks] Failed to update task completion', error)
     throw new Error(`Failed to update task: ${extractErrorMessage(error)}`)
   }
 
@@ -132,9 +163,31 @@ async function updateTaskStatus({ id, status }: UpdateTaskStatusInput): Promise<
     entityId: id,
     eventType: 'task_status_updated',
     payload: {
-      status,
+      is_completed: isCompleted,
+      status: isCompleted ? 'Done' : 'Open',
     },
+    createdAt: updatedAt,
   })
+}
+
+async function deleteTask({ id }: DeleteTaskInput): Promise<void> {
+  const userId = await requireUserId()
+  const deletedAt = new Date().toISOString()
+
+  const { error } = await supabase
+    .from('tasks')
+    .update({
+      deleted_at: deletedAt,
+      updated_at: deletedAt,
+    })
+    .eq('id', id)
+    .eq('user_id', userId)
+    .is('deleted_at', null)
+
+  if (error) {
+    console.error('[useTasks] Failed to delete task', error)
+    throw new Error(`Failed to delete task: ${extractErrorMessage(error)}`)
+  }
 }
 
 export function useTasks() {
@@ -154,23 +207,39 @@ export function useCreateTask() {
       queryClient.invalidateQueries({ queryKey: systemStatusQueryKey })
       emitSystemFeedback({
         title: '+1 Awareness',
-        description: 'Momentum +4% — system stabilizing',
+        description: 'Task logged into the calendar ledger.',
       })
     },
   })
 }
 
-export function useUpdateTaskStatus() {
+export function useToggleTaskCompletion() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: updateTaskStatus,
+    mutationFn: toggleTaskCompletion,
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: productivityTasksQueryKey })
+      queryClient.invalidateQueries({ queryKey: systemStatusQueryKey })
+      emitSystemFeedback({
+        title: variables.isCompleted ? '+1 Completion' : 'Task Reopened',
+        description: variables.isCompleted ? 'Task checked off.' : 'Task returned to the active ledger.',
+      })
+    },
+  })
+}
+
+export function useDeleteTask() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: deleteTask,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: productivityTasksQueryKey })
       queryClient.invalidateQueries({ queryKey: systemStatusQueryKey })
       emitSystemFeedback({
-        title: '+1 Awareness',
-        description: 'Momentum +4% — system stabilizing',
+        title: 'Task Removed',
+        description: 'Task archived from the active ledger.',
       })
     },
   })
