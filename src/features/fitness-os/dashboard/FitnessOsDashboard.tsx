@@ -9,7 +9,7 @@ const heatmapWeekdayLabels = new Set(['Sun', 'Tue', 'Thu', 'Sat'])
 
 function getHeatmapLevelClass(minutes: number, maxMinutes: number) {
   if (minutes <= 0 || maxMinutes <= 0) {
-    return 'border-slate-700 bg-slate-900'
+    return 'border-border bg-surface'
   }
 
   const ratio = minutes / maxMinutes
@@ -41,7 +41,7 @@ function getCalendarDayTone(minutes: number) {
     return 'border-emerald-800/70 bg-emerald-900/40 text-emerald-200'
   }
 
-  return 'border-slate-700 bg-slate-800 text-slate-300'
+  return 'border-border bg-[#111111] text-slate-300'
 }
 
 function getDailyInsight(workoutsByDate: Record<string, Workout[]>, dateKey: string): FitnessDayInsight {
@@ -87,21 +87,21 @@ function FitnessOsDashboard() {
   return (
     <section className="space-y-4">
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-        <article className="min-h-[120px] rounded-xl border border-slate-700 bg-slate-900 p-3 sm:p-4">
+        <article className="min-h-[120px] rounded-xl border border-border bg-surface p-3 sm:p-4">
           <p className="text-xs text-slate-300 sm:text-sm">Workouts This Week</p>
           <p className="mt-2 text-xl font-semibold text-slate-100 sm:text-2xl">{isLoading ? '--' : data?.workoutsThisWeek ?? 0}</p>
         </article>
-        <article className="min-h-[120px] rounded-xl border border-slate-700 bg-slate-900 p-3 sm:p-4">
+        <article className="min-h-[120px] rounded-xl border border-border bg-surface p-3 sm:p-4">
           <p className="text-xs text-slate-300 sm:text-sm">Active Workout Days</p>
           <p className="mt-2 text-xl font-semibold text-slate-100 sm:text-2xl">
             {isLoading ? '--' : data?.activeWorkoutDaysThisWeek ?? 0} / 7
           </p>
         </article>
-        <article className="min-h-[120px] rounded-xl border border-slate-700 bg-slate-900 p-3 sm:p-4">
+        <article className="min-h-[120px] rounded-xl border border-border bg-surface p-3 sm:p-4">
           <p className="text-xs text-slate-300 sm:text-sm">Session Minutes</p>
           <p className="mt-2 text-xl font-semibold text-slate-100 sm:text-2xl">{isLoading ? '--' : data?.totalSessionMinutesThisWeek ?? 0}</p>
         </article>
-        <article className="min-h-[120px] rounded-xl border border-slate-700 bg-slate-900 p-3 sm:p-4">
+        <article className="min-h-[120px] rounded-xl border border-border bg-surface p-3 sm:p-4">
           <p className="text-xs text-slate-300 sm:text-sm">Consistency</p>
           <p className="mt-2 text-xl font-semibold text-slate-100 sm:text-2xl">{isLoading ? '--' : `${data?.consistencyScore ?? 0}%`}</p>
         </article>
@@ -112,7 +112,7 @@ function FitnessOsDashboard() {
       ) : null}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <article className="rounded-xl border border-slate-700 bg-slate-900 p-4">
+        <article className="rounded-xl border border-border bg-surface p-4">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-lg font-semibold text-slate-100">Workout Calendar</h2>
@@ -125,7 +125,7 @@ function FitnessOsDashboard() {
                 setSelectedDateKey(null)
                 setIsCalendarOpen(true)
               }}
-              className="rounded-md border border-slate-600 bg-slate-800 px-3 py-1.5 text-sm text-slate-100 hover:bg-slate-700"
+              className="rounded-md border border-[#333333] bg-[#111111] px-3 py-1.5 text-sm text-slate-100 hover:bg-[#222222]"
             >
               Open Calendar
             </button>
@@ -145,7 +145,7 @@ function FitnessOsDashboard() {
                   className={`rounded border p-1 text-center text-xs ${
                     dayInsight && dayInsight.minutes > 0
                       ? getCalendarDayTone(dayInsight.minutes)
-                      : 'border-slate-700 bg-slate-800 text-slate-400'
+                      : 'border-border bg-[#111111] text-slate-400'
                   } ${day.inCurrentMonth ? '' : 'opacity-40'}`}
                 >
                   <p>{day.day}</p>
@@ -156,7 +156,7 @@ function FitnessOsDashboard() {
           </div>
         </article>
 
-        <article className="rounded-xl border border-slate-700 bg-slate-900 p-4">
+        <article className="rounded-xl border border-border bg-surface p-4">
           <h2 className="text-lg font-semibold text-slate-100">90-Day Effort Heatmap</h2>
           <p className="mt-1 text-xs text-slate-400">Intensity is based on session minutes per day.</p>
           <div className="mt-4 w-full overflow-x-auto snap-x">
@@ -181,13 +181,13 @@ function FitnessOsDashboard() {
         </article>
       </div>
 
-      <article className="rounded-xl border border-slate-700 bg-slate-900 p-4">
+      <article className="rounded-xl border border-border bg-surface p-4">
         <h2 className="text-lg font-semibold text-slate-100">Recent Workouts</h2>
         {isLoading ? <p className="mt-3 text-sm text-slate-400">Loading recent workouts...</p> : null}
         {!isLoading && (data?.recentWorkouts.length ?? 0) === 0 ? <p className="mt-3 text-sm text-slate-400">No workouts logged yet.</p> : null}
         <ul className="mt-3 space-y-2">
           {data?.recentWorkouts.slice(0, 6).map((workout) => (
-            <li key={workout.id} className="rounded-md border border-slate-700 bg-slate-800 p-2">
+            <li key={workout.id} className="rounded-md border border-border bg-[#111111] p-2">
               <p className="text-sm font-semibold text-slate-100">{workout.title}</p>
               <p className="text-xs text-slate-400">
                 {formatIndiaDate(workout.workout_date)} - {workout.duration_minutes} min
@@ -198,8 +198,8 @@ function FitnessOsDashboard() {
       </article>
 
       {isCalendarOpen && data ? (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-950/85 p-3">
-          <section className="h-[92vh] w-[96vw] max-w-6xl overflow-auto rounded-xl border border-slate-700 bg-slate-900 p-4">
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/85 p-3">
+          <section className="h-[92vh] w-[96vw] max-w-6xl overflow-auto rounded-xl border border-border bg-surface p-4">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <h3 className="text-xl font-semibold text-slate-100">Fitness Calendar View</h3>
@@ -208,7 +208,7 @@ function FitnessOsDashboard() {
               <button
                 type="button"
                 onClick={() => setIsCalendarOpen(false)}
-                className="rounded-md border border-slate-600 px-3 py-1 text-sm text-slate-100 hover:bg-slate-800"
+                className="rounded-md border border-[#333333] px-3 py-1 text-sm text-slate-100 hover:bg-[#111111]"
               >
                 Close
               </button>
@@ -218,7 +218,7 @@ function FitnessOsDashboard() {
               <button
                 type="button"
                 onClick={() => setCalendarMonth((previous) => shiftMonth(previous, -1))}
-                className="rounded-md border border-slate-600 px-3 py-1 text-sm text-slate-100 hover:bg-slate-800"
+                className="rounded-md border border-[#333333] px-3 py-1 text-sm text-slate-100 hover:bg-[#111111]"
               >
                 Previous
               </button>
@@ -226,7 +226,7 @@ function FitnessOsDashboard() {
               <button
                 type="button"
                 onClick={() => setCalendarMonth((previous) => shiftMonth(previous, 1))}
-                className="rounded-md border border-slate-600 px-3 py-1 text-sm text-slate-100 hover:bg-slate-800"
+                className="rounded-md border border-[#333333] px-3 py-1 text-sm text-slate-100 hover:bg-[#111111]"
               >
                 Next
               </button>
@@ -272,7 +272,7 @@ function FitnessOsDashboard() {
                 </div>
               </div>
 
-              <aside className="rounded-xl border border-slate-700 bg-slate-950/70 p-3">
+              <aside className="rounded-xl border border-border bg-black/70 p-3">
                 <h4 className="text-sm font-semibold text-slate-100">Day Details</h4>
                 {!selectedDateKey ? <p className="mt-2 text-sm text-slate-400">Select a day to view workout summaries.</p> : null}
                 {selectedDateKey && selectedDayInsight ? (
@@ -286,13 +286,13 @@ function FitnessOsDashboard() {
                     ) : (
                       <ul className="mt-3 space-y-2">
                         {selectedDayWorkouts.map((workout) => (
-                          <li key={workout.id} className="rounded-md border border-slate-700 bg-slate-900 p-2">
+                          <li key={workout.id} className="rounded-md border border-border bg-surface p-2">
                             <div className="flex items-start justify-between gap-2">
                               <p className="text-sm font-semibold text-slate-100">{workout.title}</p>
                               <button
                                 type="button"
                                 onClick={() => navigate(`/fitness-os/workouts?date=${selectedDateKey}`)}
-                                className="rounded border border-slate-600 px-2 py-1 text-[11px] text-slate-200 hover:bg-slate-800"
+                                className="rounded border border-[#333333] px-2 py-1 text-[11px] text-slate-200 hover:bg-[#111111]"
                               >
                                 View workout
                               </button>

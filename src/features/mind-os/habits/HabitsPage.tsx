@@ -118,7 +118,7 @@ function getMiniOverviewToneClass(status: 'none' | 'done' | 'break' | 'healed') 
     return 'border-amber-400/70 bg-amber-400/30 text-amber-100'
   }
 
-  return 'border-slate-700 bg-slate-900 text-slate-500'
+  return 'border-border bg-surface text-slate-500'
 }
 
 function HabitsPage() {
@@ -442,22 +442,22 @@ function HabitsPage() {
   const actionError = markDoneError ?? markNotDoneError ?? adjustCountError ?? setCountError ?? undoError
 
   if (isLoading) {
-    return <section className="rounded-xl border border-slate-700 bg-slate-900 p-4">Loading habits...</section>
+    return <section className="rounded-xl border border-border bg-surface p-4">Loading habits...</section>
   }
 
   if (isError || !data) {
-    return <section className="rounded-xl border border-slate-700 bg-slate-900 p-4">Failed to load habits.</section>
+    return <section className="rounded-xl border border-border bg-surface p-4">Failed to load habits.</section>
   }
 
   return (
     <section className="space-y-4 pb-24">
-      <article className="rounded-xl border border-slate-700 bg-slate-900 p-4">
+      <article className="rounded-xl border border-border bg-surface p-4">
         <div className="flex flex-wrap items-center gap-2">
           <h2 className="text-lg font-semibold text-slate-100">Habits Overview</h2>
-          <span className="rounded-full border border-slate-700 bg-slate-800 px-2 py-0.5 text-xs text-slate-300">
+          <span className="rounded-full border border-border bg-[#111111] px-2 py-0.5 text-xs text-slate-300">
             Active habits: {data.habits.length}
           </span>
-          <span className="rounded-full border border-slate-700 bg-slate-800 px-2 py-0.5 text-xs text-slate-300">
+          <span className="rounded-full border border-border bg-[#111111] px-2 py-0.5 text-xs text-slate-300">
             Heals left: {data.healTokensRemaining}/5
           </span>
           {data.lowHealTokenWarning ? (
@@ -473,7 +473,7 @@ function HabitsPage() {
       ) : null}
 
       {data.habits.length === 0 ? (
-        <section className="rounded-xl border border-slate-700 bg-slate-900 p-4 text-sm text-slate-300">No habits yet. Create your first habit with the + button.</section>
+        <section className="rounded-xl border border-border bg-surface p-4 text-sm text-slate-300">No habits yet. Create your first habit with the + button.</section>
       ) : (
         <section className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
           {data.habits.map((habit) => {
@@ -491,11 +491,11 @@ function HabitsPage() {
                   <div className="min-w-0">
                     <h3 className="truncate text-2xl font-semibold text-slate-100">{habit.title}</h3>
                     <div className="mt-1 flex flex-wrap items-center gap-1">
-                      <span className="rounded-full border border-slate-600 bg-slate-900/80 px-2 py-0.5 text-[11px] text-slate-200">
+                      <span className="rounded-full border border-[#333333] bg-surface/80 px-2 py-0.5 text-[11px] text-slate-200">
                         {habit.habit_type === 'target' ? 'Progress' : 'Checkbox'}
                       </span>
                       {habit.habit_type === 'target' ? (
-                        <span className="rounded-full border border-slate-600 bg-slate-900/80 px-2 py-0.5 text-[11px] font-semibold text-slate-100">
+                        <span className="rounded-full border border-[#333333] bg-surface/80 px-2 py-0.5 text-[11px] font-semibold text-slate-100">
                           Goal: {habit.target_value} {habit.unit ?? 'units'}
                         </span>
                       ) : null}
@@ -527,7 +527,7 @@ function HabitsPage() {
                           [habit.id]: !previous[habit.id],
                         }))
                       }
-                      className="inline-flex h-6 w-6 items-center justify-center rounded-md border border-slate-600 bg-slate-900 text-slate-200 md:hidden"
+                      className="inline-flex h-6 w-6 items-center justify-center rounded-md border border-[#333333] bg-surface text-slate-200 md:hidden"
                       aria-label={isMobileExpanded ? 'Collapse habit card' : 'Expand habit card'}
                     >
                       <ChevronIcon expanded={isMobileExpanded} />
@@ -537,25 +537,25 @@ function HabitsPage() {
 
                 <div className="mt-2 hidden space-y-2 md:block">
                   {habit.habit_type === 'target' ? (
-                    <div className="rounded-lg border border-slate-700 bg-slate-900/70 p-2">
+                    <div className="rounded-lg border border-border bg-surface/70 p-2">
                       <p className="text-xs text-slate-400">Today's count</p>
                       <div className="mt-1 flex items-center gap-2">
                         <button
                           type="button"
                           onClick={() => handleAdjustCount(habit.id, -1)}
                           disabled={isAdjustingCount || habit.todayValue <= 0}
-                          className="h-10 w-10 rounded-md border border-slate-600 bg-slate-950 text-lg font-semibold text-slate-100 hover:bg-slate-900 disabled:opacity-60"
+                          className="h-10 w-10 rounded-md border border-[#333333] bg-black text-lg font-semibold text-slate-100 hover:bg-surface disabled:opacity-60"
                         >
                           -
                         </button>
-                        <div className="h-10 min-w-[84px] rounded-md border border-slate-700 bg-slate-950 px-3 text-center text-3xl font-semibold leading-10 text-slate-100">
+                        <div className="h-10 min-w-[84px] rounded-md border border-border bg-black px-3 text-center text-3xl font-semibold leading-10 text-slate-100">
                           {habit.todayValue}
                         </div>
                         <button
                           type="button"
                           onClick={() => handleAdjustCount(habit.id, 1)}
                           disabled={isAdjustingCount}
-                          className="h-10 w-10 rounded-md border border-slate-600 bg-slate-950 text-lg font-semibold text-slate-100 hover:bg-slate-900 disabled:opacity-60"
+                          className="h-10 w-10 rounded-md border border-[#333333] bg-black text-lg font-semibold text-slate-100 hover:bg-surface disabled:opacity-60"
                         >
                           +
                         </button>
@@ -578,12 +578,12 @@ function HabitsPage() {
                       }
                       rows={2}
                       placeholder="What made this hard today?"
-                      className="mt-1 w-full rounded-md border border-slate-600 bg-slate-900 p-2 text-sm text-slate-100"
+                      className="mt-1 w-full rounded-md border border-[#333333] bg-surface p-2 text-sm text-slate-100"
                     />
                   </label>
 
                   <div className="grid grid-cols-3 gap-1.5">
-                    <div className="h-14 rounded-md border border-slate-700 bg-slate-950/80 p-1 text-center">
+                    <div className="h-14 rounded-md border border-border bg-black/80 p-1 text-center">
                       <p className="text-[10px] uppercase tracking-wide text-slate-400">Streak</p>
                       <p className="text-sm font-semibold text-slate-100">{habit.currentStreak} current</p>
                       <p className="text-[11px] text-slate-300">{habit.longestStreak} best</p>
@@ -601,7 +601,7 @@ function HabitsPage() {
                     <button
                       type="button"
                       onClick={() => openCalendarForHabit(habit.id)}
-                      className="h-14 rounded-md border border-slate-600 bg-slate-900 text-sm font-semibold text-slate-100 hover:bg-slate-800"
+                      className="h-14 rounded-md border border-[#333333] bg-surface text-sm font-semibold text-slate-100 hover:bg-[#111111]"
                     >
                       Calendar
                     </button>
@@ -612,7 +612,7 @@ function HabitsPage() {
                   {isMobileExpanded ? (
                     <>
                       <div className="grid grid-cols-[88px_1fr] gap-2">
-                        <div className="rounded-md border border-slate-700 bg-slate-950/80 p-1 text-center">
+                        <div className="rounded-md border border-border bg-black/80 p-1 text-center">
                           <p className="text-[10px] uppercase tracking-wide text-slate-400">Streak</p>
                           <p className="text-xs font-semibold text-slate-100">{habit.currentStreak} current</p>
                           <p className="text-[11px] text-slate-300">{habit.longestStreak} best</p>
@@ -629,12 +629,12 @@ function HabitsPage() {
                               }))
                             }
                             placeholder="Optional"
-                            className="mt-1 h-8 w-full rounded-md border border-slate-600 bg-slate-900 px-2 text-xs text-slate-100"
+                            className="mt-1 h-8 w-full rounded-md border border-[#333333] bg-surface px-2 text-xs text-slate-100"
                           />
                         </label>
                       </div>
 
-                      <div className="rounded-md border border-slate-700 bg-slate-900/70 p-2">
+                      <div className="rounded-md border border-border bg-surface/70 p-2">
                         <p className="text-[11px] text-slate-400">Last 7 days</p>
                         <div className="mt-1 grid grid-cols-7 gap-1">
                           {rollingSevenDateKeys.map((dateKey) => {
@@ -658,7 +658,7 @@ function HabitsPage() {
                       <button
                         type="button"
                         onClick={() => openCalendarForHabit(habit.id)}
-                        className="h-8 w-full rounded-md border border-slate-600 bg-slate-900 text-xs font-semibold text-slate-100 hover:bg-slate-800"
+                        className="h-8 w-full rounded-md border border-[#333333] bg-surface text-xs font-semibold text-slate-100 hover:bg-[#111111]"
                       >
                         Open Calendar
                       </button>
@@ -667,12 +667,12 @@ function HabitsPage() {
 
                   <div className="flex items-center gap-2">
                     {habit.habit_type === 'target' ? (
-                      <div className="flex h-8 items-center gap-1 rounded-md border border-slate-700 bg-slate-900 px-1">
+                      <div className="flex h-8 items-center gap-1 rounded-md border border-border bg-surface px-1">
                         <button
                           type="button"
                           onClick={() => handleAdjustCount(habit.id, -1)}
                           disabled={isAdjustingCount || habit.todayValue <= 0}
-                          className="h-6 w-6 rounded border border-slate-600 bg-slate-950 text-sm font-semibold text-slate-100 disabled:opacity-50"
+                          className="h-6 w-6 rounded border border-[#333333] bg-black text-sm font-semibold text-slate-100 disabled:opacity-50"
                         >
                           -
                         </button>
@@ -683,7 +683,7 @@ function HabitsPage() {
                           type="button"
                           onClick={() => handleAdjustCount(habit.id, 1)}
                           disabled={isAdjustingCount}
-                          className="h-6 w-6 rounded border border-slate-600 bg-slate-950 text-sm font-semibold text-slate-100 disabled:opacity-50"
+                          className="h-6 w-6 rounded border border-[#333333] bg-black text-sm font-semibold text-slate-100 disabled:opacity-50"
                         >
                           +
                         </button>
@@ -709,7 +709,7 @@ function HabitsPage() {
       )}
 
       <section className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-        <article className="rounded-xl border border-slate-700 bg-slate-900 p-4">
+        <article className="rounded-xl border border-border bg-surface p-4">
           <div className="flex flex-wrap items-center gap-2">
             <h2 className="text-xl font-semibold text-slate-100">Mistakes (Streak Losses)</h2>
             {data.lowHealTokenWarning ? (
@@ -729,7 +729,7 @@ function HabitsPage() {
                 const recoveryValue = recoveryDrafts[mistake.id] ?? mistake.recovery_commitment ?? ''
 
                 return (
-                  <li key={mistake.id} className="rounded-lg border border-slate-700 bg-slate-800 p-3">
+                  <li key={mistake.id} className="rounded-lg border border-border bg-[#111111] p-3">
                     <div className="flex items-start justify-between gap-2">
                       <div>
                         <p className="text-sm font-semibold text-slate-100">{mistake.habitTitle}</p>
@@ -757,7 +757,7 @@ function HabitsPage() {
                           }))
                         }
                         rows={2}
-                        className="mt-1 w-full rounded-md border border-slate-600 bg-slate-900 p-2 text-sm text-slate-100"
+                        className="mt-1 w-full rounded-md border border-[#333333] bg-surface p-2 text-sm text-slate-100"
                       />
                     </label>
 
@@ -770,12 +770,12 @@ function HabitsPage() {
                         })
                       }
                       disabled={isUpdatingBreakReason}
-                      className="mt-2 rounded-md border border-slate-600 px-3 py-1 text-xs text-slate-100 hover:bg-slate-700 disabled:opacity-60"
+                      className="mt-2 rounded-md border border-[#333333] px-3 py-1 text-xs text-slate-100 hover:bg-[#222222] disabled:opacity-60"
                     >
                       Save reason
                     </button>
 
-                    <div className="mt-3 rounded-md border border-slate-700 bg-slate-900/60 p-2">
+                    <div className="mt-3 rounded-md border border-border bg-surface/60 p-2">
                       <p className="text-xs font-semibold text-slate-200">Recovery assistant</p>
                       <p className="mt-1 text-[11px] text-slate-400">Pick a blocker prompt or write your own next-step commitment.</p>
 
@@ -790,7 +790,7 @@ function HabitsPage() {
                                 [mistake.id]: prompt,
                               }))
                             }
-                            className="rounded-full border border-slate-600 bg-slate-900 px-2 py-0.5 text-[11px] text-slate-200 hover:bg-slate-800"
+                            className="rounded-full border border-[#333333] bg-surface px-2 py-0.5 text-[11px] text-slate-200 hover:bg-[#111111]"
                           >
                             {prompt}
                           </button>
@@ -809,7 +809,7 @@ function HabitsPage() {
                           }
                           rows={2}
                           placeholder="Example: Sleep by 11:00 pm and start this habit right after tea."
-                          className="mt-1 w-full rounded-md border border-slate-600 bg-slate-900 p-2 text-sm text-slate-100"
+                          className="mt-1 w-full rounded-md border border-[#333333] bg-surface p-2 text-sm text-slate-100"
                         />
                       </label>
 
@@ -822,7 +822,7 @@ function HabitsPage() {
                           })
                         }
                         disabled={isUpdatingRecoveryCommitment}
-                        className="mt-2 rounded-md border border-slate-600 px-3 py-1 text-xs text-slate-100 hover:bg-slate-700 disabled:opacity-60"
+                        className="mt-2 rounded-md border border-[#333333] px-3 py-1 text-xs text-slate-100 hover:bg-[#222222] disabled:opacity-60"
                       >
                         Save commitment
                       </button>
@@ -845,7 +845,7 @@ function HabitsPage() {
                           }))
                         }
                         placeholder="Why use a streak heal here?"
-                        className="mt-1 w-full rounded-md border border-slate-600 bg-slate-900 px-2 py-1.5 text-sm text-slate-100"
+                        className="mt-1 w-full rounded-md border border-[#333333] bg-surface px-2 py-1.5 text-sm text-slate-100"
                       />
                     </label>
 
@@ -869,7 +869,7 @@ function HabitsPage() {
                         )
                       }
                       disabled={mistake.isHealed || data.healTokensRemaining <= 0 || isHealingBreak}
-                      className="mt-2 rounded-md border border-slate-600 px-3 py-1 text-xs text-slate-100 hover:bg-slate-700 disabled:opacity-60"
+                      className="mt-2 rounded-md border border-[#333333] px-3 py-1 text-xs text-slate-100 hover:bg-[#222222] disabled:opacity-60"
                     >
                       {isHealingBreak ? 'Healing...' : 'Heal this break'}
                     </button>
@@ -885,7 +885,7 @@ function HabitsPage() {
                 <button
                   type="button"
                   onClick={() => setIsRecentMistakesOpen(true)}
-                  className="rounded-md border border-slate-600 px-3 py-1 text-slate-200 hover:bg-slate-700"
+                  className="rounded-md border border-[#333333] px-3 py-1 text-slate-200 hover:bg-[#222222]"
                 >
                   View missed habits (last 5 days)
                 </button>
@@ -907,7 +907,7 @@ function HabitsPage() {
           ) : null}
         </article>
 
-        <article className="rounded-xl border border-slate-700 bg-slate-900 p-4">
+        <article className="rounded-xl border border-border bg-surface p-4">
           <h2 className="text-xl font-semibold text-slate-100">Streak Heal Tokens</h2>
           <p className="mt-2 text-sm text-slate-300">
             Remaining this month: <span className="font-semibold text-slate-100">{data.healTokensRemaining} / 5</span>
@@ -923,7 +923,7 @@ function HabitsPage() {
           ) : (
             <ul className="mt-2 space-y-2">
               {data.healHistory.slice(0, 8).map((heal) => (
-                <li key={heal.id} className="rounded-md border border-slate-700 bg-slate-800 p-2">
+                <li key={heal.id} className="rounded-md border border-border bg-[#111111] p-2">
                   <p className="text-sm text-slate-100">{heal.habitTitle}</p>
                   <p className="text-xs text-slate-400">Healed on {formatIndiaDateTime(heal.created_at)}</p>
                   {heal.breakDate ? <p className="text-xs text-slate-400">Recovered break: {formatIndiaDate(heal.breakDate)}</p> : null}
@@ -940,11 +940,11 @@ function HabitsPage() {
           <button
             type="button"
             onClick={() => setIsRecentMistakesOpen(false)}
-            className="absolute inset-0 bg-slate-950/85"
+            className="absolute inset-0 bg-black/85"
             aria-label="Close missed habits modal"
           />
 
-          <article className="relative z-10 max-h-[85vh] w-[96vw] max-w-3xl overflow-auto rounded-xl border border-slate-700 bg-slate-900 p-4 sm:p-6">
+          <article className="relative z-10 max-h-[85vh] w-[96vw] max-w-3xl overflow-auto rounded-xl border border-border bg-surface p-4 sm:p-6">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <h3 className="text-lg font-semibold text-slate-100">Missed Habits (Last 5 Days)</h3>
@@ -953,7 +953,7 @@ function HabitsPage() {
               <button
                 type="button"
                 onClick={() => setIsRecentMistakesOpen(false)}
-                className="rounded-md border border-slate-600 px-2 py-1 text-sm text-slate-100 hover:bg-slate-700"
+                className="rounded-md border border-[#333333] px-2 py-1 text-sm text-slate-100 hover:bg-[#222222]"
               >
                 Close
               </button>
@@ -964,7 +964,7 @@ function HabitsPage() {
             ) : (
               <ul className="mt-4 space-y-2">
                 {recentFiveDayMistakes.map((mistake) => (
-                  <li key={`recent-${mistake.id}`} className="rounded-md border border-slate-700 bg-slate-800 p-3">
+                  <li key={`recent-${mistake.id}`} className="rounded-md border border-border bg-[#111111] p-3">
                     <div className="flex items-center justify-between gap-2">
                       <p className="text-sm font-semibold text-slate-100">{mistake.habitTitle}</p>
                       <span className="text-xs text-slate-400">{formatIndiaDate(mistake.break_date)}</span>
@@ -981,21 +981,21 @@ function HabitsPage() {
       <button
         type="button"
         onClick={() => setIsCreateModalOpen(true)}
-        className="fixed bottom-5 right-5 z-30 inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-slate-600 bg-slate-800 text-slate-100 shadow-xl shadow-black/60 transition hover:bg-slate-700"
+        className="fixed bottom-5 right-5 z-30 inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-[#333333] bg-[#111111] text-slate-100 shadow-xl shadow-black/60 transition hover:bg-[#222222]"
         aria-label="Create habit"
       >
         <PlusIcon />
       </button>
 
       {undoToast && undoRemainingSeconds > 0 ? (
-        <article className="fixed bottom-24 right-5 z-30 w-[min(360px,92vw)] rounded-xl border border-slate-700 bg-slate-900 p-3 shadow-xl shadow-black/70">
+        <article className="fixed bottom-24 right-5 z-30 w-[min(360px,92vw)] rounded-xl border border-border bg-surface p-3 shadow-xl shadow-black/70">
           <p className="text-sm text-slate-100">{undoToast.habitTitle} marked done.</p>
           <p className="mt-1 text-xs text-slate-400">Undo available for {undoRemainingSeconds}s.</p>
           <button
             type="button"
             onClick={handleUndo}
             disabled={isUndoingDone}
-            className="mt-2 rounded-md border border-slate-600 bg-slate-800 px-3 py-1 text-sm text-slate-100 hover:bg-slate-700 disabled:opacity-60"
+            className="mt-2 rounded-md border border-[#333333] bg-[#111111] px-3 py-1 text-sm text-slate-100 hover:bg-[#222222] disabled:opacity-60"
           >
             {isUndoingDone ? 'Undoing...' : 'Undo'}
           </button>
@@ -1007,11 +1007,11 @@ function HabitsPage() {
           <button
             type="button"
             onClick={() => setIsCreateModalOpen(false)}
-            className="absolute inset-0 bg-slate-950/85"
+            className="absolute inset-0 bg-black/85"
             aria-label="Close create habit modal"
           />
 
-          <article className="relative z-10 h-[88vh] w-[96vw] max-w-4xl overflow-auto rounded-xl border border-slate-700 bg-slate-900 p-4 sm:p-6">
+          <article className="relative z-10 h-[88vh] w-[96vw] max-w-4xl overflow-auto rounded-xl border border-border bg-surface p-4 sm:p-6">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h2 className="text-xl font-semibold text-slate-100">Create Habit</h2>
@@ -1020,7 +1020,7 @@ function HabitsPage() {
               <button
                 type="button"
                 onClick={() => setIsCreateModalOpen(false)}
-                className="flex h-9 w-9 items-center justify-center rounded-md border border-slate-600 bg-slate-800 text-slate-100 hover:bg-slate-700"
+                className="flex h-9 w-9 items-center justify-center rounded-md border border-[#333333] bg-[#111111] text-slate-100 hover:bg-[#222222]"
                 aria-label="Close"
               >
                 <CloseIcon />
@@ -1034,7 +1034,7 @@ function HabitsPage() {
                   value={title}
                   onChange={(event) => setTitle(event.target.value)}
                   placeholder="Read 20 pages"
-                  className="mt-1 w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-slate-100"
+                  className="mt-1 w-full rounded-md border border-[#333333] bg-[#111111] px-3 py-2 text-sm text-slate-100"
                 />
               </label>
 
@@ -1043,7 +1043,7 @@ function HabitsPage() {
                 <select
                   value={habitType}
                   onChange={(event) => setHabitType(event.target.value as HabitType)}
-                  className="mt-1 w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-slate-100"
+                  className="mt-1 w-full rounded-md border border-[#333333] bg-[#111111] px-3 py-2 text-sm text-slate-100"
                 >
                   <option value="binary">Binary (done / not done)</option>
                   <option value="target">Target habit (count based)</option>
@@ -1059,7 +1059,7 @@ function HabitsPage() {
                       min={1}
                       value={targetValue}
                       onChange={(event) => setTargetValue(event.target.value)}
-                      className="mt-1 w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-slate-100"
+                      className="mt-1 w-full rounded-md border border-[#333333] bg-[#111111] px-3 py-2 text-sm text-slate-100"
                     />
                   </label>
 
@@ -1069,7 +1069,7 @@ function HabitsPage() {
                       value={unit}
                       onChange={(event) => setUnit(event.target.value)}
                       placeholder="pages"
-                      className="mt-1 w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-slate-100"
+                      className="mt-1 w-full rounded-md border border-[#333333] bg-[#111111] px-3 py-2 text-sm text-slate-100"
                     />
                   </label>
                 </div>
@@ -1082,7 +1082,7 @@ function HabitsPage() {
               <button
                 type="submit"
                 disabled={isCreatingHabit || title.trim().length === 0}
-                className="w-full rounded-md border border-slate-600 bg-slate-800 px-4 py-2 text-sm text-slate-100 hover:bg-slate-700 disabled:opacity-60"
+                className="w-full rounded-md border border-[#333333] bg-[#111111] px-4 py-2 text-sm text-slate-100 hover:bg-[#222222] disabled:opacity-60"
               >
                 {isCreatingHabit ? 'Creating...' : 'Create Habit'}
               </button>
@@ -1092,8 +1092,8 @@ function HabitsPage() {
       ) : null}
 
       {calendarHabitId && selectedHabit ? (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-950/85 p-3">
-          <section className="h-[92vh] w-[96vw] max-w-6xl overflow-auto rounded-xl border border-slate-700 bg-slate-900 p-4">
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/85 p-3">
+          <section className="h-[92vh] w-[96vw] max-w-6xl overflow-auto rounded-xl border border-border bg-surface p-4">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h3 className="text-xl font-semibold text-slate-100">{selectedHabit.title} Calendar</h3>
@@ -1102,14 +1102,14 @@ function HabitsPage() {
               <button
                 type="button"
                 onClick={() => setCalendarHabitId(null)}
-                className="rounded-md border border-slate-600 px-3 py-1 text-sm text-slate-100 hover:bg-slate-800"
+                className="rounded-md border border-[#333333] px-3 py-1 text-sm text-slate-100 hover:bg-[#111111]"
               >
                 Close
               </button>
             </div>
 
             {selectedHabit.habit_type === 'target' ? (
-              <div className="mt-3 rounded-lg border border-slate-700 bg-slate-900/70 p-3">
+              <div className="mt-3 rounded-lg border border-border bg-surface/70 p-3">
                 <p className="text-sm text-slate-200">Set today's count (keyboard input)</p>
                 <p className="text-xs text-slate-400">This updates only today and does not modify historical entries.</p>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
@@ -1118,13 +1118,13 @@ function HabitsPage() {
                     min={0}
                     value={calendarCountInput}
                     onChange={(event) => setCalendarCountInput(event.target.value)}
-                    className="h-9 w-32 rounded-md border border-slate-600 bg-slate-800 px-2 text-sm text-slate-100"
+                    className="h-9 w-32 rounded-md border border-[#333333] bg-[#111111] px-2 text-sm text-slate-100"
                   />
                   <button
                     type="button"
                     onClick={handleSetCalendarCount}
                     disabled={isSettingCount}
-                    className="h-9 rounded-md border border-slate-600 bg-slate-800 px-3 text-sm text-slate-100 hover:bg-slate-700 disabled:opacity-60"
+                    className="h-9 rounded-md border border-[#333333] bg-[#111111] px-3 text-sm text-slate-100 hover:bg-[#222222] disabled:opacity-60"
                   >
                     {isSettingCount ? 'Saving...' : 'Set'}
                   </button>
@@ -1143,7 +1143,7 @@ function HabitsPage() {
                 className={`rounded-full border px-3 py-1 text-xs ${
                   calendarFilters.done
                     ? 'border-amber-400/70 bg-amber-400/20 text-amber-100'
-                    : 'border-slate-600 bg-slate-900 text-slate-300'
+                    : 'border-[#333333] bg-surface text-slate-300'
                 }`}
               >
                 Done
@@ -1154,7 +1154,7 @@ function HabitsPage() {
                 className={`rounded-full border px-3 py-1 text-xs ${
                   calendarFilters.break
                     ? 'border-red-500/70 bg-red-500/20 text-red-100'
-                    : 'border-slate-600 bg-slate-900 text-slate-300'
+                    : 'border-[#333333] bg-surface text-slate-300'
                 }`}
               >
                 Break
@@ -1165,7 +1165,7 @@ function HabitsPage() {
                 className={`rounded-full border px-3 py-1 text-xs ${
                   calendarFilters.healed
                     ? 'border-sky-500/70 bg-sky-500/20 text-sky-100'
-                    : 'border-slate-600 bg-slate-900 text-slate-300'
+                    : 'border-[#333333] bg-surface text-slate-300'
                 }`}
               >
                 Healed
@@ -1176,7 +1176,7 @@ function HabitsPage() {
               <button
                 type="button"
                 onClick={() => setCalendarMonth((previous) => shiftMonth(previous, -1))}
-                className="rounded-md border border-slate-600 px-3 py-1 text-sm text-slate-100 hover:bg-slate-800"
+                className="rounded-md border border-[#333333] px-3 py-1 text-sm text-slate-100 hover:bg-[#111111]"
               >
                 Previous
               </button>
@@ -1184,7 +1184,7 @@ function HabitsPage() {
               <button
                 type="button"
                 onClick={() => setCalendarMonth((previous) => shiftMonth(previous, 1))}
-                className="rounded-md border border-slate-600 px-3 py-1 text-sm text-slate-100 hover:bg-slate-800"
+                className="rounded-md border border-[#333333] px-3 py-1 text-sm text-slate-100 hover:bg-[#111111]"
               >
                 Next
               </button>
@@ -1202,7 +1202,7 @@ function HabitsPage() {
                 const showBreak = calendarFilters.break && calendarBreakDates.has(day.dateKey)
                 const showDone = calendarFilters.done && calendarCompletionDates.has(day.dateKey)
 
-                let toneClass = 'border-slate-700 bg-slate-800 text-slate-300'
+                let toneClass = 'border-border bg-[#111111] text-slate-300'
                 if (showHeal) {
                   toneClass = 'border-sky-500/60 bg-sky-500/20 text-sky-100'
                 } else if (showBreak) {

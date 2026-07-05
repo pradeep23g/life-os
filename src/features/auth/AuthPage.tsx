@@ -16,7 +16,7 @@ function AuthPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   if (loading) {
-    return <section className="mx-auto mt-20 max-w-md rounded-xl border border-slate-700 bg-slate-900 p-6">Checking session...</section>
+    return <section className="mx-auto mt-20 max-w-md rounded-xl border border-border bg-surface p-6">Checking session...</section>
   }
 
   if (user) {
@@ -54,7 +54,7 @@ function AuthPage() {
   }
 
   return (
-    <section className="mx-auto mt-20 max-w-md rounded-xl border border-slate-700 bg-slate-900 p-6">
+    <section className="mx-auto mt-20 max-w-md rounded-xl border border-border bg-surface p-6">
       <h1 className="text-2xl font-semibold text-slate-100">Life OS Auth</h1>
       <p className="mt-1 text-sm text-slate-400">Sign in or create an account to access Mind OS and Productivity Hub.</p>
 
@@ -63,7 +63,7 @@ function AuthPage() {
           type="button"
           onClick={() => setMode('login')}
           className={`rounded-md border px-3 py-2 text-sm ${
-            mode === 'login' ? 'border-slate-400 bg-slate-700 text-slate-100' : 'border-slate-600 bg-slate-800 text-slate-300'
+            mode === 'login' ? 'border-slate-400 bg-[#222222] text-slate-100' : 'border-[#333333] bg-[#111111] text-slate-300'
           }`}
         >
           Login
@@ -72,7 +72,7 @@ function AuthPage() {
           type="button"
           onClick={() => setMode('signup')}
           className={`rounded-md border px-3 py-2 text-sm ${
-            mode === 'signup' ? 'border-slate-400 bg-slate-700 text-slate-100' : 'border-slate-600 bg-slate-800 text-slate-300'
+            mode === 'signup' ? 'border-slate-400 bg-[#222222] text-slate-100' : 'border-[#333333] bg-[#111111] text-slate-300'
           }`}
         >
           Sign Up
@@ -87,7 +87,7 @@ function AuthPage() {
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             required
-            className="mt-1 w-full rounded-md border border-slate-600 bg-slate-800 p-2 text-slate-100"
+            className="mt-1 w-full rounded-md border border-[#333333] bg-[#111111] p-2 text-slate-100"
           />
         </label>
 
@@ -99,7 +99,7 @@ function AuthPage() {
             onChange={(event) => setPassword(event.target.value)}
             required
             minLength={6}
-            className="mt-1 w-full rounded-md border border-slate-600 bg-slate-800 p-2 text-slate-100"
+            className="mt-1 w-full rounded-md border border-[#333333] bg-[#111111] p-2 text-slate-100"
           />
         </label>
 
@@ -109,7 +109,7 @@ function AuthPage() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full rounded-md border border-slate-600 bg-slate-800 px-4 py-2 text-sm text-slate-100 hover:bg-slate-700 disabled:opacity-60"
+          className="w-full rounded-md border border-[#333333] bg-[#111111] px-4 py-2 text-sm text-slate-100 hover:bg-[#222222] disabled:opacity-60"
         >
           {isSubmitting ? 'Please wait...' : mode === 'login' ? 'Login' : 'Create Account'}
         </button>

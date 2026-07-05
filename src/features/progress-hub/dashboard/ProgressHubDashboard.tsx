@@ -218,7 +218,7 @@ function ProgressHubDashboard() {
                 <span>{skill.skill_name}</span>
                 <span>{skill.progress_percent}%</span>
               </div>
-              <div className="mt-1 h-2 overflow-hidden rounded-full bg-slate-900">
+              <div className="mt-1 h-2 overflow-hidden rounded-full bg-surface">
                 <div className="h-full bg-emerald-700" style={{ width: `${skill.progress_percent}%` }} />
               </div>
             </div>

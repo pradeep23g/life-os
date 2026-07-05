@@ -58,13 +58,13 @@ Dark theme is the default interface.
 Base colors:
 
 Background
-#0f172a
+#000000
 
 Surface
-#1e293b
+#0a0a0a
 
 Border
-#334155
+#222222
 
 Text colors:
 

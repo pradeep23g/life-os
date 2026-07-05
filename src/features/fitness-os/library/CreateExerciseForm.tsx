@@ -77,7 +77,7 @@ function CreateExerciseForm({ value, onChange, onSubmit, submitLabel, isSubmitti
       <button
         type="submit"
         disabled={isSubmitting || !value.name.trim()}
-        className="rounded-md border border-[#222222] bg-[#0a0a0a] px-4 py-2 text-sm text-slate-100 transition-colors hover:bg-slate-900 disabled:opacity-60 md:col-span-2"
+        className="rounded-md border border-[#222222] bg-[#0a0a0a] px-4 py-2 text-sm text-slate-100 transition-colors hover:bg-surface disabled:opacity-60 md:col-span-2"
       >
         {isSubmitting ? 'Saving...' : submitLabel}
       </button>

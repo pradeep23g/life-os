@@ -31,7 +31,7 @@ function getReadableErrorMessage(error: unknown): string {
 
 function getCalendarCellTone(hasIncome: boolean, hasExpense: boolean) {
   if (hasIncome && hasExpense) {
-    return 'border-slate-600 bg-slate-900 text-slate-100'
+    return 'border-[#333333] bg-surface text-slate-100'
   }
 
   if (hasIncome) {

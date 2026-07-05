@@ -126,7 +126,7 @@ export default function EndOfDayCard() {
   }
 
   return (
-    <article className="rounded-xl border border-slate-800 bg-[#0a0a0a] p-4">
+    <article className="rounded-xl border border-border bg-[#0a0a0a] p-4">
       <h2 className="text-lg font-semibold text-slate-100">End of Day</h2>
 
       <section className="mt-4">
@@ -141,7 +141,7 @@ export default function EndOfDayCard() {
               const currentStreak = stat?.currentStreak ?? 0
 
               return (
-                <li key={habit.id} className="flex items-center justify-between gap-3 rounded-lg border border-slate-800 bg-black p-2">
+                <li key={habit.id} className="flex items-center justify-between gap-3 rounded-lg border border-border bg-black p-2">
                   <div>
                     <p className="text-sm font-medium text-slate-100">{habit.title}</p>
                     <p className="text-xs text-slate-400">Streak: {currentStreak}</p>
@@ -156,7 +156,7 @@ export default function EndOfDayCard() {
                       type="button"
                       disabled={isMarkingHabitDone}
                       onClick={() => handleMarkDone(habit.id, habit.habit_type, habit.target_value)}
-                      className="rounded border border-slate-700 bg-slate-800 px-2 py-1 text-xs text-slate-100 hover:bg-slate-700 disabled:opacity-60"
+                      className="rounded border border-border bg-[#111111] px-2 py-1 text-xs text-slate-100 hover:bg-[#222222] disabled:opacity-60"
                     >
                       Mark Done
                     </button>
@@ -178,8 +178,8 @@ export default function EndOfDayCard() {
               onClick={() => setSelectedMood(option.value)}
               className={`rounded-full border px-3 py-1 text-sm ${
                 selectedMood === option.value
-                  ? 'border-slate-500 bg-slate-800 text-slate-100'
-                  : 'border-slate-700 bg-black text-slate-300 hover:bg-slate-900'
+                  ? 'border-slate-500 bg-[#111111] text-slate-100'
+                  : 'border-border bg-black text-slate-300 hover:bg-surface'
               }`}
             >
               {option.emoji}
@@ -192,7 +192,7 @@ export default function EndOfDayCard() {
           onChange={(event) => setNote(event.target.value)}
           placeholder="One line about today... (optional)"
           rows={2}
-          className="mt-2 w-full rounded-md border border-slate-800 bg-black p-2 text-sm text-slate-100"
+          className="mt-2 w-full rounded-md border border-border bg-black p-2 text-sm text-slate-100"
         />
 
         <div className="mt-2 flex items-center gap-3">
@@ -200,7 +200,7 @@ export default function EndOfDayCard() {
             type="button"
             onClick={handleSaveCheckIn}
             disabled={isSavingCheckIn}
-            className="rounded border border-slate-700 bg-slate-800 px-3 py-1.5 text-sm text-slate-100 hover:bg-slate-700 disabled:opacity-60"
+            className="rounded border border-border bg-[#111111] px-3 py-1.5 text-sm text-slate-100 hover:bg-[#222222] disabled:opacity-60"
           >
             {isSavingCheckIn ? 'Saving...' : 'Save check-in'}
           </button>
@@ -220,7 +220,7 @@ export default function EndOfDayCard() {
                 key={dateKey}
                 title={dayLabel}
                 className={`h-2.5 w-2.5 rounded-full border ${
-                  filled ? 'border-slate-300 bg-slate-300' : 'border-slate-700 bg-transparent'
+                  filled ? 'border-slate-300 bg-slate-300' : 'border-border bg-transparent'
                 }`}
               />
             )

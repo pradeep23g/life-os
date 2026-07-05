@@ -121,7 +121,7 @@ function TimeOSPage() {
                     })
                   }
                 }}
-                className="rounded-md border border-[#222222] bg-black px-3 py-2 text-sm text-slate-100 hover:bg-slate-950"
+                className="rounded-md border border-[#222222] bg-black px-3 py-2 text-sm text-slate-100 hover:bg-black"
               >
                 Pop Out
               </button>
@@ -132,7 +132,7 @@ function TimeOSPage() {
                   stopTimer()
                 }}
                 disabled={isStopping}
-                className="rounded-md border border-[#222222] bg-black px-3 py-2 text-sm text-slate-100 hover:bg-slate-950 disabled:opacity-60"
+                className="rounded-md border border-[#222222] bg-black px-3 py-2 text-sm text-slate-100 hover:bg-black disabled:opacity-60"
               >
                 {isStopping ? 'Stopping...' : 'Stop Timer'}
               </button>
@@ -279,7 +279,7 @@ function TimeOSPage() {
                     })
                   }
                   disabled={Boolean(activeTimer) || isStarting}
-                  className="mt-3 rounded-md border border-[#222222] bg-black px-3 py-2 text-sm text-slate-100 hover:bg-slate-950 disabled:opacity-60"
+                  className="mt-3 rounded-md border border-[#222222] bg-black px-3 py-2 text-sm text-slate-100 hover:bg-black disabled:opacity-60"
                 >
                   {isStarting ? 'Starting...' : 'Start Timer'}
                 </button>
@@ -325,7 +325,7 @@ function TimeOSPage() {
                     })
                   }
                   disabled={isSavingManual}
-                  className="mt-3 rounded-md border border-[#222222] bg-black px-3 py-2 text-sm text-slate-100 hover:bg-slate-950 disabled:opacity-60"
+                  className="mt-3 rounded-md border border-[#222222] bg-black px-3 py-2 text-sm text-slate-100 hover:bg-black disabled:opacity-60"
                 >
                   {isSavingManual ? 'Saving...' : 'Save Manual Log'}
                 </button>

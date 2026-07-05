@@ -110,7 +110,7 @@ function LocalNavLink({ to, label }: { to: string; label: string }) {
       end={to === '.'}
       className={({ isActive }) =>
         `shrink-0 rounded-lg px-3 py-2 text-sm transition-colors ${
-          isActive ? 'bg-slate-700 text-slate-100' : 'text-slate-300 hover:bg-slate-800'
+          isActive ? 'bg-[#222222] text-slate-100' : 'text-slate-300 hover:bg-[#111111]'
         }`
       }
     >
@@ -124,7 +124,7 @@ function ProtectedRoute() {
 
   if (loading) {
     return (
-      <section className="mx-auto mt-20 max-w-md rounded-xl border border-slate-700 bg-slate-900 p-6 text-slate-200">
+      <section className="mx-auto mt-20 max-w-md rounded-xl border border-border bg-surface p-6 text-slate-200">
         Checking authentication...
       </section>
     )
@@ -194,9 +194,9 @@ function AppShell() {
   }, [desktopExpanded])
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
+    <div className="min-h-screen bg-black text-slate-100">
       <aside
-        className={`fixed inset-y-0 left-0 z-30 hidden border-r border-slate-800 bg-slate-950 transition-[width] duration-300 motion-reduce:transition-none md:block ${
+        className={`fixed inset-y-0 left-0 z-30 hidden border-r border-border bg-black transition-[width] duration-300 motion-reduce:transition-none md:block ${
           desktopExpanded ? 'w-72' : 'w-20'
         }`}
       >
@@ -214,12 +214,12 @@ function AppShell() {
           desktopExpanded ? 'md:pl-72' : 'md:pl-20'
         }`}
       >
-        <header className="sticky top-0 z-20 border-b border-slate-800 bg-slate-950/90 backdrop-blur">
+        <header className="sticky top-0 z-20 border-b border-border bg-black/90 backdrop-blur">
           <div className="flex h-14 items-center gap-2 px-3 md:px-6">
             <button
               type="button"
               onClick={toggleMobileSidebar}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-700 text-slate-200 hover:bg-slate-800 md:hidden"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border text-slate-200 hover:bg-[#111111] md:hidden"
               aria-label="Toggle sidebar"
               aria-expanded={mobileOpen}
             >
@@ -267,7 +267,7 @@ function AppShell() {
 function MindOsLayout() {
   return (
     <section className="space-y-4">
-      <header className="rounded-xl border border-slate-700 bg-slate-900 p-4">
+      <header className="rounded-xl border border-border bg-surface p-4">
         <h1 className="text-xl font-semibold sm:text-2xl">Mind OS</h1>
         <nav className="mt-3 flex gap-2 overflow-x-auto pb-1">
           <LocalNavLink to="." label="Dashboard" />
@@ -283,7 +283,7 @@ function MindOsLayout() {
 function ProductivityHubLayout() {
   return (
     <section className="space-y-4">
-      <header className="rounded-xl border border-slate-700 bg-slate-900 p-4">
+      <header className="rounded-xl border border-border bg-surface p-4">
         <h1 className="text-xl font-semibold sm:text-2xl">Productivity Hub</h1>
         <nav className="mt-3 flex gap-2 overflow-x-auto pb-1">
           <LocalNavLink to="." label="Dashboard" />
@@ -299,7 +299,7 @@ function ProductivityHubLayout() {
 function ProgressHubLayout() {
   return (
     <section className="space-y-4">
-      <header className="rounded-xl border border-slate-700 bg-slate-900 p-4">
+      <header className="rounded-xl border border-border bg-surface p-4">
         <h1 className="text-xl font-semibold sm:text-2xl">Progress Hub</h1>
         <nav className="mt-3 flex gap-2 overflow-x-auto pb-1">
           <LocalNavLink to="." label="Dashboard" />
@@ -317,7 +317,7 @@ function ProgressHubLayout() {
 function FitnessOsLayout() {
   return (
     <section className="space-y-4">
-      <header className="rounded-xl border border-slate-700 bg-slate-900 p-4">
+      <header className="rounded-xl border border-border bg-surface p-4">
         <h1 className="text-xl font-semibold sm:text-2xl">Fitness OS</h1>
         <nav className="mt-3 flex gap-2 overflow-x-auto pb-1">
           <LocalNavLink to="." label="Dashboard" />

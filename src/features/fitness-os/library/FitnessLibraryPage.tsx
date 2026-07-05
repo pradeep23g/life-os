@@ -173,8 +173,8 @@ function FitnessLibraryPage() {
             onClick={() => setSelectedMuscle('All')}
             className={`rounded-full border px-3 py-1 text-xs transition-colors ${
               selectedMuscle === 'All'
-                ? 'border-slate-500 bg-slate-800 text-slate-100'
-                : 'border-[#222222] bg-black text-slate-300 hover:bg-slate-900'
+                ? 'border-slate-500 bg-[#111111] text-slate-100'
+                : 'border-[#222222] bg-black text-slate-300 hover:bg-surface'
             }`}
           >
             All
@@ -186,8 +186,8 @@ function FitnessLibraryPage() {
               onClick={() => setSelectedMuscle(muscle)}
               className={`rounded-full border px-3 py-1 text-xs transition-colors ${
                 selectedMuscle === muscle
-                  ? 'border-slate-500 bg-slate-800 text-slate-100'
-                  : 'border-[#222222] bg-black text-slate-300 hover:bg-slate-900'
+                  ? 'border-slate-500 bg-[#111111] text-slate-100'
+                  : 'border-[#222222] bg-black text-slate-300 hover:bg-surface'
               }`}
             >
               {muscle}
@@ -195,7 +195,7 @@ function FitnessLibraryPage() {
           ))}
           {muscleStats.more.length > 0 ? (
             <details className="relative" open={moreOpen} onToggle={(event) => setMoreOpen((event.currentTarget as HTMLDetailsElement).open)}>
-              <summary className="cursor-pointer list-none rounded-full border border-[#222222] bg-black px-3 py-1 text-xs text-slate-300 hover:bg-slate-900">
+              <summary className="cursor-pointer list-none rounded-full border border-[#222222] bg-black px-3 py-1 text-xs text-slate-300 hover:bg-surface">
                 More ▾
               </summary>
               <div className="absolute right-0 z-10 mt-2 w-40 rounded-md border border-[#222222] bg-black p-2 shadow-2xl">
@@ -209,7 +209,7 @@ function FitnessLibraryPage() {
                         setMoreOpen(false)
                       }}
                       className={`rounded px-2 py-1 text-left text-xs transition-colors ${
-                        selectedMuscle === muscle ? 'bg-slate-800 text-slate-100' : 'text-slate-300 hover:bg-slate-900'
+                        selectedMuscle === muscle ? 'bg-[#111111] text-slate-100' : 'text-slate-300 hover:bg-surface'
                       }`}
                     >
                       {muscle}
@@ -252,7 +252,7 @@ function FitnessLibraryPage() {
                     <button
                       type="button"
                       onClick={() => beginEdit(exercise)}
-                      className="rounded-md border border-[#222222] bg-[#0a0a0a] px-3 py-1 text-xs text-slate-100 transition-colors hover:bg-slate-900"
+                      className="rounded-md border border-[#222222] bg-[#0a0a0a] px-3 py-1 text-xs text-slate-100 transition-colors hover:bg-surface"
                     >
                       Edit
                     </button>
@@ -275,7 +275,7 @@ function FitnessLibraryPage() {
                       setEditingId(null)
                       setEditingForm(emptyExerciseForm)
                     }}
-                    className="rounded-md border border-[#222222] px-3 py-1 text-sm text-slate-300 transition-colors hover:bg-slate-900"
+                    className="rounded-md border border-[#222222] px-3 py-1 text-sm text-slate-300 transition-colors hover:bg-surface"
                   >
                     Cancel
                   </button>
@@ -289,7 +289,7 @@ function FitnessLibraryPage() {
       <button
         type="button"
         onClick={() => setIsCreateModalOpen(true)}
-        className="fixed bottom-8 right-8 h-14 w-14 rounded-full bg-slate-900 border border-emerald-900 text-emerald-500 text-2xl flex items-center justify-center hover:bg-slate-800 transition-colors z-50 shadow-lg"
+        className="fixed bottom-8 right-8 h-14 w-14 rounded-full bg-surface border border-emerald-900 text-emerald-500 text-2xl flex items-center justify-center hover:bg-[#111111] transition-colors z-50 shadow-lg"
       >
         +
       </button>
@@ -311,7 +311,7 @@ function FitnessLibraryPage() {
               <button
                 type="button"
                 onClick={() => setIsCreateModalOpen(false)}
-                className="rounded-md border border-[#222222] bg-black px-3 py-1 text-sm text-slate-100 hover:bg-slate-900"
+                className="rounded-md border border-[#222222] bg-black px-3 py-1 text-sm text-slate-100 hover:bg-surface"
               >
                 Close
               </button>

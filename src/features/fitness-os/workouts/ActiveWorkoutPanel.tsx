@@ -199,7 +199,7 @@ function ActiveWorkoutPanel({ activeWorkout, exercises, onEndWorkout, isEnding }
                 <button
                   type="button"
                   onClick={() => setOpenComposerExerciseId(showComposer ? null : exerciseId)}
-                  className="rounded border border-[#222222] px-3 py-1 text-xs text-slate-200 hover:bg-slate-900"
+                  className="rounded border border-[#222222] px-3 py-1 text-xs text-slate-200 hover:bg-surface"
                 >
                   {showComposer ? 'Hide' : 'Log Set'}
                 </button>

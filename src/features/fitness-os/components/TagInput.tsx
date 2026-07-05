@@ -48,12 +48,12 @@ function TagInput({ value, onChange, placeholder, className }: TagInputProps) {
       }`}
     >
       {value.map((tag) => (
-        <span key={tag} className="inline-flex items-center gap-1 rounded-full bg-slate-800 px-2 py-1 text-xs text-white">
+        <span key={tag} className="inline-flex items-center gap-1 rounded-full bg-[#111111] px-2 py-1 text-xs text-white">
           {tag}
           <button
             type="button"
             onClick={() => onChange(value.filter((item) => item !== tag))}
-            className="rounded-full px-1 text-slate-300 transition-colors hover:bg-slate-700 hover:text-white"
+            className="rounded-full px-1 text-slate-300 transition-colors hover:bg-[#222222] hover:text-white"
             aria-label={`Remove ${tag}`}
           >
             ×

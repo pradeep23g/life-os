@@ -442,7 +442,7 @@ function TasksPage() {
                         type="button"
                         onClick={() => handleStartFocus(task.id)}
                         disabled={isStartingTimer || Boolean(activeTimer)}
-                        className="rounded-md border border-[#222222] bg-black px-2 py-1 text-xs text-slate-100 hover:bg-slate-950 disabled:opacity-50"
+                        className="rounded-md border border-[#222222] bg-black px-2 py-1 text-xs text-slate-100 hover:bg-black disabled:opacity-50"
                       >
                         {isStartingTimer ? 'Starting...' : 'Start'}
                       </button>

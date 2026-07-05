@@ -36,7 +36,7 @@ export const timeAnalyticsQueryKey = ['time-os', 'analytics'] as const
 const BUCKET_COLOR_CLASS: Record<TimeBucket, string> = {
   Academics: 'bg-purple-900',
   'Deep Work': 'bg-blue-900',
-  Admin: 'bg-slate-700',
+  Admin: 'bg-[#222222]',
   Fitness: 'bg-emerald-900',
   Learning: 'bg-amber-900',
 }

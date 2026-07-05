@@ -55,7 +55,7 @@ function ExercisePickerDrawer({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md border border-[#222222] bg-black px-3 py-1.5 text-sm text-slate-200 hover:bg-slate-900"
+            className="rounded-md border border-[#222222] bg-black px-3 py-1.5 text-sm text-slate-200 hover:bg-surface"
           >
             Close
           </button>
@@ -70,7 +70,7 @@ function ExercisePickerDrawer({
               className={`rounded-full border px-3 py-1 text-xs transition-colors ${
                 selectedMuscle === item
                   ? 'border-emerald-900 bg-emerald-950/30 text-emerald-400'
-                  : 'border-[#222222] bg-black text-slate-300 hover:bg-slate-900'
+                  : 'border-[#222222] bg-black text-slate-300 hover:bg-surface'
               }`}
             >
               {item}
@@ -84,7 +84,7 @@ function ExercisePickerDrawer({
               <button
                 type="button"
                 onClick={() => onPickExercise(exercise)}
-                className="w-full rounded-md border border-[#222222] bg-black p-3 text-left hover:bg-slate-900"
+                className="w-full rounded-md border border-[#222222] bg-black p-3 text-left hover:bg-surface"
               >
                 <p className="text-sm font-semibold text-slate-100">{exercise.name}</p>
                 <p className="mt-1 text-xs text-slate-400">

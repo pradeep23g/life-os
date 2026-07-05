@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { logEventSafe } from '../../../lib/events'
 import { supabase } from '../../../lib/supabase'
+import { emitSystemFeedback } from '../../system/feedback'
 
 export const productivityPlanningQueryKey = ['productivity-hub', 'planning'] as const
 export const productivityGoalsQueryKey = ['productivity-hub', 'planning', 'goals'] as const
@@ -360,16 +361,17 @@ async function createWeeklyPlanItem(input: CreateWeeklyPlanItemInput): Promise<v
   let resolvedOrder = input.orderIndex
 
   if (resolvedOrder === undefined) {
-    const { data: lastItem } = await supabase
+    const { count, error: countError } = await supabase
       .from('weekly_plan_items')
-      .select('order_index')
+      .select('*', { count: 'exact', head: true })
       .eq('user_id', userId)
       .eq('week_start_date', input.weekStartDate)
-      .order('order_index', { ascending: false })
-      .limit(1)
-      .maybeSingle()
 
-    resolvedOrder = typeof lastItem?.order_index === 'number' ? lastItem.order_index + 1 : 0
+    if (countError) {
+      resolvedOrder = Date.now() % 100000
+    } else {
+      resolvedOrder = count ?? 0
+    }
   }
 
   const { data, error } = await supabase
@@ -537,6 +539,7 @@ export function useCreateWeeklyPlan() {
     mutationFn: createWeeklyPlan,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: productivityPlanningQueryKey })
+      emitSystemFeedback({ title: 'Weekly Focus Saved', description: 'Your weekly focus has been saved.' })
     },
   })
 }
@@ -548,6 +551,7 @@ export function useUpdateWeeklyPlan() {
     mutationFn: updateWeeklyPlan,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: productivityPlanningQueryKey })
+      emitSystemFeedback({ title: 'Weekly Focus Updated', description: 'Your weekly focus has been updated.' })
     },
   })
 }
@@ -559,6 +563,7 @@ export function useCreateGoal() {
     mutationFn: createGoal,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: productivityGoalsQueryKey })
+      emitSystemFeedback({ title: '+1 Goal', description: 'New goal added to your alignment panel.' })
     },
   })
 }
@@ -570,6 +575,7 @@ export function useUpdateGoalStatus() {
     mutationFn: updateGoalStatus,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: productivityGoalsQueryKey })
+      emitSystemFeedback({ title: 'Goal Updated', description: 'Goal status has been updated.' })
     },
   })
 }
@@ -581,6 +587,7 @@ export function useCreateWeeklyPlanItem(weekStartDate: string) {
     mutationFn: createWeeklyPlanItem,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: productivityWeeklyPlanItemsQueryKey(weekStartDate) })
+      emitSystemFeedback({ title: '+1 Plan Item', description: 'Plan item added to this week.' })
     },
   })
 }
@@ -592,6 +599,7 @@ export function useUpdateWeeklyPlanItem(weekStartDate: string) {
     mutationFn: updateWeeklyPlanItem,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: productivityWeeklyPlanItemsQueryKey(weekStartDate) })
+      emitSystemFeedback({ title: 'Plan Item Updated', description: 'Plan item status changed.' })
     },
   })
 }
@@ -603,6 +611,7 @@ export function useUpsertWeeklyReview(weekStartDate: string) {
     mutationFn: upsertWeeklyReview,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: productivityWeeklyReviewQueryKey(weekStartDate) })
+      emitSystemFeedback({ title: 'Review Saved', description: 'Weekly review captured successfully.' })
     },
   })
 }
