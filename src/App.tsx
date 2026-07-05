@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { BrowserRouter, Navigate, NavLink, Outlet, Route, Routes, useLocation } from 'react-router-dom'
 
 import AuthPage from './features/auth/AuthPage'
@@ -7,6 +7,7 @@ import HabitsPage from './features/mind-os/habits/HabitsPage'
 import JournalPage from './features/mind-os/journal/JournalPage'
 import FitnessOsDashboard from './features/fitness-os/pages/Dashboard'
 import FitnessLibraryPage from './features/fitness-os/pages/Library'
+import PersonalRecordsPage from './features/fitness-os/library/PersonalRecordsPage'
 import WorkoutsPage from './features/fitness-os/workouts/WorkoutsPage'
 import FinanceDashboard from './features/finance-os/pages/FinanceDashboard'
 import DataLabPage from './features/data-lab/pages/DataLabPage'
@@ -86,6 +87,10 @@ function getShellTitle(pathname: string) {
 
   if (pathname.startsWith('/fitness-os/library')) {
     return 'Fitness OS - Library'
+  }
+
+  if (pathname.startsWith('/fitness-os/pr')) {
+    return 'Fitness OS - Personal Records'
   }
 
   if (pathname.startsWith('/time-os')) {
@@ -323,6 +328,7 @@ function FitnessOsLayout() {
           <LocalNavLink to="." label="Dashboard" />
           <LocalNavLink to="workouts" label="Workouts" />
           <LocalNavLink to="library" label="Library" />
+          <LocalNavLink to="pr" label="Personal Records" />
         </nav>
       </header>
       <Outlet />
@@ -366,6 +372,7 @@ function App() {
                 <Route index element={<FitnessOsDashboard />} />
                 <Route path="workouts" element={<WorkoutsPage />} />
                 <Route path="library" element={<FitnessLibraryPage />} />
+                <Route path="pr" element={<PersonalRecordsPage />} />
               </Route>
 
               <Route path="time-os" element={<TimeOSPage />} />

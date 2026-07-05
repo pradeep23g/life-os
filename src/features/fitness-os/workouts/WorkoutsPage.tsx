@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 
 import ActiveWorkoutPanel from './ActiveWorkoutPanel'
@@ -39,6 +39,7 @@ function WorkoutsPage() {
   const [sessionTitle, setSessionTitle] = useState('')
   const [sessionType, setSessionType] = useState('')
   const [expandedWorkoutId, setExpandedWorkoutId] = useState<string | null>(null)
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   const { data: expandedWorkoutDetail } = useWorkoutDetail(expandedWorkoutId)
 
   const recentCompletedWorkouts = useMemo(() => workouts.slice(0, 8), [workouts])
@@ -139,15 +140,97 @@ function WorkoutsPage() {
             <p className="mt-2 text-sm text-slate-400">No workouts logged for this date.</p>
           ) : (
             <ul className="mt-3 space-y-2">
-              {workoutsForSelectedDate.map((workout) => (
-                <li key={`day-${workout.id}`} className="rounded-md border border-[#222222] bg-black p-3">
-                  <p className="text-sm font-semibold text-slate-100">{workout.title}</p>
-                  <p className="mt-1 text-xs text-slate-400">
-                    {workout.duration_minutes} min • {workout.session_type || 'General'}
-                  </p>
-                  {workout.notes ? <p className="mt-1 text-xs text-slate-300">{workout.notes}</p> : null}
-                </li>
-              ))}
+              {workoutsForSelectedDate.map((workout) => {
+                const isExpanded = expandedWorkoutId === workout.id
+                return (
+                  <li key={`day-${workout.id}`} className="rounded-md border border-[#222222] bg-black p-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <p className="text-sm font-semibold text-slate-100">{workout.title}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm text-slate-200">{workout.duration_minutes} min</p>
+                        <button
+                          type="button"
+                          onClick={() => setExpandedWorkoutId(isExpanded ? null : workout.id)}
+                          className="rounded border border-[#222222] px-2 py-1 text-xs text-slate-300 hover:bg-[#111111]"
+                        >
+                          {isExpanded ? 'Hide' : 'Details'}
+                        </button>
+                        {confirmDeleteId === workout.id ? (
+                          <div className="flex items-center gap-2 rounded border border-red-500/30 bg-red-500/10 px-2 py-1">
+                            <span className="text-xs text-red-400">Sure?</span>
+                            <button
+                              type="button"
+                              disabled={isDeletingWorkout}
+                              onClick={(e) => {
+                                e.preventDefault()
+                                e.stopPropagation()
+                                deleteWorkout({ id: workout.id })
+                                setConfirmDeleteId(null)
+                                if (expandedWorkoutId === workout.id) setExpandedWorkoutId(null)
+                              }}
+                              className="text-xs font-semibold text-red-400 hover:text-red-300"
+                            >
+                              Yes
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault()
+                                e.stopPropagation()
+                                setConfirmDeleteId(null)
+                              }}
+                              className="text-xs text-slate-400 hover:text-slate-200"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            disabled={isDeletingWorkout}
+                            onClick={(e) => {
+                              e.preventDefault()
+                              e.stopPropagation()
+                              setConfirmDeleteId(workout.id)
+                            }}
+                            className="p-3 text-neutral-600 transition-colors hover:text-red-500 sm:p-2"
+                            aria-label="Delete workout"
+                          >
+                            <TrashIcon />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    <p className="mt-1 text-xs text-slate-400">
+                      {workout.session_type || 'General'}
+                    </p>
+                    {workout.notes ? <p className="mt-1 text-xs text-slate-300">{workout.notes}</p> : null}
+
+                    {isExpanded ? (
+                      <div className="mt-3 rounded-md border border-[#222222] bg-[#111111] p-2">
+                        {(expandedWorkoutDetail?.logs ?? []).length === 0 ? (
+                          <p className="text-xs text-slate-400">No exercise logs captured.</p>
+                        ) : (
+                          <ul className="space-y-1">
+                            {(expandedWorkoutDetail?.logs ?? []).map((log) => (
+                              <li key={log.id} className="text-xs text-slate-300 flex flex-wrap items-center gap-1">
+                                <span className="font-medium text-slate-200">{log.exercise_name}:</span>
+                                <span className="font-semibold text-emerald-400/90 drop-shadow-[0_0_3px_rgba(16,185,129,0.2)]">{log.sets ?? 1} set</span>, 
+                                <span className="font-semibold text-emerald-400/90 drop-shadow-[0_0_3px_rgba(16,185,129,0.2)]">{log.reps_total ?? 0} reps</span>
+                                {log.weight_kg ? (
+                                  <span className="font-bold text-cyan-400/90 drop-shadow-[0_0_3px_rgba(34,211,238,0.2)]">
+                                    @ {log.weight_kg}kg
+                                  </span>
+                                ) : null}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    ) : null}
+                  </li>
+                )
+              })}
             </ul>
           )}
         </article>
@@ -181,22 +264,50 @@ function WorkoutsPage() {
                       >
                         {isExpanded ? 'Hide' : 'Details'}
                       </button>
-                      <button
-                        type="button"
-                        disabled={isDeletingWorkout}
-                        onClick={() => {
-                          const confirmed = window.confirm(`Delete workout "${workout.title}"?`)
-                          if (!confirmed) return
-                          deleteWorkout({ id: workout.id })
-                          if (expandedWorkoutId === workout.id) {
-                            setExpandedWorkoutId(null)
-                          }
-                        }}
-                        className="p-3 text-neutral-600 transition-colors hover:text-red-500 sm:p-2"
-                        aria-label="Delete workout"
-                      >
-                        <TrashIcon />
-                      </button>
+                      {confirmDeleteId === workout.id ? (
+                        <div className="flex items-center gap-2 rounded border border-red-500/30 bg-red-500/10 px-2 py-1">
+                          <span className="text-xs text-red-400">Sure?</span>
+                          <button
+                            type="button"
+                            disabled={isDeletingWorkout}
+                            onClick={(e) => {
+                              e.preventDefault()
+                              e.stopPropagation()
+                              deleteWorkout({ id: workout.id })
+                              setConfirmDeleteId(null)
+                              if (expandedWorkoutId === workout.id) setExpandedWorkoutId(null)
+                            }}
+                            className="text-xs font-semibold text-red-400 hover:text-red-300"
+                          >
+                            Yes
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault()
+                              e.stopPropagation()
+                              setConfirmDeleteId(null)
+                            }}
+                            className="text-xs text-slate-400 hover:text-slate-200"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          disabled={isDeletingWorkout}
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            setConfirmDeleteId(workout.id)
+                          }}
+                          className="p-3 text-neutral-600 transition-colors hover:text-red-500 sm:p-2"
+                          aria-label="Delete workout"
+                        >
+                          <TrashIcon />
+                        </button>
+                      )}
                     </div>
                   </div>
                   <p className="mt-1 text-xs text-slate-400">
@@ -210,8 +321,15 @@ function WorkoutsPage() {
                       ) : (
                         <ul className="space-y-1">
                           {(expandedWorkoutDetail?.logs ?? []).map((log) => (
-                            <li key={log.id} className="text-xs text-slate-300">
-                              {log.exercise_name}: {log.sets ?? 1} set, {log.reps_total ?? 0} reps
+                            <li key={log.id} className="text-xs text-slate-300 flex flex-wrap items-center gap-1">
+                              <span className="font-medium text-slate-200">{log.exercise_name}:</span>
+                              <span className="font-semibold text-emerald-400/90 drop-shadow-[0_0_3px_rgba(16,185,129,0.2)]">{log.sets ?? 1} set</span>, 
+                              <span className="font-semibold text-emerald-400/90 drop-shadow-[0_0_3px_rgba(16,185,129,0.2)]">{log.reps_total ?? 0} reps</span>
+                              {log.weight_kg ? (
+                                <span className="font-bold text-cyan-400/90 drop-shadow-[0_0_3px_rgba(34,211,238,0.2)]">
+                                  @ {log.weight_kg}kg
+                                </span>
+                              ) : null}
                             </li>
                           ))}
                         </ul>

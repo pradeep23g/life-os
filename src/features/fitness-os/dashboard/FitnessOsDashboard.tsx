@@ -1,8 +1,8 @@
-﻿import { useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { type FitnessDayInsight, type Workout, useFitnessDashboard } from '../api/useFitness'
-import { buildMonthGrid, formatIndiaDate, formatIndiaDateTime, getMonthLabel, shiftMonth } from '../utils/date'
+import { buildMonthGrid, formatIndiaDate, getMonthLabel, shiftMonth } from '../utils/date'
 
 const weekdayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const
 const heatmapWeekdayLabels = new Set(['Sun', 'Tue', 'Thu', 'Sat'])
@@ -58,7 +58,6 @@ function FitnessOsDashboard() {
   const { data, isLoading, isError } = useFitnessDashboard()
   const [isCalendarOpen, setIsCalendarOpen] = useState(false)
   const [calendarMonth, setCalendarMonth] = useState(() => new Date())
-  const [selectedDateKey, setSelectedDateKey] = useState<string | null>(null)
 
   const monthCells = useMemo(() => buildMonthGrid(calendarMonth), [calendarMonth])
 
@@ -81,8 +80,6 @@ function FitnessOsDashboard() {
     }, 0)
   }, [data, monthCells])
 
-  const selectedDayWorkouts = selectedDateKey && data ? data.workoutsByDate[selectedDateKey] ?? [] : []
-  const selectedDayInsight = selectedDateKey && data ? getDailyInsight(data.workoutsByDate, selectedDateKey) : null
 
   return (
     <section className="space-y-4">
@@ -122,7 +119,6 @@ function FitnessOsDashboard() {
               type="button"
               onClick={() => {
                 setCalendarMonth(new Date())
-                setSelectedDateKey(null)
                 setIsCalendarOpen(true)
               }}
               className="rounded-md border border-[#333333] bg-[#111111] px-3 py-1.5 text-sm text-slate-100 hover:bg-[#222222]"
@@ -139,18 +135,28 @@ function FitnessOsDashboard() {
           <div className="mt-1 grid grid-cols-7 gap-1">
             {buildMonthGrid(new Date()).map((day) => {
               const dayInsight = data ? getDailyInsight(data.workoutsByDate, day.dateKey) : null
+              const dayWorkouts = data?.workoutsByDate[day.dateKey] || []
+              const title = dayWorkouts.length > 0 ? dayWorkouts[0].title : ''
               return (
-                <div
+                <button
+                  type="button"
                   key={day.dateKey}
-                  className={`rounded border p-1 text-center text-xs ${
+                  onClick={() => navigate(`/fitness-os/workouts?date=${day.dateKey}`)}
+                  className={`rounded border p-1 text-center text-xs hover:ring-1 hover:ring-slate-300 transition-all flex flex-col items-center justify-center overflow-hidden ${
                     dayInsight && dayInsight.minutes > 0
                       ? getCalendarDayTone(dayInsight.minutes)
                       : 'border-border bg-[#111111] text-slate-400'
                   } ${day.inCurrentMonth ? '' : 'opacity-40'}`}
+                  title={title || 'No workout'}
                 >
                   <p>{day.day}</p>
-                  <p className="leading-none">{dayInsight && dayInsight.minutes > 0 ? `${dayInsight.minutes}m` : ''}</p>
-                </div>
+                  {dayInsight && dayInsight.minutes > 0 ? (
+                    <>
+                      <p className="leading-none mt-0.5">{dayInsight.minutes}m</p>
+                      <p className="leading-none mt-1 truncate w-full px-0.5 text-[9px] opacity-75">{title}</p>
+                    </>
+                  ) : null}
+                </button>
               )
             })}
           </div>
@@ -203,7 +209,7 @@ function FitnessOsDashboard() {
             <div className="flex items-center justify-between gap-3">
               <div>
                 <h3 className="text-xl font-semibold text-slate-100">Fitness Calendar View</h3>
-                <p className="text-xs text-slate-400">Click any day to open its workout details drawer.</p>
+                <p className="text-xs text-slate-400">Click any day to jump to its workouts.</p>
               </div>
               <button
                 type="button"
@@ -232,7 +238,7 @@ function FitnessOsDashboard() {
               </button>
             </div>
 
-            <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-[1.45fr_1fr]">
+            <div className="mt-4">
               <div>
                 <div className="grid grid-cols-7 gap-2 text-center text-xs text-slate-400">
                   {weekdayHeaders.map((weekday) => (
@@ -245,24 +251,31 @@ function FitnessOsDashboard() {
                     const dayInsight = getDailyInsight(data.workoutsByDate, day.dateKey)
                     const dayClass = getCalendarDayTone(dayInsight.minutes)
                     const ratio = monthlyMaxMinutes > 0 ? dayInsight.minutes / monthlyMaxMinutes : 0
+                    const title = data?.workoutsByDate[day.dateKey]?.[0]?.title
 
                     return (
                       <button
                         key={day.dateKey}
                         type="button"
-                        onClick={() => setSelectedDateKey(day.dateKey)}
-                        className={`rounded-md border p-2 text-left transition ${dayClass} ${
+                        onClick={() => {
+                          setIsCalendarOpen(false)
+                          navigate(`/fitness-os/workouts?date=${day.dateKey}`)
+                        }}
+                        className={`rounded-md border p-2 text-left transition hover:ring-1 hover:ring-slate-300 ${dayClass} ${
                           day.inCurrentMonth ? '' : 'opacity-40'
-                        } ${selectedDateKey === day.dateKey ? 'ring-1 ring-slate-300/70' : ''}`}
+                        }`}
                         style={{
                           boxShadow: dayInsight.minutes > 0 ? `inset 0 0 0 9999px rgba(16, 185, 129, ${0.08 + ratio * 0.22})` : undefined,
                         }}
                       >
                         <p className="text-sm font-semibold">{day.day}</p>
                         {dayInsight.minutes > 0 ? (
-                          <p className="mt-1 text-[11px]">
-                            {dayInsight.minutes}m • {dayInsight.workoutCount}
-                          </p>
+                          <>
+                            <p className="mt-1 text-[11px]">
+                              {dayInsight.minutes}m • {dayInsight.workoutCount}
+                            </p>
+                            {title ? <p className="mt-1 truncate w-full text-[11px] opacity-75">{title}</p> : null}
+                          </>
                         ) : (
                           <p className="mt-1 text-[11px] text-slate-500">No workout</p>
                         )}
@@ -271,44 +284,6 @@ function FitnessOsDashboard() {
                   })}
                 </div>
               </div>
-
-              <aside className="rounded-xl border border-border bg-black/70 p-3">
-                <h4 className="text-sm font-semibold text-slate-100">Day Details</h4>
-                {!selectedDateKey ? <p className="mt-2 text-sm text-slate-400">Select a day to view workout summaries.</p> : null}
-                {selectedDateKey && selectedDayInsight ? (
-                  <>
-                    <p className="mt-2 text-xs text-slate-400">{formatIndiaDate(selectedDateKey)}</p>
-                    <p className="text-sm text-slate-200">
-                      {selectedDayInsight.workoutCount} workouts • {selectedDayInsight.minutes} minutes
-                    </p>
-                    {selectedDayWorkouts.length === 0 ? (
-                      <p className="mt-3 text-sm text-slate-400">No workouts logged for this day.</p>
-                    ) : (
-                      <ul className="mt-3 space-y-2">
-                        {selectedDayWorkouts.map((workout) => (
-                          <li key={workout.id} className="rounded-md border border-border bg-surface p-2">
-                            <div className="flex items-start justify-between gap-2">
-                              <p className="text-sm font-semibold text-slate-100">{workout.title}</p>
-                              <button
-                                type="button"
-                                onClick={() => navigate(`/fitness-os/workouts?date=${selectedDateKey}`)}
-                                className="rounded border border-[#333333] px-2 py-1 text-[11px] text-slate-200 hover:bg-[#111111]"
-                              >
-                                View workout
-                              </button>
-                            </div>
-                            <p className="text-xs text-slate-400">{workout.session_type || 'General session'}</p>
-                            <p className="text-xs text-slate-400">
-                              {workout.duration_minutes} min • {formatIndiaDateTime(workout.created_at)}
-                            </p>
-                            {workout.notes ? <p className="mt-1 text-xs text-slate-300">{workout.notes}</p> : null}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </>
-                ) : null}
-              </aside>
             </div>
           </section>
         </div>

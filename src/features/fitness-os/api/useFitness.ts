@@ -13,6 +13,7 @@ export const fitnessActiveWorkoutQueryKey = ['fitness-os', 'active-workout'] as 
 export const fitnessWorkoutDetailBaseQueryKey = ['fitness-os', 'workout-detail'] as const
 export const fitnessDashboardQueryKey = ['fitness-os', 'dashboard'] as const
 export const fitnessWeeklySummaryQueryKey = ['fitness-os', 'weekly-summary'] as const
+export const fitnessAllExerciseLogsQueryKey = ['fitness-os', 'all-exercise-logs'] as const
 
 export const fitnessWorkoutDetailQueryKey = (workoutId: string) => [...fitnessWorkoutDetailBaseQueryKey, workoutId] as const
 
@@ -63,6 +64,8 @@ export type ExerciseLog = {
   deleted_at: string | null
   exercise_name: string
   exercise_default_unit: string | null
+  exercise_target_muscles: string[] | null
+  workout_date?: string
 }
 
 export type WorkoutDetail = Workout & {
@@ -423,6 +426,7 @@ async function fetchWorkoutDetail(workoutId: string): Promise<WorkoutDetail | nu
     deleted_at: row.deleted_at,
     exercise_name: exercise?.name ?? 'Unknown Exercise',
     exercise_default_unit: exercise?.default_unit ?? null,
+    exercise_target_muscles: null,
   }
   })
 
@@ -509,6 +513,51 @@ async function fetchFitnessDashboard(): Promise<FitnessDashboardSummary> {
 async function fetchFitnessWeeklySummary(): Promise<FitnessWeeklySummary> {
   const workouts = await fetchWorkouts()
   return buildWeeklySummary(workouts)
+}
+
+async function fetchAllExerciseLogs(): Promise<ExerciseLog[]> {
+  const { data, error } = await supabase
+    .from('exercise_logs')
+    .select('id, user_id, workout_id, exercise_id, order_index, sets, reps_total, weight_kg, duration_minutes, distance_km, rpe, notes, created_at, updated_at, deleted_at, workouts(workout_date), fitness_exercises(name, default_unit, target_muscles, deleted_at)')
+    .is('deleted_at', null)
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    if (isMissingRelationError(error, 'exercise_logs') || isMissingRelationError(error, 'fitness_exercises')) {
+      return []
+    }
+    throw buildError('Failed to fetch all exercise logs', error)
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return ((data ?? []) as any[]).map((row) => {
+    const exerciseRelation = row.fitness_exercises
+    const exercise = Array.isArray(exerciseRelation) ? exerciseRelation[0] : exerciseRelation
+    const workoutRelation = row.workouts
+    const workout = Array.isArray(workoutRelation) ? workoutRelation[0] : workoutRelation
+
+    return {
+      id: row.id,
+      user_id: row.user_id,
+      workout_id: row.workout_id,
+      exercise_id: row.exercise_id,
+      order_index: row.order_index,
+      sets: row.sets,
+      reps_total: row.reps_total,
+      weight_kg: row.weight_kg,
+      duration_minutes: row.duration_minutes,
+      distance_km: row.distance_km,
+      rpe: row.rpe,
+      notes: row.notes,
+      created_at: row.created_at,
+      updated_at: row.updated_at,
+      deleted_at: row.deleted_at,
+      exercise_name: exercise?.name ?? 'Unknown Exercise',
+      exercise_default_unit: exercise?.default_unit ?? null,
+      exercise_target_muscles: exercise?.target_muscles ?? null,
+      workout_date: workout?.workout_date,
+    }
+  })
 }
 
 async function createWorkout({ workoutDate, title, sessionType, durationMinutes, notes }: CreateWorkoutInput): Promise<void> {
@@ -665,34 +714,26 @@ async function updateWorkout({ id, workoutDate, title, sessionType, durationMinu
 
 async function deleteWorkout({ id }: DeleteWorkoutInput): Promise<void> {
   const userId = await requireUserId()
-  const now = new Date().toISOString()
+
+  // First delete logs to avoid any orphaned logs if not cascading
+  const { error: logsError } = await supabase
+    .from('exercise_logs')
+    .delete()
+    .eq('workout_id', id)
+    .eq('user_id', userId)
+
+  if (logsError && !isMissingRelationError(logsError, 'exercise_logs')) {
+    throw buildError('Failed to delete workout logs', logsError)
+  }
 
   const { error } = await supabase
     .from('workouts')
-    .update({
-      deleted_at: now,
-      updated_at: now,
-    })
+    .delete()
     .eq('id', id)
     .eq('user_id', userId)
-    .is('deleted_at', null)
 
   if (error) {
     throw buildError('Failed to delete workout', error)
-  }
-
-  const { error: logsError } = await supabase
-    .from('exercise_logs')
-    .update({
-      deleted_at: now,
-      updated_at: now,
-    })
-    .eq('workout_id', id)
-    .eq('user_id', userId)
-    .is('deleted_at', null)
-
-  if (logsError && !isMissingRelationError(logsError, 'exercise_logs')) {
-    throw buildError('Failed to soft delete workout logs', logsError)
   }
 
   await logEventSafe({
@@ -703,8 +744,7 @@ async function deleteWorkout({ id }: DeleteWorkoutInput): Promise<void> {
     eventType: FITNESS_WORKOUT_DELETED,
     payload: {
       workout_id: id,
-      deleted_at: now,
-      child_exercise_logs_soft_deleted: !logsError,
+      deleted_at: new Date().toISOString(),
     },
   })
 }
@@ -1042,6 +1082,12 @@ export function useDeleteWorkout() {
       invalidateFitnessQueries(queryClient)
       queryClient.invalidateQueries({ queryKey: fitnessWorkoutDetailQueryKey(variables.id) })
     },
+    onError: (error) => {
+      emitSystemFeedback({
+        title: 'Workout Deletion Failed',
+        description: error instanceof Error ? error.message : 'Unknown error occurred while deleting workout',
+      })
+    },
   })
 }
 
@@ -1129,5 +1175,17 @@ export function useDeleteExerciseLog() {
       invalidateFitnessQueries(queryClient)
       queryClient.invalidateQueries({ queryKey: fitnessWorkoutDetailQueryKey(variables.workoutId) })
     },
+  })
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function useSystemEventBus(handler: (event: any) => void) {
+  useEventBus(handler)
+}
+
+export function useAllExerciseLogs() {
+  return useQuery({
+    queryKey: fitnessAllExerciseLogsQueryKey,
+    queryFn: fetchAllExerciseLogs,
   })
 }
