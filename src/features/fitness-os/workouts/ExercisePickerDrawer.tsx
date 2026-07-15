@@ -1,3 +1,4 @@
+import { useEffect, useMemo } from 'react'
 import type { FitnessExercise } from '../api/useFitness'
 
 type ExercisePickerDrawerProps = {
@@ -23,68 +24,93 @@ function ExercisePickerDrawer({
   onPickExercise,
   onClose,
 }: ExercisePickerDrawerProps) {
+  useEffect(() => {
+    if (!isOpen) return
+    const originalHtml = document.documentElement.style.overflow
+    const originalBody = document.body.style.overflow
+    
+    // Check if body has scrollbar to prevent layout shift
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`
+    }
+    
+    document.documentElement.style.overflow = 'hidden'
+    document.body.style.overflow = 'hidden'
+    
+    return () => {
+      document.documentElement.style.overflow = originalHtml
+      document.body.style.overflow = originalBody
+      document.body.style.paddingRight = ''
+    }
+  }, [isOpen])
+  const filterOptions = useMemo(() => {
+    const groupedMuscles = new Set<string>()
+    for (const exercise of exercises) {
+      for (const rawMuscle of exercise.target_muscles ?? []) {
+        groupedMuscles.add(normalizeMuscle(rawMuscle))
+      }
+    }
+
+    return [
+      'All',
+      ...preferredMuscles.filter((item) => groupedMuscles.has(item)),
+      ...[...groupedMuscles].filter((item) => !preferredMuscles.includes(item)),
+    ]
+  }, [exercises])
+
+  const filteredExercises = useMemo(() => {
+    return selectedMuscle === 'All'
+      ? exercises
+      : exercises.filter((exercise) => (exercise.target_muscles ?? []).includes(selectedMuscle))
+  }, [exercises, selectedMuscle])
+
   if (!isOpen) {
     return null
   }
-
-  const groupedMuscles = new Set<string>()
-  for (const exercise of exercises) {
-    for (const rawMuscle of exercise.target_muscles ?? []) {
-      groupedMuscles.add(normalizeMuscle(rawMuscle))
-    }
-  }
-
-  const filterOptions = [
-    'All',
-    ...preferredMuscles.filter((item) => groupedMuscles.has(item)),
-    ...[...groupedMuscles].filter((item) => !preferredMuscles.includes(item)),
-  ]
-
-  const filteredExercises =
-    selectedMuscle === 'All'
-      ? exercises
-      : exercises.filter((exercise) => (exercise.target_muscles ?? []).includes(selectedMuscle))
 
   return (
     <div className="fixed inset-0 z-50">
       <button type="button" className="absolute inset-0 bg-black/70" onClick={onClose} aria-label="Close exercise picker" />
 
-      <aside className="absolute inset-y-0 right-0 w-full max-w-md border-l border-[#222222] bg-[#0a0a0a] p-4 shadow-2xl shadow-black/80">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-slate-100">Pick Exercise</h3>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-md border border-[#222222] bg-black px-3 py-1.5 text-sm text-slate-200 hover:bg-surface"
-          >
-            Close
-          </button>
-        </div>
-
-        <div className="mt-3 flex flex-wrap gap-2">
-          {filterOptions.map((item) => (
+      <aside className="absolute inset-y-0 right-0 w-full max-w-md border-l border-[#222222] bg-[#0a0a0a] shadow-2xl shadow-black/80 flex flex-col">
+        <div className="p-4 flex-none border-b border-[#222222] space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-slate-100">Pick Exercise</h3>
             <button
-              key={item}
               type="button"
-              onClick={() => onSelectMuscle(item)}
-              className={`rounded-full border px-3 py-1 text-xs transition-colors ${
-                selectedMuscle === item
-                  ? 'border-emerald-900 bg-emerald-950/30 text-emerald-400'
-                  : 'border-[#222222] bg-black text-slate-300 hover:bg-surface'
-              }`}
+              onClick={onClose}
+              className="rounded-md border border-[#222222] bg-black px-3 py-1.5 text-sm text-slate-200 hover:bg-surface"
             >
-              {item}
+              Close
             </button>
-          ))}
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {filterOptions.map((item) => (
+              <button
+                key={item}
+                type="button"
+                onClick={() => onSelectMuscle(item)}
+                className={`rounded-full border px-3 py-1 text-xs transition-colors ${
+                  selectedMuscle === item
+                    ? 'border-emerald-900 bg-emerald-950/30 text-emerald-400'
+                    : 'border-[#222222] bg-black text-slate-300 hover:bg-surface'
+                }`}
+              >
+                {item}
+              </button>
+            ))}
+          </div>
         </div>
 
-        <ul className="mt-4 space-y-2 overflow-y-auto pb-4">
+        <ul className="flex-1 overflow-y-auto p-4 space-y-2">
           {filteredExercises.map((exercise) => (
             <li key={exercise.id}>
               <button
                 type="button"
                 onClick={() => onPickExercise(exercise)}
-                className="w-full rounded-md border border-[#222222] bg-black p-3 text-left hover:bg-surface"
+                className="w-full rounded-md border border-[#222222] bg-black p-3 text-left hover:bg-surface focus:outline-none focus:ring-1 focus:ring-emerald-500/50"
               >
                 <p className="text-sm font-semibold text-slate-100">{exercise.name}</p>
                 <p className="mt-1 text-xs text-slate-400">

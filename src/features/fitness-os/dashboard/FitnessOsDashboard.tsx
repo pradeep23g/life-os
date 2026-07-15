@@ -5,7 +5,16 @@ import { type FitnessDayInsight, type Workout, useFitnessDashboard } from '../ap
 import { buildMonthGrid, formatIndiaDate, getMonthLabel, shiftMonth } from '../utils/date'
 
 const weekdayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const
-const heatmapWeekdayLabels = new Set(['Sun', 'Tue', 'Thu', 'Sat'])
+const heatmapWeekdayLabels = new Set(['Mon', 'Wed', 'Fri']) // Common GitHub heatmap labels
+
+function getHeatmapIntensityLabel(minutes: number, maxMinutes: number) {
+  if (minutes <= 0 || maxMinutes <= 0) return 'No Activity'
+  const ratio = minutes / maxMinutes
+  if (ratio >= 0.75) return 'Very High Intensity'
+  if (ratio >= 0.5) return 'High Intensity'
+  if (ratio >= 0.25) return 'Medium Intensity'
+  return 'Low Intensity'
+}
 
 function getHeatmapLevelClass(minutes: number, maxMinutes: number) {
   if (minutes <= 0 || maxMinutes <= 0) {
@@ -80,6 +89,47 @@ function FitnessOsDashboard() {
     }, 0)
   }, [data, monthCells])
 
+  const heatmapWeeks = useMemo(() => {
+    if (!data || data.heatmapDays.length === 0) return []
+    
+    const weeksMatrix: (FitnessDayInsight | null)[][] = []
+    let currentWeek: (FitnessDayInsight | null)[] = []
+    
+    const firstDay = data.heatmapDays[0]
+    const firstDayOfWeek = new Date(firstDay.date).getDay() // 0 = Sun, 6 = Sat
+    
+    for (let i = 0; i < firstDayOfWeek; i++) {
+      currentWeek.push(null)
+    }
+    
+    for (const day of data.heatmapDays) {
+      currentWeek.push(day)
+      if (currentWeek.length === 7) {
+        weeksMatrix.push(currentWeek)
+        currentWeek = []
+      }
+    }
+    
+    if (currentWeek.length > 0) {
+      while (currentWeek.length < 7) {
+        currentWeek.push(null)
+      }
+      weeksMatrix.push(currentWeek)
+    }
+    
+    return weeksMatrix
+  }, [data])
+
+  const legendThresholds = useMemo(() => {
+    if (maxHeatmapMinutes === 0) return [0]
+    return [
+      0,
+      Math.round(maxHeatmapMinutes * 0.25),
+      Math.round(maxHeatmapMinutes * 0.5),
+      Math.round(maxHeatmapMinutes * 0.75),
+      maxHeatmapMinutes
+    ]
+  }, [maxHeatmapMinutes])
 
   return (
     <section className="space-y-4">
@@ -165,23 +215,48 @@ function FitnessOsDashboard() {
         <article className="rounded-xl border border-border bg-surface p-4">
           <h2 className="text-lg font-semibold text-slate-100">90-Day Effort Heatmap</h2>
           <p className="mt-1 text-xs text-slate-400">Intensity is based on session minutes per day.</p>
-          <div className="mt-4 w-full overflow-x-auto snap-x">
-            <div className="flex min-w-max gap-3 snap-start">
-              <div className="grid grid-rows-7 gap-1 pt-1 text-[10px] text-slate-500">
-                {Array.from({ length: 7 }, (_, index) => {
-                  const label = heatmapWeekdayLabels.has(weekdayHeaders[index]) ? weekdayHeaders[index] : ''
-                  return <span key={weekdayHeaders[index]}>{label}</span>
-                })}
-              </div>
-              <div className="grid auto-cols-[18px] grid-flow-col grid-rows-7 gap-2">
-                {(data?.heatmapDays ?? []).map((day) => (
-                  <span
-                    key={day.date}
-                    className={`h-[18px] w-[18px] rounded-sm border ${getHeatmapLevelClass(day.minutes, maxHeatmapMinutes)}`}
-                    title={`${formatIndiaDate(day.date)} - ${day.minutes} min - ${day.workoutCount} workouts`}
-                  />
+          <div className="mt-4 w-full overflow-x-auto pb-2">
+            <div className="flex min-w-max gap-2">
+              <div className="flex flex-col justify-between pt-[2px] pb-[2px] text-[10px] text-slate-500 mr-1 h-[142px]">
+                {Array.from({ length: 7 }, (_, index) => (
+                  <span key={index} className="h-[18px] leading-[18px]">
+                    {heatmapWeekdayLabels.has(weekdayHeaders[index]) ? weekdayHeaders[index] : ''}
+                  </span>
                 ))}
               </div>
+              <div className="flex gap-[3px]">
+                {heatmapWeeks.map((week, wIdx) => (
+                  <div key={wIdx} className="flex flex-col gap-[3px]">
+                    {week.map((day, dIdx) => {
+                      if (!day) {
+                        return <span key={`pad-${wIdx}-${dIdx}`} className="h-[18px] w-[18px]" />
+                      }
+                      return (
+                        <span
+                          key={day.date}
+                          className={`h-[18px] w-[18px] rounded-sm border ${getHeatmapLevelClass(day.minutes, maxHeatmapMinutes)} transition-colors hover:ring-1 hover:ring-slate-300 cursor-default`}
+                          title={`${formatIndiaDate(day.date)}\n${day.minutes} minutes\n${day.workoutCount} workout${day.workoutCount !== 1 ? 's' : ''}\n${getHeatmapIntensityLabel(day.minutes, maxHeatmapMinutes)}`}
+                        />
+                      )
+                    })}
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <div className="mt-4 flex items-center gap-2 text-[10px] text-slate-400 pl-[30px]">
+              <span>Less</span>
+              {legendThresholds.map((threshold, i) => (
+                <div key={i} className="flex flex-col items-center group relative">
+                  <span className={`h-[14px] w-[14px] rounded-sm border ${getHeatmapLevelClass(threshold, maxHeatmapMinutes)}`} />
+                  {threshold > 0 ? (
+                    <span className="absolute top-full mt-1 text-[9px] opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                      {threshold}m{i === legendThresholds.length - 1 ? '+' : ''}
+                    </span>
+                  ) : null}
+                </div>
+              ))}
+              <span>More</span>
             </div>
           </div>
         </article>

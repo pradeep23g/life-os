@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import {
   type FitnessExercise,
@@ -93,7 +93,13 @@ function ActiveWorkoutPanel({ activeWorkout, exercises, onEndWorkout, isEnding }
     }
     return map
   }, [workoutDetail])
-  const selectedExerciseIds = manualSelectedExerciseIds
+  const selectedExerciseIds = useMemo(() => {
+    const ids = new Set(manualSelectedExerciseIds)
+    for (const id of logsByExerciseId.keys()) {
+      ids.add(id)
+    }
+    return Array.from(ids)
+  }, [manualSelectedExerciseIds, logsByExerciseId])
 
   const handlePickExercise = (exercise: FitnessExercise) => {
     setManualSelectedExerciseIds((previous) => {
@@ -140,8 +146,12 @@ function ActiveWorkoutPanel({ activeWorkout, exercises, onEndWorkout, isEnding }
               weight: '',
             },
           }))
-          setManualSelectedExerciseIds((previous) => previous.filter((id) => id !== exerciseId))
-          setOpenComposerExerciseId(null)
+          // We no longer remove from manualSelectedExerciseIds here
+          // so the user can easily continue adding sets.
+          // Auto-scroll to ensure it stays in view
+          setTimeout(() => {
+            document.getElementById(`exercise-card-${exerciseId}`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+          }, 50)
         },
       },
     )
@@ -187,77 +197,101 @@ function ActiveWorkoutPanel({ activeWorkout, exercises, onEndWorkout, isEnding }
           const valueLabel = getValueInputLabel(exercise)
           const showComposer = openComposerExerciseId === exerciseId
 
+          const lastLog = exerciseLogs.length > 0 ? exerciseLogs[exerciseLogs.length - 1] : null
+
           return (
-            <article key={exerciseId} className="rounded-md border border-[#222222] bg-black p-3">
+            <article key={exerciseId} id={`exercise-card-${exerciseId}`} className="rounded-md border border-[#222222] bg-black p-3">
               <div className="flex items-center justify-between gap-3">
-                <div>
+                <div className="flex-1">
                   <p className="text-sm font-semibold text-slate-100">{exercise?.name ?? 'Unknown Exercise'}</p>
                   <p className="mt-1 text-xs text-slate-400">
-                    {exercise?.target_muscles?.[0] ?? 'General'} - {exercise?.category ?? 'General'}
+                    {exercise?.target_muscles?.[0] ?? 'General'}
                   </p>
+                  <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-300">
+                    <span>{exerciseLogs.length} Set{exerciseLogs.length !== 1 ? 's' : ''}</span>
+                    {lastLog && (
+                      <span className="opacity-75">
+                        Last: {lastLog.weight_kg ? `${lastLog.weight_kg}kg × ` : ''}{lastLog.reps_total || lastLog.duration_minutes || '?'}
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => setOpenComposerExerciseId(showComposer ? null : exerciseId)}
                   className="rounded border border-[#222222] px-3 py-1 text-xs text-slate-200 hover:bg-surface"
                 >
-                  {showComposer ? 'Hide' : 'Log Set'}
+                  {showComposer ? 'Hide' : 'Expand'}
                 </button>
               </div>
 
               {showComposer ? (
-                <div className="mt-3 grid grid-cols-1 gap-2 md:grid-cols-[90px_1fr_1fr_auto]">
-                  <input
-                    value={`#${nextSetNumber}`}
-                    readOnly
-                    className="rounded border border-[#222222] bg-[#0a0a0a] px-3 py-2 text-sm text-slate-300"
-                  />
-                  <input
-                    type="number"
-                    min={1}
-                    step={valueLabel === 'Reps' ? '1' : '0.5'}
-                    value={draft.value}
-                    onChange={(event) =>
-                      setSetDraftByExerciseId((previous) => ({
-                        ...previous,
-                        [exerciseId]: {
-                          ...draft,
-                          value: event.target.value,
-                        },
-                      }))
-                    }
-                    placeholder={valueLabel}
-                    className="rounded border border-[#222222] bg-[#0a0a0a] px-3 py-2 text-sm text-slate-100"
-                  />
-                  {!isBodyweight ? (
+                <div className="mt-4 space-y-2 border-t border-[#222222] pt-3">
+                  {exerciseLogs.map((log, index) => (
+                    <div key={log.id} className="flex items-center gap-3 text-sm text-slate-300">
+                      <span className="w-12 text-slate-500">Set {index + 1}</span>
+                      {log.weight_kg ? (
+                        <span className="w-16">{log.weight_kg} kg</span>
+                      ) : (
+                        <span className="w-16">{isBodyweight ? 'BW' : '-'}</span>
+                      )}
+                      <span>× {log.reps_total || log.duration_minutes || '?'} {valueLabel}</span>
+                    </div>
+                  ))}
+
+                  <div className="mt-3 grid grid-cols-1 gap-2 pt-2 md:grid-cols-[80px_1fr_1fr_auto]">
+                    <input
+                      value={`Set ${nextSetNumber}`}
+                      readOnly
+                      className="rounded border border-[#222222] bg-[#0a0a0a] px-3 py-2 text-sm text-slate-400 focus:outline-none"
+                    />
                     <input
                       type="number"
-                      min={0}
-                      step="0.5"
-                      value={draft.weight}
+                      min={1}
+                      step={valueLabel === 'Reps' ? '1' : '0.5'}
+                      value={draft.value}
                       onChange={(event) =>
                         setSetDraftByExerciseId((previous) => ({
                           ...previous,
                           [exerciseId]: {
                             ...draft,
-                            weight: event.target.value,
+                            value: event.target.value,
                           },
                         }))
                       }
-                      placeholder="Weight (kg)"
+                      placeholder={valueLabel}
                       className="rounded border border-[#222222] bg-[#0a0a0a] px-3 py-2 text-sm text-slate-100"
                     />
-                  ) : (
-                    <div className="rounded border border-[#222222] bg-[#0a0a0a] px-3 py-2 text-sm text-slate-400">Bodyweight</div>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => handleAddSet(exerciseId)}
-                    disabled={isAddingSet}
-                    className={`${greenReplicaButtonClass} disabled:opacity-60`}
-                  >
-                    Add Set
-                  </button>
+                    {!isBodyweight ? (
+                      <input
+                        type="number"
+                        min={0}
+                        step="0.5"
+                        value={draft.weight}
+                        onChange={(event) =>
+                          setSetDraftByExerciseId((previous) => ({
+                            ...previous,
+                            [exerciseId]: {
+                              ...draft,
+                              weight: event.target.value,
+                            },
+                          }))
+                        }
+                        placeholder="Weight (kg)"
+                        className="rounded border border-[#222222] bg-[#0a0a0a] px-3 py-2 text-sm text-slate-100"
+                      />
+                    ) : (
+                      <div className="rounded border border-[#222222] bg-[#0a0a0a] px-3 py-2 text-sm text-slate-400">Bodyweight</div>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => handleAddSet(exerciseId)}
+                      disabled={isAddingSet}
+                      className={`${greenReplicaButtonClass} disabled:opacity-60`}
+                    >
+                      Save Set
+                    </button>
+                  </div>
                 </div>
               ) : null}
             </article>
