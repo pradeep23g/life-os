@@ -1,161 +1,113 @@
-import { useEventsAnalytics } from '../../../lib/useEventsAnalytics'
-import { useFitnessWeeklySummary } from '../../fitness-os/api/useFitness'
-import { useHabitWorkspace } from '../../mind-os/api/useHabits'
-import { useJournal } from '../../mind-os/api/useJournal'
+import { useMissionControlSnapshot } from '../api/useMissionControlSnapshot'
+import BrainEngineHero from '../../system/components/BrainEngineHero'
 import EndOfDayCard from '../components/EndOfDayCard'
-import { useChallenges, useMilestones } from '../../progress-hub/api/useProgress'
-import { useTasks } from '../../productivity-hub/api/useTasks'
-import SystemStatusCard from '../../system/components/SystemStatusCard'
-
-function formatMetric(value: string | number, isLoading: boolean, hasError: boolean) {
-  if (isLoading) {
-    return 'Loading...'
-  }
-
-  if (hasError) {
-    return 'Unavailable'
-  }
-
-  return value
-}
 
 function MissionControl() {
-  const {
-    data: habitData,
-    isLoading: habitsLoading,
-    isError: habitsError,
-  } = useHabitWorkspace()
-  const {
-    data: tasks = [],
-    isLoading: tasksLoading,
-    isError: tasksError,
-  } = useTasks()
-  const {
-    data: journals = [],
-    isLoading: journalsLoading,
-    isError: journalsError,
-  } = useJournal()
-  const {
-    data: milestones = [],
-    isLoading: milestonesLoading,
-    isError: milestonesError,
-  } = useMilestones()
-  const {
-    data: challenges = [],
-    isLoading: challengesLoading,
-    isError: challengesError,
-  } = useChallenges()
-  const {
-    data: eventsAnalytics,
-    isLoading: eventsLoading,
-    isError: eventsError,
-  } = useEventsAnalytics()
-  const {
-    data: fitnessSummary,
-    isLoading: fitnessLoading,
-    isError: fitnessError,
-  } = useFitnessWeeklySummary()
+  const { isLoading, isError, brain, systems, metrics, recentEvents } = useMissionControlSnapshot()
 
-  const activeHabits = habitData?.habits.length ?? 0
-  const longestHabitStreak = habitData?.longestHabitStreak
-  const pendingTasks = tasks.filter((task) => !task.is_completed).length
-  const averageMood = journals.length
-    ? (journals.reduce((sum, entry) => sum + entry.mood, 0) / journals.length).toFixed(1)
-    : '0.0'
+  if (isLoading) {
+    return (
+      <section className="flex min-h-[60vh] flex-col items-center justify-center space-y-4 bg-black">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#1a1a1a] border-t-emerald-500/80" />
+        <p className="text-[10px] font-mono tracking-widest uppercase text-slate-500">Initializing System Snapshot...</p>
+      </section>
+    )
+  }
 
-  const pendingMilestones = milestones.filter((milestone) => !milestone.is_completed).length
-  const activeChallenges = challenges.filter((challenge) => challenge.status === 'Active').length
-  const completedChallenges = challenges.filter((challenge) => challenge.status === 'Completed').length
-  const completionPercent = challenges.length ? Math.round((completedChallenges / challenges.length) * 100) : 0
-
-  const progressLoading = milestonesLoading || challengesLoading
-  const progressError = milestonesError || challengesError
-
-  const stats = [
-    {
-      label: 'Active Habits',
-      value: formatMetric(activeHabits, habitsLoading, habitsError),
-    },
-    {
-      label: 'Longest Habit Streak',
-      value: formatMetric(`${longestHabitStreak?.streak ?? 0} days`, habitsLoading, habitsError),
-      detail: !habitsLoading && !habitsError ? longestHabitStreak?.title ?? 'No streaks yet' : '',
-    },
-    {
-      label: 'Pending Tasks',
-      value: formatMetric(pendingTasks, tasksLoading, tasksError),
-    },
-    {
-      label: 'Journal Entries',
-      value: formatMetric(journals.length, journalsLoading, journalsError),
-    },
-    {
-      label: 'Average Mood',
-      value: formatMetric(`${averageMood} / 5`, journalsLoading, journalsError),
-    },
-    {
-      label: 'Progress Hub',
-      value: formatMetric(`${activeChallenges} Active`, progressLoading, progressError),
-      detail: !progressLoading && !progressError ? `${pendingMilestones} Pending - ${completionPercent}% Complete` : '',
-    },
-    {
-      label: 'Fitness This Week',
-      value: formatMetric(`${fitnessSummary?.activeWorkoutDaysThisWeek ?? 0} days`, fitnessLoading, fitnessError),
-      detail: !fitnessLoading && !fitnessError ? `${fitnessSummary?.totalSessionMinutesThisWeek ?? 0} min logged` : '',
-    },
-    {
-      label: 'Activity Consistency',
-      value: formatMetric(`${eventsAnalytics?.consistencyPercent ?? 0}%`, eventsLoading, eventsError),
-      detail: !eventsLoading && !eventsError ? `${eventsAnalytics?.activeDaysThisWeek ?? 0}/7 active days this week` : '',
-    },
-  ]
+  if (isError) {
+    return (
+      <section className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
+        <p className="text-sm font-semibold text-red-400">Failed to load system snapshot.</p>
+      </section>
+    )
+  }
 
   return (
-    <section className="space-y-4 bg-[#000000]">
-      <header className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
-        <h1 className="text-2xl font-semibold text-slate-100">Mission Control</h1>
-        <p className="mt-1 text-sm text-slate-300">Live summaries across Life OS modules.</p>
+    <section className="space-y-10 bg-[#000000] pb-24">
+      <header className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p className="text-[10px] text-slate-500 font-mono tracking-widest uppercase mb-1">Life OS</p>
+          <h1 className="text-2xl font-semibold text-slate-100">Mission Control</h1>
+        </div>
+        <div className="text-[10px] text-slate-500 font-mono tracking-widest uppercase mt-1">
+          {new Date().toISOString().split('T')[0]} // Snapshot 00:00
+        </div>
       </header>
 
-      <SystemStatusCard />
+      <BrainEngineHero brain={brain} />
 
-      <EndOfDayCard />
-
-      <p className="text-sm font-semibold text-slate-300">System Metrics (Detailed View)</p>
-
-      <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-8">
-        {stats.map((stat) => (
-          <article key={stat.label} className="min-h-[120px] rounded-xl border border-[#222222] bg-[#0a0a0a] p-3 sm:p-4">
-            <p className="text-xs text-slate-300 sm:text-sm">{stat.label}</p>
-            <p className="mt-2 text-xl font-semibold text-slate-100 sm:text-2xl">{stat.value}</p>
-            {stat.detail ? <p className="mt-1 text-[11px] text-slate-400 sm:text-xs">{stat.detail}</p> : null}
-          </article>
-        ))}
+      <div>
+        <h3 className="text-xs font-medium text-slate-500 mb-3">Live System Status</h3>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
+          {systems.map((sys) => (
+            <div key={sys.id} className="rounded-lg border border-[#1a1a1a] bg-black p-3">
+              <div className="flex justify-between items-center mb-1">
+                <p className="text-[11px] font-medium text-slate-400">{sys.name}</p>
+                <span className={`w-1 h-1 rounded-full ${
+                  sys.status === 'Healthy'
+                    ? 'bg-emerald-500'
+                    : sys.status === 'Needs Input'
+                      ? 'bg-blue-500'
+                      : sys.status === 'Warning'
+                        ? 'bg-amber-500'
+                        : 'bg-rose-500'
+                }`} />
+              </div>
+              <p className="text-[10px] text-slate-500 mt-1 truncate">{sys.activity}</p>
+            </div>
+          ))}
+        </div>
       </div>
 
-      <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
-        <h2 className="text-base font-semibold text-slate-100">Mind OS Snapshot</h2>
-        <p className="mt-1 text-xs text-slate-400">Core mental system status</p>
-        <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
-          <div className="rounded-lg border border-[#222222] bg-black p-2">
-            <p className="text-[11px] text-slate-400">Active Habits</p>
-            <p className="text-lg font-semibold text-slate-100">{formatMetric(activeHabits, habitsLoading, habitsError)}</p>
-          </div>
-          <div className="rounded-lg border border-[#222222] bg-black p-2">
-            <p className="text-[11px] text-slate-400">Longest Streak</p>
-            <p className="text-lg font-semibold text-slate-100">{formatMetric(longestHabitStreak?.streak ?? 0, habitsLoading, habitsError)}</p>
-          </div>
-          <div className="rounded-lg border border-[#222222] bg-black p-2">
-            <p className="text-[11px] text-slate-400">Journal Entries</p>
-            <p className="text-lg font-semibold text-slate-100">{formatMetric(journals.length, journalsLoading, journalsError)}</p>
-          </div>
-          <div className="rounded-lg border border-[#222222] bg-black p-2">
-            <p className="text-[11px] text-slate-400">Average Mood</p>
-            <p className="text-lg font-semibold text-slate-100">{formatMetric(`${averageMood}/5`, journalsLoading, journalsError)}</p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="md:col-span-2">
+          <h3 className="text-xs font-medium text-slate-500 mb-3">System Metrics</h3>
+          <div className="grid grid-cols-2 gap-3 sm:gap-4">
+            {metrics.map((stat) => (
+              <div key={stat.id} className="min-h-[100px] rounded-xl border border-[#1a1a1a] bg-black p-4 flex flex-col justify-between">
+                <div className="flex justify-between items-start">
+                  <p className="text-xs text-slate-400">{stat.label}</p>
+                  {stat.id === 'pending-tasks' && <span className="text-slate-500 text-xs">−</span>}
+                </div>
+                <div>
+                  <p className="text-2xl font-light text-slate-100 mb-0.5">{stat.value}</p>
+                  {stat.supportingText && (
+                    <p className="text-[10px] text-slate-500">{stat.supportingText}</p>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
-      </article>
 
+        <div>
+          <h3 className="text-xs font-medium text-slate-500 mb-3">Recent Activity</h3>
+          <div className="rounded-xl border border-[#1a1a1a] bg-black p-6 flex items-center justify-center min-h-[100px]">
+            {recentEvents.length === 0 ? (
+              <p className="text-xs text-slate-500">No recent activity detected.</p>
+            ) : (
+              <div className="w-full space-y-3">
+                {recentEvents.map((evt) => (
+                  <div key={evt.id} className="flex justify-between items-center gap-3 text-xs border-b border-[#111111] pb-2 last:border-0 last:pb-0">
+                    <span className="text-slate-400 font-mono">{evt.description}</span>
+                    <span className="text-slate-600 font-mono text-[10px]">
+                      {new Date(evt.timestamp).toLocaleTimeString()}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="pt-8 border-t border-[#111111]">
+        <div className="text-center mb-6">
+          <h2 className="text-sm font-semibold text-slate-100">End of Day Protocol</h2>
+          <p className="text-xs text-slate-500 mt-1">Conclude today and prepare the system for tomorrow.</p>
+        </div>
+        <EndOfDayCard />
+      </div>
     </section>
   )
 }

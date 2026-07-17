@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 
 import { useTelemetryMetrics } from '../hooks/useDataLabMetrics'
+import type { DataLabRecentEvent } from '../api/useDataLab'
 import { toEventFrequencyBars, toEventWaterfallNodes } from '../transforms/telemetry'
 import DataLabEmptyState from '../components/shared/DataLabEmptyState'
 import TelemetryHealthCard from '../components/telemetry/TelemetryHealthCard'
@@ -28,7 +29,7 @@ function TelemetryTab() {
   const waterfallNodes = useMemo(
     () =>
       toEventWaterfallNodes(
-        allEvents.slice(0, 50).map((e) => ({
+        allEvents.slice(0, 50).map((e: DataLabRecentEvent) => ({
           id: e.id,
           timestamp: e.created_at,
           domain: e.domain,

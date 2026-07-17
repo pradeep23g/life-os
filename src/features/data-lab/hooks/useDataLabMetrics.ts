@@ -6,6 +6,7 @@ import {
   useDataLabModuleConsistency,
   useDataLabEventCoverage,
   useDataLabRecentEvents,
+  type DataLabRecentEvent,
 } from '../api/useDataLab'
 import { useDataLabStore } from '../store/useDataLabStore'
 import { filterByPeriod, getPeriodLabel } from '../utils/period'
@@ -55,7 +56,7 @@ export function useOverviewMetrics() {
       computeBehaviorInsights(
         filteredDaily,
         filteredWeekly,
-        (eventsQuery.data ?? []).map((e) => ({ created_at: e.created_at })),
+        (eventsQuery.data ?? []).map((e: DataLabRecentEvent) => ({ created_at: e.created_at })),
       ),
     [filteredDaily, filteredWeekly, eventsQuery.data],
   )
@@ -109,7 +110,7 @@ export function useBehaviorMetrics() {
   const rhythmMetrics = useMemo(
     () =>
       computeRhythmMetrics(
-        (eventsQuery.data ?? []).map((e) => ({ created_at: e.created_at })),
+        (eventsQuery.data ?? []).map((e: DataLabRecentEvent) => ({ created_at: e.created_at })),
       ),
     [eventsQuery.data],
   )
@@ -149,7 +150,7 @@ export function useTelemetryMetrics() {
 
   const eventStream: EventStreamEntry[] = useMemo(
     () =>
-      (eventsQuery.data ?? []).slice(0, 50).map((e) => ({
+      (eventsQuery.data ?? []).slice(0, 50).map((e: DataLabRecentEvent) => ({
         id: e.id,
         timestamp: e.created_at,
         domain: e.domain,

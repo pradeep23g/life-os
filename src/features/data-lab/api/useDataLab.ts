@@ -6,6 +6,7 @@ export const dataLabDailyActivityQueryKey = ['data-lab', 'daily-activity-90d'] a
 export const dataLabWeeklyScoreQueryKey = ['data-lab', 'weekly-score-12w'] as const
 export const dataLabModuleConsistencyQueryKey = ['data-lab', 'module-consistency-30d'] as const
 export const dataLabEventCoverageQueryKey = ['data-lab', 'event-coverage-30d'] as const
+export const dataLabRecentEventsQueryKey = ['data-lab', 'recent-events'] as const
 
 export type DataLabDailyActivity = {
   user_id: string
@@ -69,6 +70,18 @@ export type DataLabEventCoverage = {
   active_days: number
   first_seen_date: string
   last_seen_date: string
+}
+
+export type DataLabRecentEvent = {
+  id: string
+  user_id: string
+  domain: string
+  entity_type: string
+  entity_id: string | null
+  event_type: string
+  event_date_ist: string
+  payload: Record<string, unknown>
+  created_at: string
 }
 
 function getErrorMessage(error: unknown): string {
@@ -208,6 +221,26 @@ async function fetchDataLabEventCoverage(): Promise<DataLabEventCoverage[]> {
   return (data ?? []) as DataLabEventCoverage[]
 }
 
+async function fetchDataLabRecentEvents(): Promise<DataLabRecentEvent[]> {
+  const { data, error } = await supabase
+    .from('events')
+    .select(
+      'id, user_id, domain, entity_type, entity_id, event_type, event_date_ist, payload, created_at',
+    )
+    .order('created_at', { ascending: false })
+    .limit(1000)
+
+  if (error) {
+    if (isMissingRelationError(error, 'events')) {
+      return []
+    }
+
+    throw buildError('Failed to fetch Data Lab recent events', error)
+  }
+
+  return (data ?? []) as DataLabRecentEvent[]
+}
+
 export function useDataLabDailyActivity() {
   return useQuery({
     queryKey: dataLabDailyActivityQueryKey,
@@ -233,5 +266,12 @@ export function useDataLabEventCoverage() {
   return useQuery({
     queryKey: dataLabEventCoverageQueryKey,
     queryFn: fetchDataLabEventCoverage,
+  })
+}
+
+export function useDataLabRecentEvents() {
+  return useQuery({
+    queryKey: dataLabRecentEventsQueryKey,
+    queryFn: fetchDataLabRecentEvents,
   })
 }
