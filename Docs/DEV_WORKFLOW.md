@@ -2,440 +2,369 @@
 
 This document defines the official development workflow for Life OS.
 
-It exists to ensure that human developers and AI agents (Codex, GPT, Gemini) make changes safely without breaking existing systems.
-
-This workflow is especially important for protecting the **Supabase database architecture** and maintaining the **nested cognitive boundaries** of the frontend.
+Human developers and AI agents must follow this workflow to make changes safely without breaking existing systems, corrupting data, or violating architectural boundaries.
 
 ---
 
-# DEVELOPMENT PRINCIPLES
-
-All development must follow these rules:
+## 1. DEVELOPMENT PRINCIPLES
 
 1. Never break existing features.
 2. Avoid rewriting working systems.
-3. Always follow the nested, domain-driven architecture defined in:
-   SYSTEM_ARCHITECTURE.md
-4. Always follow UI constraints and cognitive boundaries defined in:
-   UI_SYSTEM.md
-5. When uncertain, prefer the simplest implementation.
+3. Implement inside the correct domain module (`src/features/<module>/`).
+4. Follow the cognitive boundary rule (reflection ≠ execution).
+5. Every mutation either emits a durable event or is documented as non-analytical.
+6. When uncertain, prefer the simplest implementation.
+7. Code stability over feature speed.
 
 ---
 
-# DATABASE SAFETY RULES (CRITICAL)
+## 2. DATABASE SAFETY RULES
 
-The Supabase database is the **core infrastructure** of Life OS.
+The Supabase database is the core infrastructure of Life OS. Historical data integrity is non-negotiable.
 
-Agents must follow strict rules when interacting with it.
+### Rule 1 — Never Modify Existing Schema Without Approval
 
----
+Protected tables: `habits`, `habit_logs`, `journal_entries`, `tasks`, `events`, `transactions`, `workouts`, `time_logs`, and all others listed in `SYSTEM_ARCHITECTURE.md`.
 
-## RULE 1 — NEVER MODIFY EXISTING TABLE STRUCTURE WITHOUT APPROVAL
+Do not:
+- Drop columns
+- Rename columns
+- Alter existing constraints
+- Delete indexes
 
-Tables such as:
+These changes can silently break SQL views, React Query hooks, and analytics pipelines.
 
-profiles  
-tasks  
-habits  
-habit_logs  
-journal_entries  
-events  
+### Rule 2 — All Database Changes Use Migrations
 
-must NOT be altered without clear reasoning.
+Every schema change must be written as a `.sql` file in `supabase/migrations/`.
 
-Avoid:
-
-• dropping columns  
-• renaming columns  
-• altering constraints  
-
-These changes can break the entire application.
-
----
-
-## RULE 2 — ALL DATABASE CHANGES MUST USE MIGRATIONS
-
-Database modifications must be written as SQL migrations.
+Naming convention:
+- Sequenced: `NN_description.sql` (for early schema)
+- Timestamped: `YYYYMMDDNNNN_description.sql` (preferred for all new migrations)
 
 Example:
-
 ```sql
-ALTER TABLE tasks
-ADD COLUMN deadline TIMESTAMP;
-Never modify the database manually without documenting the change.
-
----
-
-## RULE 3 - THE OBSERVABILITY MANDATE
-
-Every user action that changes system state MUST either:
-
-1. emit a durable event to `public.events` using `logEventSafe` and the established taxonomy in `src/lib/eventTaxonomy.ts`, or
-2. be explicitly documented as a non-analytical system operation in `Docs/EVENT_TAXONOMY.md`.
-
-Durable event names must follow:
-
-```text
-domain.entity.action
+-- supabase/migrations/202607180001_add_task_tags.sql
+alter table public.tasks
+  add column if not exists tags text[] default '{}';
 ```
 
-Event payloads must include relational IDs such as `task_id`, `habit_id`, `journal_entry_id`, `time_log_id`, `transaction_id`, or `workout_id`. Status/value changes must include previous and next values when available.
+Never manually edit the database without a corresponding migration file.
 
-Transient `system_event_queue` signals are not a substitute for durable analytics events.
+### Rule 3 — The Observability Mandate
 
-RULE 4 — SUPABASE CONSOLE SQL MUST BE SAFE
-When writing SQL for the Supabase console:
+Every user action that changes system state must either:
 
-Always verify:
+1. Emit a durable event to `public.events` via `logEventSafe` using a constant from `src/lib/eventTaxonomy.ts`, **or**
+2. Be explicitly documented as a non-analytical system operation in `EVENT_TAXONOMY.md`.
 
-• correct table name
-• correct column name
-• valid constraints
+Durable event format: `domain.entity.action` (e.g., `mind.habit.completed`).
 
-Example safe query:
+Transient `system_event_queue` signals are not a substitute for durable events.
 
-SQL
-SELECT *
-FROM tasks
-WHERE deleted_at IS NULL;
-Avoid dangerous queries like:
+### Rule 4 — Supabase Console SQL Must Be Safe
 
-SQL
-DELETE FROM tasks;
-This can wipe the entire table.
+When writing raw SQL for the Supabase console:
+- Always verify table and column names against the migration history.
+- Never run destructive queries without a recovery plan.
+- Avoid `DELETE FROM <table>` without a `WHERE` clause.
+- Use `SELECT` to verify before mutating.
 
-SUPABASE QUERY PATTERNS & DOMAIN CACHE KEYS
-Frontend queries must follow standardized patterns.
-CRITICAL: React Query cache keys MUST be prefixed with their specific OS Module Domain to prevent data cross-contamination.
+---
 
-PRODUCTIVITY HUB DOMAIN (Execution)
-TASKS QUERY (READ)
+## 3. REACT QUERY PATTERNS
 
-JavaScript
-supabase
-  .from("tasks")
-  .select("*")
-  .is("deleted_at", null)
-  .order("created_at", { ascending: false })
-Cache key: ["productivity-hub", "tasks"]
+### Cache Key Convention
 
-TASKS MUTATION (WRITE - TRIGGERS EVENT)
+```ts
+// Domain-prefixed cache key arrays:
+['mind-os', 'habits']
+['mind-os', 'journals']
+['productivity-hub', 'tasks']
+['productivity-hub', 'planning']
+['progress-hub', 'milestones']
+['fitness-os', 'workouts']
+['time-os', 'logs']
+['finance-os', 'transactions']
+['system-status']
+['life-os', 'events-analytics']
+['data-lab', 'daily-activity-90d']
+['data-lab', 'weekly-score-12w']
+['data-lab', 'module-consistency-30d']
+['data-lab', 'event-coverage-30d']
+['data-lab', 'recent-events']
+```
 
-JavaScript
-supabase
-  .from("tasks")
-  .insert({ title, priority, status: "To Do", user_id })
-MIND OS DOMAIN (Reflection)
-HABITS QUERY (READ)
+### Query Pattern
 
-JavaScript
-supabase
-  .from("habits")
-  .select("*")
-  .is("deleted_at", null)
-Cache key: ["mind-os", "habits"]
+```ts
+import { useQuery } from '@tanstack/react-query'
+import { supabase } from '../../../lib/supabase'
 
-HABIT LOGS MUTATION (WRITE - TRIGGERS EVENT)
+export function useMyDomainData() {
+  return useQuery({
+    queryKey: ['my-domain', 'my-entity'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('my_table')
+        .select('*')
+        .is('deleted_at', null)
+        .order('created_at', { ascending: false })
 
-JavaScript
-supabase
-  .from("habit_logs")
-  .insert({
-    habit_id,
-    user_id,
-    value
+      if (error) throw new Error(`Failed to fetch: ${error.message}`)
+      return data ?? []
+    },
   })
-JOURNAL ENTRIES QUERY (READ)
+}
+```
 
-JavaScript
-supabase
-  .from("journal_entries")
-  .select("*")
-  .is("deleted_at", null)
-  .order("created_at", { ascending: false })
-Cache key: ["mind-os", "journals"]
+### Mutation Pattern with Event + Invalidation
 
-JOURNAL ENTRIES MUTATION (WRITE - TRIGGERS EVENT)
+```ts
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { logEventSafe } from '../../../lib/events'
+import { EVENT_TYPES } from '../../../lib/eventTaxonomy'
 
-JavaScript
-supabase
-  .from("journal_entries")
-  .insert({ mood, went_well, went_wrong, lesson_learned, user_id })
-FRONTEND DEVELOPMENT RULES
-Frontend must follow these standards:
+export function useCreateMyEntity() {
+  const queryClient = useQueryClient()
 
-Framework: React + Vite
-Routing: React Router (Nested Routes)
-Styling: TailwindCSS + CSS Grid
-State Management: React Query (Domain-Prefixed)
+  return useMutation({
+    mutationFn: async (input: MyInput) => {
+      const { data, error } = await supabase
+        .from('my_table')
+        .insert({ ...input, user_id: userId })
+        .select()
+        .single()
 
-Avoid:
-• heavy UI libraries
-• large dependency packages
-• flat routing structures
+      if (error) throw error
 
-COMPONENT & ROUTING DEVELOPMENT RULES (NESTED DOMAINS)
-Components MUST remain strictly inside their respective OS Modules. Flat folder structures are banned.
+      await logEventSafe({
+        domain: 'my-domain',
+        entityType: 'my_entity',
+        entityId: data.id,
+        eventType: EVENT_TYPES.MY_ENTITY_CREATED,
+        payload: { my_entity_id: data.id },
+      })
 
-Recommended structure:
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['my-domain', 'my-entity'] })
+      queryClient.invalidateQueries({ queryKey: ['system-status'] })
+    },
+  })
+}
+```
 
-Plaintext
+### Brain Engine Invalidation Rule
+
+After any successful mutation in the following domains, always invalidate `['system-status']`:
+- `mind-os` (habits, journals)
+- `productivity-hub` (tasks)
+- `fitness-os` (workouts)
+- `time-os` (time logs)
+
+This causes an immediate Brain Engine re-evaluation.
+
+---
+
+## 4. FRONTEND DEVELOPMENT RULES
+
+### Technology Constraints
+
+- Framework: React + Vite
+- Routing: React Router (nested routes)
+- Styling: TailwindCSS
+- State: React Query (server) + Zustand (Event Bus only)
+- No heavy UI component libraries (Material UI, Ant Design, Radix, etc.)
+- No animation frameworks (Framer Motion, etc. for simple transitions)
+- No chart libraries; all charts are hand-coded SVG/CSS
+
+### Component Placement Rules
+
+Components must live inside the module they belong to:
+
+```
 features/
   mind-os/
-    api/              # hooks: useHabits.ts, useJournal.ts
-    components/       # UI: MoodSelector.tsx
-    habits/           # Feature: HabitTracker.tsx
-    journal/          # Feature: JournalEditor.tsx
-    MindOsDashboard.tsx
+    api/           useHabits.ts, useJournal.ts
+    components/    HabitCard.tsx, MoodSelector.tsx
+    habits/        HabitsPage.tsx
+    journal/       JournalPage.tsx
+    dashboard/     MindOsDashboard.tsx
+    utils/         ...
+```
 
-  productivity-hub/
-    api/              # hooks: useTasks.ts
-    components/       # UI: KanbanColumn.tsx
-    tasks/            # Feature: TasksKanban.tsx
-    ProductivityDashboard.tsx
-Pages should strictly map to React Router nested routes.
+Never place domain components in `src/components/`. That folder is for shared non-domain components only (currently: `AppErrorBoundary`, `CommandPalette`).
 
-Example Router Structure:
+### Routing Rules
 
-JavaScript
-<Route path="/" element={<MissionControl />} />
-<Route path="/mind-os" element={<MindOsLayout />}>
-  <Route index element={<MindOsDashboard />} />
-  <Route path="journal" element={<JournalPage />} />
-  <Route path="habits" element={<HabitsPage />} />
-</Route>
-<Route path="/productivity-hub" element={<ProductivityLayout />}>
-  <Route index element={<ProductivityDashboard />} />
-  <Route path="tasks" element={<TasksPage />} />
-</Route>
-REACT QUERY CACHE RULE
-After creating or updating data, always refresh the cache using the specific domain key.
+Pages map to React Router nested routes defined in `App.tsx`.
 
-Example for updating a task:
+When adding a new route:
+1. Create the page component inside the correct feature folder.
+2. Import it in `App.tsx`.
+3. Add a `<Route>` inside the correct layout.
+4. Add a sub-nav `LocalNavLink` in the layout component if it's a tab-level page.
+5. Add a title case to `getShellTitle()` in `App.tsx`.
 
-JavaScript
-queryClient.invalidateQueries({
-  queryKey: ["productivity-hub", "tasks"]
-});
-This ensures the UI stays synchronized with the database while preventing the Mind OS components from unnecessarily re-rendering.
+### UI Standards
 
-ERROR HANDLING
-Supabase operations must always check for errors.
+Standard card frame used across all modules:
+```
+rounded-xl border border-border bg-surface p-4
+```
 
-Example:
+Color tokens:
+- `bg-black` — page background
+- `bg-surface` (`#0a0a0a`) — card/surface background
+- `border-border` (`#222222`) — all borders
+- `text-slate-100` — primary text
+- `text-slate-400` — secondary/muted text
 
-JavaScript
-const { data, error } = await supabase
-  .from("tasks")
-  .select("*");
+Never introduce custom color values outside the established system.
 
-if (error) {
-  console.error(error);
+---
+
+## 5. ERROR HANDLING
+
+### Supabase Query Errors
+
+Always check for errors on every Supabase call:
+
+```ts
+const { data, error } = await supabase.from('table').select('*')
+if (error) throw new Error(`Failed to fetch: ${error.message}`)
+```
+
+### Missing Table/View Graceful Fallback
+
+For tables or views that may not exist during migration transitions:
+
+```ts
+function isMissingTableError(error: unknown, tableName: string): boolean {
+  // Check for PostgreSQL error codes 42P01 (table not found) or PostgREST 205
+  ...
 }
-Never ignore database errors.
 
-TESTING RULES
-Before committing changes, verify:
+if (isMissingTableError(error, 'my_view')) {
+  return [] // Return empty fallback, don't throw
+}
+```
 
-Feature renders correctly within its nested layout.
+This pattern is used throughout the codebase to ensure graceful degradation when migrations have not yet been applied.
 
-Cognitive boundaries are intact (e.g., no tasks showing in the Journal).
+### logEventSafe
 
-Database writes succeed.
+Always use `logEventSafe` (never direct `supabase.from('events').insert`). It is wrapped in try/catch and silently swallows failures so event logging never blocks user actions.
 
-Domain-specific queries return correct data.
+---
 
-No console errors appear.
+## 6. FEATURE DEVELOPMENT FLOW
 
-Use the browser console to verify behavior.
+When implementing a new feature:
 
-RESPONSIVE DESIGN TESTING
-Agents must test both:
+1. **Read** `SYSTEM_ARCHITECTURE.md` to confirm the module boundary.
+2. **Search** existing hooks and components; reuse before creating.
+3. **Write** the Supabase migration if a schema change is needed.
+4. **Implement** the React Query hook in `features/<module>/api/`.
+5. **Build** the UI component in `features/<module>/components/` or `pages/`.
+6. **Connect** the route in `App.tsx` if it's a new page.
+7. **Add** durable event emission after each state-changing mutation.
+8. **Invalidate** the correct cache keys including `['system-status']` if applicable.
+9. **Run** `npm run lint && npm run build` to verify.
+10. **Test** all related journeys per `RELEASE_GATE_CHECKLIST.md`.
 
-Desktop view (Grid layouts, sidebar visible)
-Mobile view (Stacked layouts, collapsed sidebar)
+---
 
-Use browser developer tools to simulate mobile screens.
+## 7. BUG FIX PROCESS
 
-PERFORMANCE RULES
-The application must remain lightweight.
+1. Identify the source file and domain.
+2. Verify the Supabase query (table name, column names, filters).
+3. Verify the React Query cache key and invalidation.
+4. Verify UI rendering logic.
+5. Apply the minimal fix — never rewrite entire systems to fix a small bug.
 
-Avoid:
+---
 
-• large state trees (Use React Query instead)
-• unnecessary re-renders across domains
-• heavy animations
+## 8. GIT WORKFLOW
 
-Prefer:
+Commit message format: `type(scope): description`
 
-• simple components
-• efficient database queries
-• precise React Query caching
-
-LOCAL COMMAND CHECKLIST
-Use npm commands from the repo root (`life-os/`).
-
-- `npm install` for initial setup or dependency sync
-- `npm ci` for clean, lockfile-based installs (recommended for reproducible environments)
-- `npm run dev` for local feature development
-- `npm run lint` before commits to catch lint issues
-- `npm run build` before commits to validate type-check + production build
-- `npm run preview` when you need to verify the production build output
-
-Quick verification command:
-- `npm run lint && npm run build`
-
-GIT WORKFLOW
-Every change should follow this process:
-
-Implement feature inside correct nested domain folder
-Test locally
-Verify database queries
-Commit changes
-
-Example commit message:
-
-feat(productivity-hub): add tasks kanban system nested route
-
-Avoid vague commits like:
-
-update stuff
-
-AI AGENT RESPONSIBILITY
-AI agents must not attempt large architectural rewrites.
-
-Instead:
-
-• improve existing components within their specific OS domains
-• add modular features respecting the nested structure
-• follow documented architecture
-
-Agents should always consult:
-
-PRADEEP_PROFILE.md
-LIFE_RULES.md
-AGENTS.md
-SYSTEM_ARCHITECTURE.md
-PROJECT_ROADMAP.md
-UI_SYSTEM.md
-DEV_WORKFLOW.md
-
-before implementing changes.
-
-FINAL RULE
-Life OS is a long-term system.
-
-Every change must prioritize:
-
-stability
-simplicity
-scalability
-cognitive protection
-
-Never sacrifice stability for speed.
-
-CODEX AUTONOMOUS DEVELOPMENT MODE
-Life OS is designed to allow AI agents to implement features with minimal supervision.
-
-Codex is responsible for:
-
-• frontend component development
-• backend query integration
-• database migration scripts
-• UI improvements
-• bug fixes
-• testing workflows
-
-However, Codex must follow strict guardrails.
-
-SAFE OPERATIONS (NO APPROVAL REQUIRED)
-Codex may freely perform the following actions:
-
-• read files
-• modify React components within established domains
-• update Tailwind styling and CSS Grids
-• write React Query domain-specific queries
-• implement nested UI layouts
-• refactor small components
-• create new feature modules within the correct features/ folder
+Types: `feat`, `fix`, `refactor`, `docs`, `chore`, `test`
 
 Examples:
+```
+feat(productivity-hub): add task deadline_date field
+fix(mind-os): correct habit streak calculation for skipped days
+docs: update EVENT_TAXONOMY with new fitness events
+chore(migrations): add data_lab_event_coverage_30d view
+```
 
-Create new components
-Improve responsive design
-Add React Query caching
+Avoid vague commits: `update stuff`, `fix bug`, `wip`.
 
-OPERATIONS REQUIRING APPROVAL
-Codex must ask before performing these actions:
+---
 
-• modifying database schema
-• deleting tables
-• installing heavy dependencies
-• changing authentication logic
-• altering Supabase policies
-• modifying environment variables
-• restructuring the top-level nested architecture
+## 9. SAFE VS. APPROVAL-REQUIRED OPERATIONS
 
-Example restricted operations:
+### Safe — No Approval Required
 
-ALTER TABLE
-DROP TABLE
-DELETE FROM events
-npm install large UI libraries
+- Reading files
+- Modifying React components within established domains
+- Adding new components inside correct feature folders
+- Adding React Query hooks using existing tables
+- Updating Tailwind styling
+- Creating new SQL views that read existing tables
+- Implementing nested UI layouts
 
-DATABASE CHANGE PROTOCOL
-If a schema change is required:
+### Requires Approval
 
-Generate SQL migration
+- Adding or dropping table columns
+- Dropping or renaming tables
+- Modifying RLS policies
+- Changing authentication logic
+- Installing new npm dependencies
+- Modifying environment variables
+- Restructuring the top-level architecture
 
-Present SQL to user
+### Requires Explicit User Approval
 
-Wait for approval
+- Destructive data migrations
+- Dropping production tables
+- Modifying the events schema
+- Any change that could cause data loss
 
-Execute migration in Supabase console
+---
 
-Codex must NEVER auto-execute destructive queries.
+## 10. PERFORMANCE REQUIREMENTS
 
-FEATURE DEVELOPMENT FLOW
-When implementing a feature Codex should follow this order:
+- Bundle size: minimize. No large dependencies without justification.
+- Avoid unnecessary re-renders across domain boundaries.
+- Use React Query caching to prevent redundant fetches.
+- SQL views do aggregation; TypeScript does not perform O(n) table scans.
+- No heavy client-side computations on large datasets.
 
-Read SYSTEM_ARCHITECTURE.md
+---
 
-Check PROJECT_ROADMAP.md
+## 11. RESPONSIVE DESIGN TESTING
 
-Implement backend query
+Test both:
+- **Desktop** — sidebar rail visible, multi-column grids, expanded layouts
+- **Mobile** — hamburger drawer, stacked cards, horizontal scrollable tabs
 
-Build UI component in the correct nested directory
+Use browser DevTools device simulation for mobile testing.
 
-Connect React Query with domain-specific cache keys
+---
 
-Map the React Router path
+## 12. PRE-COMMIT CHECKLIST
 
-Test locally
+Before any commit:
 
-Refactor if needed
-
-BUG FIX PROCESS
-When a bug appears:
-
-Identify source file and domain
-
-Verify Supabase query
-
-Verify React Query cache (ensure right domain key is invalidated)
-
-Verify UI rendering
-
-Apply minimal fix
-
-Never rewrite entire systems to fix a small bug.
-
-PERFORMANCE REQUIREMENTS
-Codex must optimize for:
-
-• small bundle size
-• minimal dependencies
-• efficient queries
-• responsive UI
-
-
+- [ ] `npm run lint` passes
+- [ ] `npm run build` passes
+- [ ] Feature works in both desktop and mobile viewports
+- [ ] Cognitive boundaries are intact
+- [ ] Database writes succeed and are verified
+- [ ] No console errors
+- [ ] Durable event emission verified (or documented as non-analytical)
+- [ ] Brain Engine reactivity verified if applicable (system-status invalidated)

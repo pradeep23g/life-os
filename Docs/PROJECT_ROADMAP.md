@@ -1,222 +1,201 @@
-# LIFE OS - DEVELOPMENT ROADMAP
+# LIFE OS — PROJECT ROADMAP
 
-This document defines the structured development plan for Life OS.
+This document describes the implemented state of Life OS and the active development direction.
 
-It guides both human developers and AI agents on what to build next while preserving domain boundaries and long-term scalability.
-
----
-
-# DEVELOPMENT PHILOSOPHY
-
-Life OS should evolve gradually.
-
-Each system must follow:
-
-- domain-isolated modular architecture
-- relational database design
-- analytics compatibility
-- low-friction logging
-- cognitive boundaries (reflection vs execution)
-
-Features should only be added when the underlying architecture can support them safely.
+It is ordered by what has been built, then what comes next. It does not contain speculative visions or unconfirmed plans.
 
 ---
 
-# PHASE 1 - CORE SYSTEMS AND SHELL (IMPLEMENTED)
+## DEVELOPMENT PHILOSOPHY
 
-## 1.1 Global Shell and Mission Control
+Life OS evolves gradually, module by module.
 
-Build top-level routing and sidebar.
-Mission Control provides aggregated system summaries.
+Every system must follow:
+- Domain-isolated modular architecture
+- Relational database design with SQL-first aggregation
+- Durable telemetry on all state-changing mutations
+- Low-friction logging (minimum interaction to record reality)
+- Cognitive boundary protection (reflection ≠ execution)
 
-Core widgets:
-
-- active habits (Mind OS)
-- pending tasks (Productivity Hub)
-- journal signals (Mind OS)
-- mood/consistency summaries
-
-## 1.2 Mind OS Domain (Reflection)
-
-Build nested routing for `/mind-os`.
-
-Habit system:
-
-- value-based and binary habits
-- habit logs
-- streak analytics
-- mistakes, heals, and recovery context
-
-Journal system:
-
-- mood
-- what went good
-- what you've learned
-- brief about day
-
-## 1.3 Productivity Hub Domain (Execution)
-
-Build nested routing for `/productivity-hub`.
-
-Tasks system:
-
-- Kanban states (`To Do`, `Doing`, `Done`)
-- task creation
-- priority levels
-- status updates
+Features are only added when the underlying architecture can support them safely.
 
 ---
 
-# PHASE 2 - PROGRESS HUB (IMPLEMENTED)
+## IMPLEMENTED SYSTEMS
 
-Track long-term and short-term learning progress.
+### ✅ Phase 1 — Core Shell + Mind OS + Productivity Hub
 
-Modules:
+**Global Shell:**
+- True-black dark mode SPA with nested React Router routing
+- Collapsible sidebar rail (compact/expanded, session-persisted)
+- Mobile drawer with hamburger toggle
+- AppShell with GlobalTimerBar, SystemFeedbackToast, CommandPalette overlays
+- AppErrorBoundary for per-route error isolation
+- Supabase auth with `ProtectedRoute` and `AuthContext`
 
-- Progress Hub dashboard
-- programming progress
-- personal skills
-- milestones
-- challenges
+**Mind OS (`/mind-os`):**
+- Habit Tracker: value-based and binary habits, habit logs, streak tracking
+- Habit recovery flow: mistake reason, recovery commitment, streak heal
+- Journal: mood, multi-field entries (went well, went wrong, lesson learned, day brief)
+- Journal multi-entry per day with retroactive date support
+- Journal calendar modal with per-day mood aggregation and multi-entry badge
+- Journal date modal with read-only timeline
+
+**Productivity Hub (`/productivity-hub`):**
+- Tasks Kanban (To Do / Doing / Done)
+- Task creation with priority, deadline type, and deadline date
+- `is_completed` boolean schema for reliable completion queries
 
 ---
 
-# PHASE 3 - FITNESS OS (IMPLEMENTED V1)
+### ✅ Phase 2 — Progress Hub
 
-Fitness OS tracks physical discipline in `/fitness-os`.
+- Programming skills: level tracking, project count increments
+- Personal skills: level, project count, progress increments
+- Milestones: create and toggle completion
+- Challenges: create and status transitions (Active → Completed / Dropped)
+- Progress Hub dashboard aggregating all sub-features
 
-Focus:
+---
 
-- effort tracking over body metrics
+### ✅ Phase 3 — Fitness OS
 
-Modules:
-
-- dashboard with weekly cards
-- workouts and aggregate exercise logs
-- exercise library
-- calendar popup and day details drawer
+- Workouts with exercise logs (sets, reps, weight per exercise)
+- Exercise library (custom exercise CRUD)
 - 90-day effort heatmap
+- Weekly summary cards (active days, total minutes)
+- Calendar popup and day details drawer
+- Personal Records page
+- Soft deletes throughout
 
 ---
 
-# PHASE 4 - FINANCE OS (IMPLEMENTED V1, EXPANDING)
+### ✅ Phase 4 — Finance OS
 
-Finance OS is now live in `/finance-os` as a behavior-focused spending ledger.
-
-Implemented core:
-
-- user-scoped finance ledger (`finance_transactions`) with RLS
-- quick-log modal flow (mobile-first)
-- need vs want tracking (`is_need`)
-- monthly metrics:
-  - total spent
-  - money left
-  - daily safe limit
-  - projected monthly spend
-  - waste amount + top waste category
-- weekly burn card with 7-day micro-bars and baseline overrun feedback
-- decision feedback loop:
-  - warning/surge toasts for unsafe want spikes and budget projection risk
-
-Next expansion:
-
-- recurring expenses
-- savings/investment buckets
-- weekly/monthly trend comparisons
+- Behavioral spending ledger (`public.transactions`)
+- Need vs. want tracking (`is_need` boolean)
+- Monthly metrics: total spent, money left, daily safe limit, projected spend, waste
+- Weekly burn card with 7-day mini-bars and baseline overrun feedback
+- Quick-log modal (mobile-first FAB)
+- Decision feedback toasts: want spike warning, over-budget projection alert
+- Migrated from legacy `finance_transactions` to `transactions` table
 
 ---
 
-# PHASE 5 - ANALYTICS SYSTEM (IN PROGRESS)
+### ✅ Phase 5 — Events Analytics Pipeline
 
-Life OS analyzes behavioral patterns via the events pipeline.
-
-Current foundation exists:
-
-- `events` table
-- domain event emission
-- weekly consistency summaries
-
-Next expansion:
-
-- stronger cross-domain comparative insights
-- more SQL-first aggregated views
-- stable analytics contracts for dashboards
+- `public.events` durable analytics table with IST-scoped date keys
+- `logEventSafe` utility for non-blocking event writes
+- `EVENT_TYPES` constants in `src/lib/eventTaxonomy.ts`
+- Event emission across all domain mutations
+- `useEventsAnalytics` hook: weekly event count, consistency percent, momentum delta
+- Weekly consistency summary feeds Mission Control
 
 ---
 
-# PHASE 6 - PLANNING ENGINE (INSIDE PRODUCTIVITY HUB, IMPLEMENTED V1)
+### ✅ Phase 6 — Planning Engine (Inside Productivity Hub)
 
-Planning connects goals to daily action.
-
-Implemented core:
-
-- weekly focus
-- goals CRUD
-- weekly plan items
-- weekly review
-- alignment health summaries
-
-Next expansion:
-
-- richer planning loops and coaching quality summaries
+- Weekly focus text field with upsert behavior
+- Goals CRUD with status tracking
+- Weekly plan items with completion
+- Weekly review capture
+- Alignment health summary (goals/plan completion metrics)
 
 ---
 
-# PHASE 7 - TIME OS (IMPLEMENTED V1)
+### ✅ Phase 7 — Time OS
 
-Time OS in `/time-os` tracks focused execution with low friction.
-
-Implemented core:
-
-- global active timer persisted in DB (`end_time is null`)
-- optional task linkage from Productivity Hub
-- strict buckets (`Academics`, `Deep Work`, `Admin`, `Fitness`, `Learning`)
-- manual log entry
-- lightweight analytics (today total, distribution, 7-day trend)
-
----
-
-# PHASE 8 - BRAIN ENGINE (IMPLEMENTED V1, EVOLVING)
-
-Brain Engine turns Life OS into an active decision system.
-
-Implemented core:
-
-- SQL-first snapshot views (`current_day_snapshot`, `current_day_snapshot_history_14d`)
-- TS intelligence layer (momentum, trend, directive)
-- issue detection + severity
-- interactive next move in Mission Control
-- daily briefing tone logic
-- cross-module reactivity via `['system-status']` invalidation
-
-Next expansion:
-
-- deeper directive quality
-- broader domain intelligence inputs
-- stronger finance-aware decision pressure
+- Global active timer (one per user, enforced by DB unique index)
+- Bucket categories: Academics, Deep Work, Admin, Fitness, Learning
+- Optional task linkage (Start Focus → task to Doing; stop → task to Done)
+- Manual log entry
+- Time insights: today total, bucket distribution bar, 7-day trend
+- GlobalTimerBar global overlay
+- PiP timer via Document Picture-in-Picture API
+- `deep_work_minutes_today` integrated into Brain Engine snapshot
 
 ---
 
-# SOCIAL FEATURES (LIMITED)
+### ✅ Phase 8 — Brain Engine v1
 
-Life OS is primarily personal. Social features must stay minimal.
-
-Avoid public comparison mechanics (for example, public leaderboards).
-
----
-
-# AI INSIGHT SYSTEM (LONG TERM)
-
-Long-term intelligence should explain patterns like:
-
-- productivity on workout days
-- habit consistency vs output
-- mood vs execution patterns
-
-This depends on robust historical event coverage and stable aggregation contracts.
+- `current_day_snapshot` SQL view: per-user daily facts
+- `current_day_snapshot_history_14d` SQL view: 14-day rolling history
+- `analyzeMomentum.ts`: momentum score (0–100) + trend (rising/falling/stable)
+- `generateDirectives.ts`: urgency scoring across 5 domains (task/habit/journal/deep-work/fitness)
+- `systemEngine.ts`: issue detection + orchestration
+- `useSystemStatus.ts`: React Query hook composing snapshot + Brain Engine
+- `BrainEngineHero.tsx`: Mission Control full Brain Engine panel
+- `SystemStatusCard.tsx`: compact system status + directive CTA
+- `DailyBriefing.tsx`: momentum-band tone message
+- Cross-module reactivity: `['system-status']` invalidation
 
 ---
 
-# FINAL DEVELOPMENT RULE
+### ✅ Phase 9 — Event Bus + Evening Sync
 
-All future systems must integrate with the events analytics pipeline and preserve strict cognitive boundaries.
+- `useEventBus` Zustand store: in-memory ring buffer (max 50 events)
+- `public.system_event_queue`: transient operational signals
+- `public.system_metrics`: daily Evening Sync snapshots
+- `useEveningSync.ts`: reads queue, computes momentum delta, writes metrics, clears queue + bus
+- Transient event types: DEEP_WORK_COMPLETED, WORKOUT_COMPLETED, HABIT_FAILED, WANT_EXPENSE_ADDED
+
+---
+
+### ✅ Phase 10 — Data Lab v1
+
+- Dedicated analytics module at `/data-lab`
+- Three SQL views: daily 90d, weekly 12w, module consistency 30d
+- Event coverage view: 30-day per-event-type coverage
+- Metrics engine (11 pure computation files): consistency, correlation, drift, insights, momentum, rhythm, streaks, systemHealth, telemetryHealth, weeklyScore
+- Transforms layer: chart-ready data for behavior, overview, telemetry
+- Data maturity system: insufficient / experimental / stable
+- Three-tab UI: Overview, Behavior, Telemetry
+- Analytics period selector: 7d / 30d / 90d / all
+- Chart components: ContributionCalendar, BehaviorTimeline, HabitStreakRivers, CorrelationMatrix, MomentumDistribution, ActivityHistogram, EventFrequencyHistogram, EventWaterfall
+- Telemetry: TelemetryHealthCard, SystemHealthPanel, RecentEventStream
+
+---
+
+## IN PROGRESS / NEXT PRIORITIES
+
+### Finance OS Expansion
+- Recurring expense tracking
+- Savings/investment buckets
+- Weekly and monthly trend comparisons
+
+### Brain Engine Quality
+- Deeper cross-domain pressure signals (e.g., finance-aware directive weights)
+- Historical momentum from `system_metrics` integrated into trend calculation
+- Broader domain intelligence inputs
+
+### Events Coverage Expansion
+- Ensure all domain mutations have complete durable event coverage
+- Audit legacy event strings and migrate to taxonomy-compliant versions
+
+### Data Lab Depth
+- Cross-domain behavioral insights engine (pattern: productivity on workout days)
+- Temporal correlation between domains (mood vs. output, habits vs. task completion)
+- User-facing insight narratives from metrics data
+
+### Task System Expansion
+- Deadline display and overdue indicators
+- Filtering and sorting on Kanban
+- Search across tasks
+
+---
+
+## LONG-TERM VISION
+
+- AI insight layer reading behavioral history from `public.events`
+- Pattern explanations: productivity on workout days, mood vs. execution, habit consistency vs. output
+- Depends on complete event coverage and stable analytics contracts
+
+---
+
+## FINAL DEVELOPMENT RULE
+
+All future systems must:
+1. Integrate with the events analytics pipeline (`logEventSafe` on mutations)
+2. Preserve strict cognitive boundaries (reflection ≠ execution)
+3. Use SQL-first aggregation for derived data
+4. Follow domain-isolated folder structure

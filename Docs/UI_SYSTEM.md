@@ -2,402 +2,341 @@
 
 This document defines the official UI/UX system for Life OS.
 
-Its purpose is to guide human developers and AI agents (Codex, GPT, Gemini) so the interface remains:
-
-• simple  
-• efficient  
-• lightweight  
-• responsive  
-• cognitively optimized  
-
-The UI must prioritize **clarity and speed over visual complexity**.
+The interface must prioritize clarity, cognitive safety, and speed. Life OS is a daily operating system — not a decorative app.
 
 ---
 
-# UI PHILOSOPHY & COGNITIVE BOUNDARIES
+## 1. UI PHILOSOPHY
 
-Life OS is not a decorative application. It is a **daily operating system for life management**.
+Life OS is a **personal command center**.
 
-Therefore, the interface must follow these principles:
+The interface must follow these principles:
 
-• minimal visual noise  
-• fast interaction  
-• readable typography  
-• low resource consumption  
+- Minimal visual noise
+- Fast interaction
+- Readable typography
+- Cognitive protection: reflection features must never mix with execution features
+- Low resource consumption — no heavy component libraries or animation frameworks
 
-**CRITICAL RULE: Cognitive Boundaries**
-Life OS uses a nested architecture to protect human cognitive load. 
-Reflection features (Mind OS) must NEVER be mixed with Execution features (Productivity Hub). 
-Showing pending tasks inside a journaling space triggers the Zeigarnik Effect (task anxiety). AI agents must strictly isolate these features into their designated Module Workspaces.
-
-Animations and complex visual effects must be avoided entirely.
+**Cognitive Boundary (Hard Constraint):**
+Mind OS (reflection) and Productivity Hub (execution) must never share UI space. Showing pending tasks inside a journaling interface triggers cognitive anxiety (Zeigarnik Effect). This is not a style preference; it is an architectural invariant.
 
 ---
 
-# COLOR SYSTEM
+## 2. COLOR SYSTEM
 
-Life OS uses a **two-color dominant theme** similar to Notion.
+Life OS uses a **true-black dark theme** as its only active theme.
 
-Each theme contains:
+### Dark Theme (Primary and Only Active Theme)
 
-1 neutral base color  
-1 accent color  
+| Role | Value | Tailwind |
+|---|---|---|
+| Page background | `#000000` | `bg-black` |
+| Card/surface | `#0a0a0a` | `bg-surface` (custom) |
+| Border | `#222222` | `border-border` (custom) |
+| Primary text | `#f1f5f9` | `text-slate-100` |
+| Secondary text | `#94a3b8` | `text-slate-400` |
+| Hover surface | `#111111` | `bg-[#111111]` |
+| Active surface | `#222222` | `bg-[#222222]` |
 
-The accent color highlights:
+Custom Tailwind tokens are defined in `tailwind.config.js`:
+```js
+theme: {
+  extend: {
+    colors: {
+      surface: '#0a0a0a',
+      border:  '#222222',
+    },
+  },
+},
+```
 
-• active elements  
-• buttons  
-• progress indicators  
+### Accent Usage
 
----
+Accent colors are applied contextually for status indicators:
+- `text-green-400` / `bg-green-400` — active/healthy states
+- `text-yellow-400` / `bg-yellow-400` — warning states
+- `text-red-400` / `bg-red-400` — critical/error states
+- `text-blue-400` — informational highlights
 
-# DARK THEME (PRIMARY)
-
-Dark theme is the default interface.
-
-Base colors:
-
-Background
-#000000
-
-Surface
-#0a0a0a
-
-Border
-#222222
-
-Text colors:
-
-Primary text
-#f1f5f9
-
-Secondary text
-#94a3b8
-
-Accent color example:
-
-Red
-#ef4444
-
-Alternative accents allowed:
-
-blue
-green
-orange
-
-Only **one accent color may be active at a time**.
+Only one accent color should be active in any given UI context.
 
 ---
 
-# LIGHT THEME
+## 3. TYPOGRAPHY
 
-Light theme must mirror the dark theme structure.
+No external font loaded. Typography uses the browser system stack:
 
-Base colors:
+```css
+font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+```
 
-Background
-#ffffff
+Font scale (Tailwind):
 
-Surface
-#f8fafc
+| Context | Class |
+|---|---|
+| Module h1 | `text-xl` to `text-2xl font-semibold` |
+| Card title | `text-base font-semibold` |
+| Body | `text-sm` |
+| Labels/metadata | `text-xs` |
 
-Border
-#e2e8f0
-
-Text:
-
-Primary
-#0f172a
-
-Secondary
-#475569
-
-Accent color remains the same as dark theme.
+Avoid large typography. The interface is data-dense; readability at small sizes is more important than visual hierarchy through size alone.
 
 ---
 
-# TYPOGRAPHY
+## 4. LAYOUT SYSTEM
 
-Typography must prioritize readability.
+### Standard Card Frame
 
-Recommended font:
+All data widgets, forms, and panels use a consistent card container:
 
-Inter
-
-Fallback:
-
-system-ui
-
-Font sizes:
-
-Page title
-text-3xl
-
-Section title
-text-xl
-
-Card title
-text-lg
-
-Body
-text-sm
-
-Avoid large typography scaling.
-
----
-
-# LAYOUT SYSTEM & GRID ARCHITECTURE
-
-Life OS follows a **card-based layout** combined with a **flexible CSS Grid**.
-
-### Consistent Frame
-All data widgets and interface elements must sit inside a standard card:
-
-rounded-xl
-border
-padding
-surface background
-
-Example Tailwind classes:
-
-rounded-xl
-border border-slate-700
-bg-slate-900
-p-4
-
-Cards must contain:
-
-• clear header  
-• minimal controls  
-• consistent spacing  
-
-### Flexible Canvas (CSS Grid)
-While card styles must remain uniform, the width of the cards should adapt to the data they hold. 
-Agents should utilize CSS Grid classes like `col-span-2` or `col-span-full` for domain-specific visualisations (e.g., a wide line chart for Finance OS spending analytics).
-
----
-
-# NAVIGATION ARCHITECTURE (NESTED ROUTING)
-
-Life OS uses a two-tier navigation system to reduce cognitive overload.
-
-### Tier 1: Global Sidebar (The Pillars)
-The sidebar acts as the macro-navigator. It ONLY links to Master Modules.
-
-Items:
-
-Mission Control
-Mind OS
-Productivity Hub
-Fitness OS
-Finance OS
-Progress Hub
-
-Rules:
-
-• always visible on desktop  
-• collapsible on mobile  
-• icons should be minimal  
-
-### Tier 2: Local Module Navigation (Sub-navigation)
-When a user clicks into a module (e.g., Mind OS), the main workspace renders a secondary top-navigation bar (tabs) specific to that module. 
-
-Example for Mind OS Workspace:
-[ Dashboard ]  [ Habit Tracker ]  [ Journal ]
-
----
-
-# MODULE SPECIFICATIONS
-
-Each OS Pillar has its own distinct structure.
-
-## 1. Mission Control (Master Dashboard)
-Mission Control displays **system summaries only**. It acts as an aggregator.
-
-Example layout:
-
-Active Habits (Pulled from Mind OS)
-Pending Tasks (Pulled from Productivity Hub)
-Daily Split (Pulled from Fitness OS)
-Average Mood (Pulled from Mind OS)
-
-Cards should be displayed in a **grid layout**.
-
-Desktop:
-
-4 column grid
-
-Mobile:
-
-1 column stack
-
----
-
-## 2. Mind OS Workspace
-The cognitive reflection zone. 
-
-**Strict UI Rule:** Tasks and execution-based deadlines are BANNED from this interface. 
-
-Sub-pages:
-• Mind OS Dashboard (Wide charts for mood trends, habit streaks)
-• Habit Tracker
-• Journal System
-
----
-
-## 3. Productivity Hub Workspace
-The execution zone. 
-
-Sub-pages:
-• Productivity Dashboard (Upcoming deadlines, daily focus)
-• Tasks (Kanban)
-• Planning Engine
-
----
-
-## 4. Fitness OS & Finance OS Workspaces
-These modules require domain-specific dashboards.
-• Fitness OS Dashboard: Focus on effort tracking (Today's split, weekly consistency).
-• Finance OS Dashboard: Focus on behavior awareness (Monthly spending overview using `col-span-full` charts).
-
----
-
-# COMPONENT LEVEL SPECIFICATIONS
-
-### Habits UI
-Habit cards must be extremely simple.
-
-Example:
-
-Read Book
-12 / 30 pages
-[ + ]
-
-Rules:
-
-• one action button  
-• visible progress  
-• progress bars should be subtle  
-
-### Tasks UI
-Tasks use a **Kanban layout**.
-
-Columns:
-
-To Do
-Doing
-Done
+```html
+<div class="rounded-xl border border-border bg-surface p-4">
+  <!-- content -->
+</div>
+```
 
 Cards contain:
+- A clear header (usually `<h2>` or `<h3>` with appropriate Tailwind weight)
+- Minimal controls
+- Consistent internal spacing (`space-y-3` or `space-y-4`)
 
-task title
-priority label
+### Grid Layouts
 
-Avoid complex drag animations. Use simple click-to-move menus or highly optimized lightweight dragging to maintain UI speed.
+Responsive multi-column grids use Tailwind's grid utilities:
 
-### Journal UI
-Layout:
+```html
+<!-- Standard 2-column on md, 1-column on mobile -->
+<div class="grid gap-4 md:grid-cols-2">
 
-Mood selector
-Recent Entries List | Journal Editor
+<!-- 3-column on lg -->
+<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 
-Mood selector must be button based.
+<!-- Full-width spanning card -->
+<div class="col-span-full">
+```
 
-😞
-😐
-🙂
-😄
-🔥
+Use `col-span-full` for wide visualizations (timelines, heatmaps, charts).
 
-*(Note: Full Calendar navigation is reserved for Phase 6 Planning Engine)*
+### Page Spacing
 
----
-
-# RESPONSIVE DESIGN
-
-Life OS must function well on:
-
-• laptops  
-• tablets  
-• mobile devices  
-
-Responsive rules:
-
-Desktop:
-
-global sidebar visible
-nested local navigation at top
-multi-column grid layouts
-
-Mobile:
-
-global sidebar collapses into hamburger menu
-cards stack vertically
-local navigation becomes horizontal scrollable tabs
+Page content is wrapped in `<main class="p-3 sm:p-4 md:p-6">` by the AppShell. Inner components should use `space-y-4` for vertical rhythm between sections.
 
 ---
 
-# PERFORMANCE RULES
+## 5. NAVIGATION ARCHITECTURE
 
-To keep the UI lightweight:
+### Tier 1 — Global Sidebar
+
+The `Sidebar.tsx` component renders as:
+- Desktop: fixed left rail, 80px compact (icons only) or 288px expanded (icons + labels)
+- Mobile: hidden by default, shown as drawer via hamburger toggle in AppShell header
+
+Current navigation order (from `navItems` in `Sidebar.tsx`):
+1. Mission Control
+2. Mind OS
+3. Productivity Hub
+4. Time OS
+5. Finance OS
+6. Data Lab
+7. Fitness OS
+8. Progress Hub
+
+Desktop expand/collapse state is persisted to `sessionStorage` under key `life-os.desktop-sidebar`.
+
+### Tier 2 — Module Sub-Navigation
+
+Multi-page modules render a horizontal tab bar in their layout component. Tab links use `NavLink` with `end` for exact matching.
+
+Example (Mind OS):
+```
+[ Dashboard ]  [ Habits ]  [ Journal ]
+```
+
+Tabs overflow horizontally on mobile with `overflow-x-auto pb-1`.
+
+Active tab styling:
+```html
+<!-- Active -->
+<a class="shrink-0 rounded-lg px-3 py-2 text-sm bg-[#222222] text-slate-100">
+
+<!-- Inactive -->
+<a class="shrink-0 rounded-lg px-3 py-2 text-sm text-slate-300 hover:bg-[#111111]">
+```
+
+---
+
+## 6. GLOBAL OVERLAYS
+
+These components render inside AppShell and are always visible:
+
+| Component | Purpose |
+|---|---|
+| `GlobalTimerBar` | Active/idle timer surface at the bottom of the screen |
+| `SystemFeedbackToast` | Non-blocking toast notifications for mutations |
+| `CommandPalette` | Keyboard-driven `Ctrl+K` navigation across all modules |
+| `AppErrorBoundary` | Per-route error isolation; prevents full-app crashes |
+
+---
+
+## 7. MODULE UI SPECIFICATIONS
+
+### Mission Control
+
+- Primary grid layout: metric cards + Brain Engine hero + system status panels
+- Brain Engine hero spans full width or wide columns
+- Metric cards in a 2–4 column grid depending on breakpoint
+- All content is read-only summaries; no data entry
+
+### Mind OS
+
+**Habits:**
+- Habit cards are minimal: title, progress indicator, increment button
+- One action button per habit (`+` / check)
+- Progress bars are subtle (height 2–4px)
+- Calendar modal for historical view (done/break/healed filters)
+
+**Journal:**
+- Mood selector: button-based (emoji or number scale 1–5)
+- Recent entries list with truncated preview
+- Calendar modal with per-day mood and multi-entry badge
+- No task references visible
+
+### Productivity Hub
+
+**Tasks:**
+- Kanban layout: `To Do`, `Doing`, `Done` columns
+- Cards contain: task title, priority label, status badge
+- `Start Focus` CTA per card (links to Time OS timer)
+- No drag animations; click-to-move is acceptable
+
+**Planning:**
+- Weekly focus text field
+- Goals list with status transitions
+- Weekly plan items with completion checkbox
+- Weekly review text area
+- Alignment health metric (computed from goals/items completion)
+
+### Progress Hub
+
+- Programming skills: level badge, project count, increment CTA
+- Personal skills: similar to programming skills
+- Milestones: completion toggle, date tracking
+- Challenges: status transitions (Active → Completed / Dropped)
+
+### Fitness OS
+
+- Dashboard: weekly cards per session, 90-day heatmap
+- Workouts: expandable cards with exercise logs (sets/reps/weight)
+- Library: exercise CRUD, muscle group categorization
+- Personal Records: best lifts display
+
+### Time OS
+
+- Global Timer Bar always visible across all pages
+- Single active timer state: bucket selector, optional task link, start/stop
+- Manual log entry form
+- Today totals, bucket distribution bar, 7-day trend bars
+
+### Finance OS
+
+- Metric cards: total spent, money left, daily safe limit, projected monthly, waste
+- Quick-log FAB (floating action button) → modal
+- Weekly burn card: 7 mini-bars, baseline comparison
+- Transaction ledger: need/want badge, category, amount
+
+### Data Lab
+
+- Three tabs: Overview, Behavior, Telemetry
+- Period selector: `7d | 30d | 90d | all` (filters display, not fetch)
+- Data maturity guard on advanced visualizations (correlation, insights)
+- Charts are hand-coded SVG/CSS — no external chart library
+
+---
+
+## 8. ICON SYSTEM
+
+All icons are inline SVGs defined as React components. No icon library dependency.
+
+Icon style convention:
+- `viewBox="0 0 24 24"` standard 24px grid
+- `fill="none"` with `stroke="currentColor"`
+- `strokeWidth="1.8"`
+- `strokeLinecap="round"` / `strokeLinejoin="round"` for soft look
+- Default size class: `h-5 w-5`
+
+---
+
+## 9. FORMS AND INPUTS
+
+Standard input styling:
+```html
+<input class="w-full rounded-lg border border-border bg-[#111111] px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-[#444444]">
+```
+
+Standard button:
+```html
+<!-- Primary action -->
+<button class="rounded-lg bg-slate-100 px-4 py-2 text-sm font-medium text-black hover:bg-slate-200">
+
+<!-- Secondary action -->
+<button class="rounded-lg border border-border px-4 py-2 text-sm text-slate-300 hover:bg-[#111111]">
+
+<!-- Destructive action -->
+<button class="rounded-lg px-4 py-2 text-sm text-red-400 hover:bg-red-400/10">
+```
+
+---
+
+## 10. RESPONSIVE DESIGN
+
+| Breakpoint | Behavior |
+|---|---|
+| Mobile (< 768px) | Sidebar hidden → hamburger drawer. Cards stack 1-column. Sub-nav tabs scroll horizontally. |
+| Tablet / Desktop (≥ 768px) | Sidebar rail visible. Multi-column grids activate. Expanded layouts available. |
+
+Tailwind prefix: `md:` for ≥768px changes.
+
+Mobile-first: base styles target mobile. `md:` and `lg:` progressively enhance for larger screens.
+
+---
+
+## 11. PERFORMANCE RULES
 
 Avoid:
-
-• heavy UI component libraries (e.g., Material UI, Ant Design)
-• large animation frameworks (e.g., Framer Motion for simple things)
-• unnecessary React re-renders  
+- External UI component libraries (Material UI, Ant Design, Radix, etc.)
+- Heavy animation frameworks for simple transitions
+- Unnecessary React re-renders across domain boundaries
+- Client-side sorting/filtering of large result sets (use SQL views instead)
 
 Prefer:
-
-• TailwindCSS  
-• small, strictly typed reusable components  
-• React Query caching to prevent loading spinners  
-
----
-
-# ACCESSIBILITY
-
-UI should maintain:
-
-• readable color contrast (especially on secondary text)
-• full keyboard navigation  
-• clear focus states for accessibility
+- TailwindCSS utility classes
+- Small, focused, strictly-typed components
+- React Query caching to avoid loading spinners on re-navigation
+- SQL aggregation for derived data
 
 ---
 
-# DESIGN RESTRICTIONS FOR AI AGENTS
+## 12. ACCESSIBILITY
 
-Agents must NOT introduce:
-
-• excessive color palettes  
-• complex CSS gradients  
-• unnecessary hover animations  
-• flat routing that mixes domains
-
-Life OS should feel calm, structured, and functional.
+- Adequate color contrast for readable text (slate-100 on black/surface backgrounds)
+- `aria-label` on icon-only buttons (e.g., sidebar toggle, close buttons)
+- `aria-hidden="true"` on all decorative SVG icons
+- `aria-expanded` on toggleable containers
+- `aria-label` or descriptive text on all interactive elements
+- Keyboard navigation: all interactive elements reachable via Tab
 
 ---
 
-# UI DEVELOPMENT WORKFLOW
+## 13. DESIGN RESTRICTIONS FOR AGENTS
 
-When implementing UI features, agents must follow this process:
+Do NOT introduce:
+- New color values not in the established system
+- CSS gradient backgrounds
+- Complex hover animations or transitions
+- External UI libraries
+- Flat routing that bypasses the nested layout system
+- Execution items (tasks) inside reflection interfaces (journal/habits)
+- Reflection items (journal) inside execution interfaces (tasks/planning)
 
-1. identify module boundary (e.g., Does this belong in Mind OS or Productivity Hub?)
-2. define nested route mapping
-3. build component structure
-4. implement Tailwind styling using consistent card frames
-5. utilize CSS Grid for responsive layouts
-6. verify responsive behavior on mobile/desktop viewports
-
----
-
-# FINAL PRINCIPLE
-
-The UI must always prioritize:
-
-clarity
-speed
-focus
-cognitive safety
-
-Life OS should feel like a **personal command center**, not a decorative productivity tool.
+The UI must feel calm, structured, and functional at all times.
