@@ -21,7 +21,7 @@ function TelemetryHealthCard({ metrics }: TelemetryHealthCardProps) {
   return (
     <DataLabSection title="Telemetry Health" subtitle="Event coverage and system instrumentation diagnostics">
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-        <div className="border border-[#222222] bg-black p-3">
+        <div className="border border-border bg-black p-3">
           <p className="text-[10px] uppercase tracking-widest text-slate-600 font-mono">Coverage</p>
           <p className={`mt-1 text-2xl font-mono font-bold ${getHealthColor(metrics.coveragePercent)}`}>
             {metrics.coveragePercent}%
@@ -31,7 +31,7 @@ function TelemetryHealthCard({ metrics }: TelemetryHealthCardProps) {
           </p>
         </div>
 
-        <div className="border border-[#222222] bg-black p-3">
+        <div className="border border-border bg-black p-3">
           <p className="text-[10px] uppercase tracking-widest text-slate-600 font-mono">Health Score</p>
           <div className="mt-1 flex items-center gap-2">
             <div className={`h-2 w-2 rounded-full ${getStatusDot(metrics.healthScore)}`} />
@@ -41,7 +41,7 @@ function TelemetryHealthCard({ metrics }: TelemetryHealthCardProps) {
           </div>
         </div>
 
-        <div className="border border-[#222222] bg-black p-3">
+        <div className="border border-border bg-black p-3">
           <p className="text-[10px] uppercase tracking-widest text-slate-600 font-mono">Silent Events</p>
           <p className={`mt-1 text-2xl font-mono font-bold ${
             metrics.silentEvents.length > 10 ? 'text-rose-400' : 'text-slate-300'
@@ -50,7 +50,7 @@ function TelemetryHealthCard({ metrics }: TelemetryHealthCardProps) {
           </p>
         </div>
 
-        <div className="border border-[#222222] bg-black p-3">
+        <div className="border border-border bg-black p-3">
           <p className="text-[10px] uppercase tracking-widest text-slate-600 font-mono">Inactive</p>
           <p className={`mt-1 text-2xl font-mono font-bold ${
             metrics.inactiveModules.length > 0 ? 'text-amber-400' : 'text-emerald-400'
@@ -63,7 +63,7 @@ function TelemetryHealthCard({ metrics }: TelemetryHealthCardProps) {
 
       {/* Inactive modules list */}
       {metrics.inactiveModules.length > 0 ? (
-        <div className="border-t border-[#222222] pt-3 mt-3">
+        <div className="border-t border-border pt-3 mt-3">
           <p className="text-[10px] uppercase tracking-wider text-slate-500 font-mono mb-2">Inactive Modules</p>
           <div className="flex flex-wrap gap-2">
             {metrics.inactiveModules.map((mod) => (
@@ -77,7 +77,7 @@ function TelemetryHealthCard({ metrics }: TelemetryHealthCardProps) {
 
       {/* Silent events sample */}
       {metrics.silentEvents.length > 0 ? (
-        <div className="border-t border-[#222222] pt-3 mt-3">
+        <div className="border-t border-border pt-3 mt-3">
           <p className="text-[10px] uppercase tracking-wider text-slate-500 font-mono mb-2">
             Silent Events (first 10)
           </p>

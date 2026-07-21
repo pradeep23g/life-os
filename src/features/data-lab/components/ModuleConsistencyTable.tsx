@@ -24,7 +24,7 @@ function ModuleConsistencyTable() {
   )
 
   return (
-    <article className="rounded-none border border-[#222222] bg-[#0a0a0a] p-4">
+    <article className="rounded-xl border border-border bg-surface p-4">
       <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-100">Module Consistency</h2>
       <p className="mt-1 text-xs text-slate-400">Lowest consistency surfaces first.</p>
 
@@ -39,7 +39,7 @@ function ModuleConsistencyTable() {
         <div className="mt-4 overflow-x-auto">
           <table className="min-w-full border-collapse text-left text-sm">
             <thead className="font-mono uppercase tracking-wide text-slate-500">
-              <tr className="border-b border-[#222222]">
+              <tr className="border-b border-border">
                 <th className="px-3 py-2 font-medium">Module</th>
                 <th className="px-3 py-2 font-medium">Active Days</th>
                 <th className="px-3 py-2 font-medium">Consistency %</th>
@@ -55,7 +55,7 @@ function ModuleConsistencyTable() {
                 </tr>
               ) : (
                 sortedRows.map((row) => (
-                  <tr key={row.module_name} className="border-b border-[#222222] last:border-b-0">
+                  <tr key={row.module_name} className="border-b border-border last:border-b-0">
                     <td className="px-3 py-3 text-slate-100">{row.module_name}</td>
                     <td className="px-3 py-3 font-mono text-slate-300">
                       {row.active_days} / {row.days_observed}

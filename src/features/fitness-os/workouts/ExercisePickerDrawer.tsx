@@ -73,14 +73,14 @@ function ExercisePickerDrawer({
     <div className="fixed inset-0 z-50">
       <button type="button" className="absolute inset-0 bg-black/70" onClick={onClose} aria-label="Close exercise picker" />
 
-      <aside className="absolute inset-y-0 right-0 w-full max-w-md border-l border-[#222222] bg-[#0a0a0a] shadow-2xl shadow-black/80 flex flex-col">
-        <div className="p-4 flex-none border-b border-[#222222] space-y-3">
+      <aside className="absolute inset-y-0 right-0 w-full max-w-md border-l border-border bg-surface shadow-2xl shadow-black/80 flex flex-col">
+        <div className="p-4 flex-none border-b border-border space-y-3">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-slate-100">Pick Exercise</h3>
+            <h3 className="text-base font-semibold text-slate-100">Pick Exercise</h3>
             <button
               type="button"
               onClick={onClose}
-              className="rounded-md border border-[#222222] bg-black px-3 py-1.5 text-sm text-slate-200 hover:bg-surface"
+              className="rounded-md border border-border bg-[#111111] px-3 py-1.5 text-sm text-slate-200 hover:bg-[#222222]"
             >
               Close
             </button>
@@ -94,8 +94,8 @@ function ExercisePickerDrawer({
                 onClick={() => onSelectMuscle(item)}
                 className={`rounded-full border px-3 py-1 text-xs transition-colors ${
                   selectedMuscle === item
-                    ? 'border-emerald-900 bg-emerald-950/30 text-emerald-400'
-                    : 'border-[#222222] bg-black text-slate-300 hover:bg-surface'
+                    ? 'border-green-900 bg-green-950/30 text-green-400'
+                    : 'border-border bg-[#111111] text-slate-300 hover:bg-[#222222]'
                 }`}
               >
                 {item}
@@ -110,7 +110,7 @@ function ExercisePickerDrawer({
               <button
                 type="button"
                 onClick={() => onPickExercise(exercise)}
-                className="w-full rounded-md border border-[#222222] bg-black p-3 text-left hover:bg-surface focus:outline-none focus:ring-1 focus:ring-emerald-500/50"
+                className="w-full rounded-md border border-border bg-[#111111] p-3 text-left hover:bg-[#222222] focus:outline-none focus:ring-1 focus:ring-green-500/50"
               >
                 <p className="text-sm font-semibold text-slate-100">{exercise.name}</p>
                 <p className="mt-1 text-xs text-slate-400">
@@ -121,7 +121,7 @@ function ExercisePickerDrawer({
             </li>
           ))}
           {filteredExercises.length === 0 ? (
-            <li className="rounded-md border border-[#222222] bg-black p-3 text-sm text-slate-400">
+            <li className="rounded-md border border-border bg-[#111111] p-3 text-sm text-slate-400">
               No exercises match this filter.
             </li>
           ) : null}

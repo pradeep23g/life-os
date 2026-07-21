@@ -167,7 +167,7 @@ function CommandPalette() {
     <div className="fixed inset-0 z-[100] flex items-start justify-center bg-black/80 p-4 pt-[12vh]">
       <button type="button" aria-label="Close command palette" onClick={closePalette} className="absolute inset-0" />
 
-      <article className="relative z-10 w-full max-w-2xl rounded-xl border border-[#222222] bg-[#0a0a0a] p-4 shadow-2xl">
+      <article className="relative z-10 w-full max-w-2xl rounded-xl border border-border bg-surface p-4">
         <input
           ref={inputRef}
           value={inputValue}
@@ -184,23 +184,23 @@ function CommandPalette() {
             }
           }}
           placeholder="Type /f 600 want movie or /t Ship auth fix"
-          className="w-full rounded-lg border border-[#222222] bg-black px-4 py-4 text-lg text-slate-100 outline-none placeholder:text-slate-500 focus:border-emerald-900"
+          className="w-full rounded-lg border border-border bg-black px-4 py-4 text-lg text-slate-100 outline-none placeholder:text-slate-500 focus:border-green-900"
         />
 
-        <div className="mt-3 rounded-lg border border-[#222222] bg-black p-3">
+        <div className="mt-3 rounded-lg border border-border bg-black p-3">
           {parsed.kind === 'empty' ? <p className="text-sm text-slate-400">Type a slash command to run one action instantly.</p> : null}
-          {parsed.kind === 'invalid' ? <p className="text-sm text-rose-400">{parsed.reason}</p> : null}
+          {parsed.kind === 'invalid' ? <p className="text-sm text-red-400">{parsed.reason}</p> : null}
           {parsed.kind === 'finance' || parsed.kind === 'task' ? (
             <div className="flex items-center justify-between gap-3">
               <p className="text-sm text-slate-200">
-                <span className="mr-2 rounded-md border border-emerald-900 bg-emerald-950/20 px-2 py-1 text-xs text-emerald-400">Enter</span>
+                <span className="mr-2 rounded-lg border border-green-900 bg-green-950/20 px-2 py-1 text-xs text-green-400">Enter</span>
                 {parsed.label}
               </p>
               <button
                 type="button"
                 onClick={runCommand}
                 disabled={isSubmitting}
-                className="rounded border border-emerald-900 px-3 py-1 text-sm text-emerald-400 transition-colors hover:bg-emerald-950/30 disabled:opacity-60"
+                className="rounded-lg border border-green-900 px-3 py-1 text-sm text-green-400 transition-colors hover:bg-green-950/30 disabled:opacity-60"
               >
                 Run
               </button>

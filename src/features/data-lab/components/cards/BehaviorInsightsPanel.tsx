@@ -10,11 +10,11 @@ const INSIGHT_ICONS: Record<string, string> = {
   least_active_weekday: '◇',
   longest_streak: '█',
   current_streak: '▶',
-  largest_increase: '↑',
-  largest_decline: '↓',
+  largest_increase: 'â†‘',
+  largest_decline: 'â†“',
   peak_hour: '◉',
   best_week: '★',
-  most_consistent: '●',
+  most_consistent: 'â—',
   least_consistent: '○',
 }
 
@@ -33,10 +33,10 @@ function BehaviorInsightsPanel({ insights }: BehaviorInsightsPanelProps) {
         {insights.map((insight, idx) => (
           <div
             key={`${insight.type}-${idx}`}
-            className="flex items-start gap-3 border border-[#222222] bg-black px-3 py-2.5"
+            className="flex items-start gap-3 border border-border bg-black px-3 py-2.5"
           >
             <span className="text-[10px] text-slate-600 mt-0.5 w-3 shrink-0 text-center font-mono">
-              {INSIGHT_ICONS[insight.type] ?? '·'}
+              {INSIGHT_ICONS[insight.type] ?? 'Â·'}
             </span>
             <div className="min-w-0">
               <p className="text-[10px] uppercase tracking-wider text-slate-500 font-mono">

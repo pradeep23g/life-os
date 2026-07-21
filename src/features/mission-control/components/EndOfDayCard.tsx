@@ -131,10 +131,10 @@ export default function EndOfDayCard() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto space-y-16 pb-8">
+    <div className="mx-auto max-w-3xl space-y-16 pb-8">
       {/* 1. FINALIZE HABITS */}
       <section>
-        <h3 className="text-[11px] font-mono tracking-widest text-slate-500 uppercase text-center mb-6">1. Finalize Habits</h3>
+        <h3 className="mb-6 text-center font-mono text-xs tracking-widest text-slate-500 uppercase">1. Finalize Habits</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {habits.length === 0 ? (
             <div className="col-span-2 text-center text-xs text-slate-500">No habits yet.</div>
@@ -145,20 +145,20 @@ export default function EndOfDayCard() {
               const currentStreak = stat?.currentStreak ?? 0
 
               return (
-                <div key={habit.id} className="flex items-center justify-between gap-3 rounded-lg border border-[#1a1a1a] bg-[#030303] p-4">
+                <div key={habit.id} className="flex items-center justify-between gap-3 rounded-xl border border-border bg-surface p-4">
                   <div>
                     <p className="text-sm font-medium text-slate-200">{habit.title}</p>
-                    <p className="text-[10px] text-slate-500 mt-1">Streak: {currentStreak}</p>
+                    <p className="mt-1 text-xs text-slate-500">Streak: {currentStreak}</p>
                   </div>
 
                   {completedToday ? (
-                    <span className="text-emerald-500/80 font-medium text-sm px-4">Done</span>
+                    <span className="px-4 text-sm font-medium text-green-500/80">Done</span>
                   ) : (
                     <button
                       type="button"
                       disabled={isMarkingHabitDone}
                       onClick={() => handleMarkDone(habit.id, habit.habit_type, habit.target_value)}
-                      className="rounded border border-[#222222] bg-[#0a0a0a] px-4 py-1.5 text-xs text-slate-300 hover:bg-[#111111] disabled:opacity-60 transition-colors"
+                      className="rounded-lg border border-border bg-[#111111] px-4 py-1.5 text-xs text-slate-300 transition-colors hover:bg-[#222222] disabled:opacity-60"
                     >
                       Mark Done
                     </button>
@@ -171,8 +171,8 @@ export default function EndOfDayCard() {
       </section>
 
       {/* 2. REFLECTION */}
-      <section className="max-w-md mx-auto text-center space-y-6">
-        <h3 className="text-[11px] font-mono tracking-widest text-slate-500 uppercase mb-2">2. Reflection</h3>
+      <section className="mx-auto max-w-md space-y-6 text-center">
+        <h3 className="mb-2 font-mono text-xs tracking-widest text-slate-500 uppercase">2. Reflection</h3>
         
         <div className="flex justify-center gap-4">
           {moodOptions.map((option) => (
@@ -180,10 +180,10 @@ export default function EndOfDayCard() {
               key={option.value}
               type="button"
               onClick={() => setSelectedMood(option.value)}
-              className={`w-10 h-10 rounded-full flex items-center justify-center text-xl transition-all border ${
+              className={`flex h-10 w-10 items-center justify-center rounded-full border text-xl transition-all ${
                 selectedMood === option.value
                   ? 'border-indigo-500/50 bg-indigo-500/10 grayscale-0'
-                  : 'border-[#1a1a1a] bg-[#030303] grayscale opacity-60 hover:opacity-100 hover:bg-[#111111]'
+                  : 'border-border bg-surface opacity-60 grayscale hover:bg-[#111111] hover:opacity-100'
               }`}
             >
               {option.emoji}
@@ -196,7 +196,7 @@ export default function EndOfDayCard() {
           onChange={(event) => setNote(event.target.value)}
           placeholder="Write a brief reflection... (optional)"
           rows={3}
-          className="w-full rounded-lg border border-[#1a1a1a] bg-black p-4 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-slate-500 transition-colors resize-none"
+          className="w-full resize-none rounded-lg border border-border bg-[#111111] p-4 text-sm text-slate-200 transition-colors placeholder:text-slate-600 focus:border-slate-500 focus:outline-none"
         />
 
         <div className="flex flex-col items-center gap-2">
@@ -204,18 +204,18 @@ export default function EndOfDayCard() {
             type="button"
             onClick={handleSaveCheckIn}
             disabled={isSavingCheckIn}
-            className="rounded-md border border-[#222222] bg-[#0a0a0a] px-8 py-2 text-xs font-medium text-slate-300 hover:bg-[#111111] disabled:opacity-60 transition-colors"
+            className="rounded-lg border border-border px-8 py-2 text-xs font-medium text-slate-300 transition-colors hover:bg-[#111111] disabled:opacity-60"
           >
             {isSavingCheckIn ? 'Saving...' : 'Save Check-In'}
           </button>
-          {saveMessage ? <p className="text-[11px] text-emerald-500/80">{saveMessage}</p> : null}
-          {saveError ? <p className="text-[11px] text-red-500/80">{saveError}</p> : null}
+          {saveMessage ? <p className="text-xs text-green-500/80">{saveMessage}</p> : null}
+          {saveError ? <p className="text-xs text-red-500/80">{saveError}</p> : null}
         </div>
       </section>
 
       {/* 3. CONSISTENCY */}
-      <section className="max-w-sm mx-auto text-center">
-        <h3 className="text-[11px] font-mono tracking-widest text-slate-500 uppercase mb-6">Consistency</h3>
+      <section className="mx-auto max-w-sm text-center">
+        <h3 className="mb-6 font-mono text-xs tracking-widest text-slate-500 uppercase">Consistency</h3>
         <div className="flex justify-center gap-6">
           {weekDateKeys.map((dateKey, index) => {
             const filled = journalDateSet.has(dateKey)
@@ -223,11 +223,11 @@ export default function EndOfDayCard() {
             return (
               <div key={dateKey} className="flex flex-col items-center gap-2">
                 <div 
-                  className={`w-2 h-2 rounded-full transition-all ${
-                    filled ? 'bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.6)]' : 'bg-[#222222]'
+                  className={`h-2 w-2 rounded-full transition-all ${
+                    filled ? 'bg-indigo-500' : 'bg-[#222222]'
                   }`} 
                 />
-                <span className="text-[9px] font-mono tracking-widest uppercase text-slate-500">{dayLabel}</span>
+                <span className="font-mono text-xs tracking-widest text-slate-500 uppercase">{dayLabel}</span>
               </div>
             )
           })}
@@ -235,13 +235,13 @@ export default function EndOfDayCard() {
       </section>
 
       {/* 4. EXECUTE EVENING SYNC */}
-      <div className="pt-8 flex flex-col items-center gap-4">
-        <p className="text-[10px] font-mono text-slate-500 tracking-widest">{pendingEventsCount} Pending System Events</p>
+      <div className="flex flex-col items-center gap-4 pt-8">
+        <p className="font-mono text-xs tracking-widest text-slate-500">{pendingEventsCount} Pending System Events</p>
         <button
           type="button"
           disabled={isSyncing}
           onClick={() => executeEveningSync()}
-          className="rounded-lg border border-[#222222] bg-[#0a0a0a] px-10 py-3 text-[11px] font-mono tracking-widest text-slate-300 uppercase hover:bg-[#111111] hover:text-slate-100 transition-all disabled:opacity-50"
+          className="rounded-lg border border-border bg-surface px-10 py-3 font-mono text-xs tracking-widest text-slate-300 uppercase transition-all hover:bg-[#111111] hover:text-slate-100 disabled:opacity-50"
         >
           {isSyncing ? 'Syncing...' : 'Execute Evening Sync'}
         </button>

@@ -124,6 +124,15 @@ function LocalNavLink({ to, label }: { to: string; label: string }) {
   )
 }
 
+function ModuleHeader({ title, children }: { title: string; children?: React.ReactNode }) {
+  return (
+    <header className="rounded-xl border border-border bg-surface p-4">
+      <h1 className="text-base font-semibold sm:text-2xl">{title}</h1>
+      {children ? <nav className="mt-3 flex gap-2 overflow-x-auto pb-1">{children}</nav> : null}
+    </header>
+  )
+}
+
 function ProtectedRoute() {
   const { user, loading } = useAuth()
 
@@ -272,14 +281,11 @@ function AppShell() {
 function MindOsLayout() {
   return (
     <section className="space-y-4">
-      <header className="rounded-xl border border-border bg-surface p-4">
-        <h1 className="text-xl font-semibold sm:text-2xl">Mind OS</h1>
-        <nav className="mt-3 flex gap-2 overflow-x-auto pb-1">
-          <LocalNavLink to="." label="Dashboard" />
-          <LocalNavLink to="habits" label="Habits" />
-          <LocalNavLink to="journal" label="Journal" />
-        </nav>
-      </header>
+      <ModuleHeader title="Mind OS">
+        <LocalNavLink to="." label="Dashboard" />
+        <LocalNavLink to="habits" label="Habits" />
+        <LocalNavLink to="journal" label="Journal" />
+      </ModuleHeader>
       <Outlet />
     </section>
   )
@@ -288,14 +294,11 @@ function MindOsLayout() {
 function ProductivityHubLayout() {
   return (
     <section className="space-y-4">
-      <header className="rounded-xl border border-border bg-surface p-4">
-        <h1 className="text-xl font-semibold sm:text-2xl">Productivity Hub</h1>
-        <nav className="mt-3 flex gap-2 overflow-x-auto pb-1">
-          <LocalNavLink to="." label="Dashboard" />
-          <LocalNavLink to="tasks" label="Tasks" />
-          <LocalNavLink to="planning" label="Planning" />
-        </nav>
-      </header>
+      <ModuleHeader title="Productivity Hub">
+        <LocalNavLink to="." label="Dashboard" />
+        <LocalNavLink to="tasks" label="Tasks" />
+        <LocalNavLink to="planning" label="Planning" />
+      </ModuleHeader>
       <Outlet />
     </section>
   )
@@ -304,16 +307,13 @@ function ProductivityHubLayout() {
 function ProgressHubLayout() {
   return (
     <section className="space-y-4">
-      <header className="rounded-xl border border-border bg-surface p-4">
-        <h1 className="text-xl font-semibold sm:text-2xl">Progress Hub</h1>
-        <nav className="mt-3 flex gap-2 overflow-x-auto pb-1">
-          <LocalNavLink to="." label="Dashboard" />
-          <LocalNavLink to="programming" label="Programming" />
-          <LocalNavLink to="personal-skills" label="Personal Skills" />
-          <LocalNavLink to="milestones" label="Milestones" />
-          <LocalNavLink to="challenges" label="Challenges" />
-        </nav>
-      </header>
+      <ModuleHeader title="Progress Hub">
+        <LocalNavLink to="." label="Dashboard" />
+        <LocalNavLink to="programming" label="Programming" />
+        <LocalNavLink to="personal-skills" label="Personal Skills" />
+        <LocalNavLink to="milestones" label="Milestones" />
+        <LocalNavLink to="challenges" label="Challenges" />
+      </ModuleHeader>
       <Outlet />
     </section>
   )
@@ -322,15 +322,12 @@ function ProgressHubLayout() {
 function FitnessOsLayout() {
   return (
     <section className="space-y-4">
-      <header className="rounded-xl border border-border bg-surface p-4">
-        <h1 className="text-xl font-semibold sm:text-2xl">Fitness OS</h1>
-        <nav className="mt-3 flex gap-2 overflow-x-auto pb-1">
-          <LocalNavLink to="." label="Dashboard" />
-          <LocalNavLink to="workouts" label="Workouts" />
-          <LocalNavLink to="library" label="Library" />
-          <LocalNavLink to="pr" label="Personal Records" />
-        </nav>
-      </header>
+      <ModuleHeader title="Fitness OS">
+        <LocalNavLink to="." label="Dashboard" />
+        <LocalNavLink to="workouts" label="Workouts" />
+        <LocalNavLink to="library" label="Library" />
+        <LocalNavLink to="pr" label="Personal Records" />
+      </ModuleHeader>
       <Outlet />
     </section>
   )

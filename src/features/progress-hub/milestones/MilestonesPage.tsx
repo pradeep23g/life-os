@@ -1,4 +1,4 @@
-﻿import { useState } from 'react'
+import { useState } from 'react'
 import type { FormEvent } from 'react'
 
 import { useCreateMilestone, useMilestones, useToggleMilestoneCompletion } from '../api/useProgress'
@@ -36,8 +36,8 @@ function MilestonesPage() {
 
   return (
     <section className="space-y-4">
-      <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
-        <h2 className="text-lg font-semibold text-[#f1f5f9]">Milestones</h2>
+      <article className="rounded-xl border border-border bg-surface p-4">
+        <h2 className="text-base font-semibold text-slate-100">Milestones</h2>
 
         <form onSubmit={handleSubmit} className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-[1fr_180px_140px]">
           <input
@@ -45,20 +45,20 @@ function MilestonesPage() {
             value={title}
             onChange={(event) => setTitle(event.target.value)}
             placeholder="Milestone title"
-            className="rounded-md border border-[#222222] bg-black p-2 text-[#f1f5f9]"
+            className="rounded-md border border-border bg-black p-2 text-slate-100"
           />
 
           <input
             type="date"
             value={targetDate}
             onChange={(event) => setTargetDate(event.target.value)}
-            className="rounded-md border border-[#222222] bg-black p-2 text-[#f1f5f9]"
+            className="rounded-md border border-border bg-black p-2 text-slate-100"
           />
 
           <button
             type="submit"
             disabled={isCreating || !title.trim() || !targetDate}
-            className="rounded-md border border-[#222222] bg-black px-4 py-2 text-sm text-[#f1f5f9] hover:bg-[#111111] disabled:opacity-60"
+            className="rounded-md border border-border bg-black px-4 py-2 text-sm text-slate-100 hover:bg-[#111111] disabled:opacity-60"
           >
             {isCreating ? 'Adding...' : 'Add Milestone'}
           </button>
@@ -76,8 +76,8 @@ function MilestonesPage() {
         {!isLoading && milestones.length === 0 ? <p className="text-sm text-[#a1a1aa]">No milestones created yet.</p> : null}
 
         {milestones.map((milestone) => (
-          <article key={milestone.id} className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
-            <p className="text-base font-semibold text-[#f1f5f9]">{milestone.title}</p>
+          <article key={milestone.id} className="rounded-xl border border-border bg-surface p-4">
+            <p className="text-base font-semibold text-slate-100">{milestone.title}</p>
             <p className="mt-1 text-sm text-[#a1a1aa]">Target Date: {new Date(milestone.target_date).toLocaleDateString()}</p>
             <p className="text-sm text-[#a1a1aa]">
               Achieved Date:{' '}
@@ -88,7 +88,7 @@ function MilestonesPage() {
               type="button"
               onClick={() => toggleMilestone({ id: milestone.id, isCompleted: milestone.is_completed })}
               disabled={isUpdating}
-              className="mt-3 rounded-md border border-[#222222] bg-black px-3 py-1 text-xs text-[#f1f5f9] hover:bg-[#111111] disabled:opacity-60"
+              className="mt-3 rounded-md border border-border bg-black px-3 py-1 text-xs text-slate-100 hover:bg-[#111111] disabled:opacity-60"
             >
               {milestone.is_completed ? 'Reopen' : 'Mark as Achieved'}
             </button>

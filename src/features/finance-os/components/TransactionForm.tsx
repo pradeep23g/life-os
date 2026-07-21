@@ -109,7 +109,7 @@ function TransactionForm({ isSaving, error, onSubmit }: TransactionFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="rounded-lg border border-[#222222] bg-black p-2">
+      <div className="rounded-lg border border-border bg-black p-2">
         <p className="text-xs text-slate-400">Mode</p>
         <div className="mt-2 grid grid-cols-2 gap-2">
           <button
@@ -119,7 +119,7 @@ function TransactionForm({ isSaving, error, onSubmit }: TransactionFormProps) {
             className={`rounded-md border px-3 py-3 text-sm transition-colors ${
               values.transactionType === 'EXPENSE'
                 ? 'border-rose-900 bg-rose-950/20 text-rose-300'
-                : 'border-[#222222] bg-[#0a0a0a] text-slate-300 hover:bg-[#111111]'
+                : 'border-border bg-[#111111] text-slate-300 hover:bg-[#222222]'
             }`}
           >
             Log Expense
@@ -131,7 +131,7 @@ function TransactionForm({ isSaving, error, onSubmit }: TransactionFormProps) {
             className={`rounded-md border px-3 py-3 text-sm transition-colors ${
               values.transactionType === 'INCOME'
                 ? 'border-emerald-900 bg-emerald-950/20 text-emerald-300'
-                : 'border-[#222222] bg-[#0a0a0a] text-slate-300 hover:bg-[#111111]'
+                : 'border-border bg-[#111111] text-slate-300 hover:bg-[#222222]'
             }`}
           >
             Log Income
@@ -147,11 +147,11 @@ function TransactionForm({ isSaving, error, onSubmit }: TransactionFormProps) {
           value={values.amount}
           onChange={(event) => handleAmountChange(event.target.value)}
           placeholder="0.00"
-          className="mt-1 w-full rounded-lg border border-[#222222] bg-black px-3 py-3 text-2xl font-semibold text-slate-100 outline-none placeholder:text-slate-500 focus:border-emerald-900"
+          className="mt-1 w-full rounded-lg border border-border bg-[#111111] px-3 py-3 text-2xl font-semibold text-slate-100 outline-none placeholder:text-slate-500 focus:border-slate-600 focus:ring-1 focus:ring-slate-600"
         />
       </label>
 
-      <div className="rounded-lg border border-[#222222] bg-black p-2">
+      <div className="rounded-lg border border-border bg-black p-2">
         <p className="text-xs text-slate-400">
           {values.transactionType === 'EXPENSE' ? 'Spend Type' : 'Source'}
         </p>
@@ -170,7 +170,7 @@ function TransactionForm({ isSaving, error, onSubmit }: TransactionFormProps) {
                 aria-pressed={isSelected}
                 onClick={() => setValues((previous) => ({ ...previous, category: option }))}
                 className={`rounded-md border px-3 py-3 text-sm transition-colors ${
-                  isSelected ? selectedClass : 'border-[#222222] bg-[#0a0a0a] text-slate-300 hover:bg-[#111111]'
+                  isSelected ? selectedClass : 'border-border bg-[#111111] text-slate-300 hover:bg-[#222222]'
                 }`}
               >
                 {option}
@@ -186,7 +186,7 @@ function TransactionForm({ isSaving, error, onSubmit }: TransactionFormProps) {
           value={values.note}
           onChange={(event) => setValues((previous) => ({ ...previous, note: event.target.value }))}
           placeholder={values.transactionType === 'INCOME' ? 'Source detail / context' : 'Vendor / context'}
-          className="mt-1 w-full rounded-lg border border-[#222222] bg-black px-3 py-2.5 text-sm text-slate-100 outline-none placeholder:text-slate-500 focus:border-emerald-900"
+          className="mt-1 w-full rounded-lg border border-border bg-[#111111] px-3 py-2.5 text-sm text-slate-100 outline-none placeholder:text-slate-500 focus:border-slate-600 focus:ring-1 focus:ring-slate-600"
         />
       </label>
 

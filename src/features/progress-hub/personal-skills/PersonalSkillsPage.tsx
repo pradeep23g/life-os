@@ -1,4 +1,4 @@
-﻿import { useState } from 'react'
+import { useState } from 'react'
 import type { FormEvent } from 'react'
 
 import {
@@ -51,8 +51,8 @@ function PersonalSkillsPage() {
 
   return (
     <section className="space-y-4">
-      <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
-        <h2 className="text-lg font-semibold text-[#f1f5f9]">Personal Skills</h2>
+      <article className="rounded-xl border border-border bg-surface p-4">
+        <h2 className="text-base font-semibold text-slate-100">Personal Skills</h2>
 
         <form onSubmit={handleSubmit} className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-[1fr_170px_170px_140px]">
           <input
@@ -60,13 +60,13 @@ function PersonalSkillsPage() {
             value={skillName}
             onChange={(event) => setSkillName(event.target.value)}
             placeholder="Skill name"
-            className="rounded-md border border-[#222222] bg-black p-2 text-[#f1f5f9]"
+            className="rounded-md border border-border bg-black p-2 text-slate-100"
           />
 
           <select
             value={domain}
             onChange={(event) => setDomain(event.target.value as PersonalSkillDomain)}
-            className="rounded-md border border-[#222222] bg-black p-2 text-[#f1f5f9]"
+            className="rounded-md border border-border bg-black p-2 text-slate-100"
           >
             {domains.map((option) => (
               <option key={option} value={option}>
@@ -78,7 +78,7 @@ function PersonalSkillsPage() {
           <select
             value={proficiencyLevel}
             onChange={(event) => setProficiencyLevel(event.target.value as ProficiencyLevel)}
-            className="rounded-md border border-[#222222] bg-black p-2 text-[#f1f5f9]"
+            className="rounded-md border border-border bg-black p-2 text-slate-100"
           >
             {proficiencyLevels.map((level) => (
               <option key={level} value={level}>
@@ -90,7 +90,7 @@ function PersonalSkillsPage() {
           <button
             type="submit"
             disabled={isCreating || !skillName.trim()}
-            className="rounded-md border border-[#222222] bg-black px-4 py-2 text-sm text-[#f1f5f9] hover:bg-[#111111] disabled:opacity-60"
+            className="rounded-md border border-border bg-black px-4 py-2 text-sm text-slate-100 hover:bg-[#111111] disabled:opacity-60"
           >
             {isCreating ? 'Adding...' : 'Add Skill'}
           </button>
@@ -112,8 +112,8 @@ function PersonalSkillsPage() {
         ) : null}
 
         {personalSkills.map((skill) => (
-          <article key={skill.id} className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
-            <p className="text-base font-semibold text-[#f1f5f9]">{skill.skill_name}</p>
+          <article key={skill.id} className="rounded-xl border border-border bg-surface p-4">
+            <p className="text-base font-semibold text-slate-100">{skill.skill_name}</p>
             <p className="mt-1 text-sm text-[#a1a1aa]">Domain: {skill.domain}</p>
             <p className="text-sm text-[#a1a1aa]">Level: {skill.proficiency_level}</p>
             <p className="text-sm text-[#a1a1aa]">Projects: {skill.projects_completed}</p>
@@ -124,7 +124,7 @@ function PersonalSkillsPage() {
                 type="button"
                 onClick={() => levelUp({ id: skill.id, currentLevel: skill.proficiency_level })}
                 disabled={isLeveling || skill.proficiency_level === 'Advanced'}
-                className="rounded-md border border-[#222222] bg-black px-3 py-1 text-xs text-[#f1f5f9] hover:bg-[#111111] disabled:opacity-60"
+                className="rounded-md border border-border bg-black px-3 py-1 text-xs text-slate-100 hover:bg-[#111111] disabled:opacity-60"
               >
                 Level Up Proficiency
               </button>
@@ -133,7 +133,7 @@ function PersonalSkillsPage() {
                 type="button"
                 onClick={() => addProject({ id: skill.id, currentProjects: skill.projects_completed })}
                 disabled={isAddingProject}
-                className="rounded-md border border-[#222222] bg-black px-3 py-1 text-xs text-[#f1f5f9] hover:bg-[#111111] disabled:opacity-60"
+                className="rounded-md border border-border bg-black px-3 py-1 text-xs text-slate-100 hover:bg-[#111111] disabled:opacity-60"
               >
                 Add Project
               </button>
@@ -142,7 +142,7 @@ function PersonalSkillsPage() {
                 type="button"
                 onClick={() => addProgress({ id: skill.id, currentProgress: skill.progress_percent })}
                 disabled={isAddingProgress || skill.progress_percent >= 100}
-                className="rounded-md border border-[#222222] bg-black px-3 py-1 text-xs text-[#f1f5f9] hover:bg-[#111111] disabled:opacity-60"
+                className="rounded-md border border-border bg-black px-3 py-1 text-xs text-slate-100 hover:bg-[#111111] disabled:opacity-60"
               >
                 Add Progress +10%
               </button>

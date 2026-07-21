@@ -13,7 +13,7 @@ function WeeklyScoreCard() {
 
   if (isLoading) {
     return (
-      <article className="rounded-none border border-[#222222] bg-[#0a0a0a] p-4">
+      <article className="rounded-xl border border-border bg-surface p-4">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-100">Weekly System Score</h2>
         <p className="mt-3 text-sm text-slate-400">Loading facts...</p>
       </article>
@@ -22,7 +22,7 @@ function WeeklyScoreCard() {
 
   if (isError) {
     return (
-      <article className="rounded-none border border-[#222222] bg-[#0a0a0a] p-4">
+      <article className="rounded-xl border border-border bg-surface p-4">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-100">Weekly System Score</h2>
         <p className="mt-3 text-sm text-rose-400">
           {error instanceof Error ? error.message : 'Failed to load weekly score.'}
@@ -35,11 +35,11 @@ function WeeklyScoreCard() {
   const recentWeeks = data.slice(0, 3)
 
   return (
-    <article className="rounded-none border border-[#222222] bg-[#0a0a0a] p-4">
+    <article className="rounded-xl border border-border bg-surface p-4">
       <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-100">Weekly System Score</h2>
       <p className="mt-1 text-xs text-slate-400">Most recent completed read from the weekly analytics view.</p>
 
-      <div className="mt-4 border border-[#222222] bg-black p-4">
+      <div className="mt-4 border border-border bg-black p-4">
         <p className="text-xs uppercase tracking-wide text-slate-400">Current Week</p>
         <p className="mt-2 font-mono text-4xl font-semibold text-slate-100">
           {latestWeek ? latestWeek.weekly_system_score : '--'}
@@ -58,7 +58,7 @@ function WeeklyScoreCard() {
             recentWeeks.map((week) => (
               <li
                 key={week.week_start_date}
-                className="flex items-center justify-between border border-[#222222] bg-black px-3 py-2 text-sm"
+                className="flex items-center justify-between border border-border bg-black px-3 py-2 text-sm"
               >
                 <span className="text-slate-300">Week of {formatWeekLabel(week.week_start_date)}</span>
                 <span className="font-mono font-medium text-slate-100">{week.weekly_system_score} pts</span>

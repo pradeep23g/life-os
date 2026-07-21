@@ -119,13 +119,13 @@ function TabButton({
       onClick={onClick}
       className={`relative shrink-0 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
         isActive
-          ? 'bg-[#1a1a2e] text-slate-100'
+          ? 'bg-[#111111] text-slate-100 ring-1 ring-border'
           : 'text-slate-400 hover:bg-[#111111] hover:text-slate-200'
       }`}
     >
       {label}
       {badge ? (
-        <span className="ml-2 inline-flex items-center rounded-full bg-[#222222] px-1.5 py-0.5 text-[10px] font-medium text-slate-300">
+        <span className="ml-2 inline-flex items-center rounded-full border border-border bg-black px-1.5 py-0.5 text-[10px] font-medium text-slate-300">
           {badge}
         </span>
       ) : null}
@@ -365,7 +365,7 @@ function PlanningPage() {
       <article className="rounded-xl border border-border bg-surface p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="text-lg font-semibold text-slate-100">Planning Engine</h2>
+            <h2 className="text-base font-semibold text-slate-100">Planning Engine</h2>
             <p className="mt-0.5 text-sm text-slate-400">
               Week of {formatWeekDate(currentWeekStart)}
             </p>
@@ -497,7 +497,7 @@ function PlanningPage() {
                     <select
                       value={itemStatus}
                       onChange={(event) => setItemStatus(event.target.value as PlanItemStatus)}
-                      className="rounded-md border border-[#333333] bg-[#111111] p-2 text-sm text-slate-100 focus:outline-none"
+                      className="rounded-md border border-border bg-[#111111] p-2 text-sm text-slate-100 focus:outline-none"
                     >
                       {planStatuses.map((status) => (
                         <option key={status} value={status}>
@@ -509,7 +509,7 @@ function PlanningPage() {
                     <select
                       value={itemGoalId}
                       onChange={(event) => setItemGoalId(event.target.value)}
-                      className="rounded-md border border-[#333333] bg-[#111111] p-2 text-sm text-slate-100 focus:outline-none"
+                      className="rounded-md border border-border bg-[#111111] p-2 text-sm text-slate-100 focus:outline-none"
                     >
                       <option value="">Link goal</option>
                       {goals.map((goal) => (
@@ -524,7 +524,7 @@ function PlanningPage() {
                     <select
                       value={itemTaskId}
                       onChange={(event) => setItemTaskId(event.target.value)}
-                      className="rounded-md border border-[#333333] bg-[#111111] p-2 text-sm text-slate-100 focus:outline-none"
+                      className="rounded-md border border-border bg-[#111111] p-2 text-sm text-slate-100 focus:outline-none"
                     >
                       <option value="">Link task</option>
                       {tasks.map((task) => (
@@ -537,7 +537,7 @@ function PlanningPage() {
                     <select
                       value={itemHabitId}
                       onChange={(event) => setItemHabitId(event.target.value)}
-                      className="rounded-md border border-[#333333] bg-[#111111] p-2 text-sm text-slate-100 focus:outline-none"
+                      className="rounded-md border border-border bg-[#111111] p-2 text-sm text-slate-100 focus:outline-none"
                     >
                       <option value="">Link habit</option>
                       {habits.map((habit) => (
@@ -553,7 +553,7 @@ function PlanningPage() {
                     onChange={(event) => setItemNotes(event.target.value)}
                     rows={2}
                     placeholder="Optional note"
-                    className="w-full rounded-md border border-[#333333] bg-[#111111] p-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none"
+                    className="w-full rounded-md border border-border bg-[#111111] p-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none"
                   />
                 </div>
               )}
@@ -580,7 +580,7 @@ function PlanningPage() {
                     <article
                       key={item.id}
                       className={`flex items-start justify-between gap-3 rounded-lg border border-border p-3 transition-colors ${
-                        item.status === 'Done' ? 'bg-[#0a0a0a] opacity-60' : 'bg-surface'
+                        item.status === 'Done' ? 'bg-surface opacity-60' : 'bg-surface'
                       }`}
                     >
                       <div className="min-w-0 flex-1">
@@ -613,7 +613,7 @@ function PlanningPage() {
                           })
                         }
                         disabled={isUpdatingItem}
-                        className={`shrink-0 rounded-md border border-[#333333] bg-[#111111] px-2 py-1 text-xs font-medium focus:outline-none ${statusColors[item.status]}`}
+                        className={`shrink-0 rounded-md border border-border bg-[#111111] px-2 py-1 text-xs font-medium focus:outline-none ${statusColors[item.status]}`}
                       >
                         {planStatuses.map((status) => (
                           <option key={`${item.id}-${status}`} value={status}>
@@ -633,7 +633,7 @@ function PlanningPage() {
             <button
               type="button"
               onClick={() => setShowRecentEntries(!showRecentEntries)}
-              className="flex w-full items-center justify-between p-4 text-left transition-colors hover:bg-[#0f0f0f] rounded-xl"
+              className="flex w-full items-center justify-between p-4 text-left transition-colors hover:bg-[#111111] rounded-xl"
             >
               <h3 className="text-sm font-medium text-slate-400">Recent Weekly Focus Entries</h3>
               <span className="text-xs text-slate-500">{showRecentEntries ? '▲' : '▼'}</span>
@@ -644,7 +644,7 @@ function PlanningPage() {
                 {!isPlansLoading && plans.length === 0 ? <p className="text-sm text-slate-500">No plans yet.</p> : null}
                 <ul className="space-y-2">
                   {plans.slice(0, 6).map((plan) => (
-                    <li key={plan.id} className="rounded-lg border border-border bg-[#0d0d0d] p-3">
+                    <li key={plan.id} className="rounded-lg border border-border bg-[#111111] p-3">
                       <p className="text-xs text-slate-500">{formatWeekDate(plan.week_start_date)}</p>
                       <p className="mt-1 text-sm text-slate-200">{plan.focus_text}</p>
                     </li>
@@ -722,7 +722,7 @@ function PlanningPage() {
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-semibold text-slate-100">{goal.title}</p>
                       <div className="mt-1 flex flex-wrap items-center gap-2">
-                        <span className="rounded-full bg-[#1a1a2e] px-2 py-0.5 text-[10px] font-medium text-slate-300">
+                        <span className="rounded-full border border-border bg-[#111111] px-2 py-0.5 text-[10px] font-medium text-slate-300">
                           {domainLabels[goal.domain]}
                         </span>
                         {goal.target_date && (
@@ -743,7 +743,7 @@ function PlanningPage() {
                         })
                       }
                       disabled={isUpdatingGoalStatus}
-                      className={`shrink-0 rounded-md border border-[#333333] bg-[#111111] px-2 py-1 text-xs font-medium focus:outline-none ${
+                      className={`shrink-0 rounded-md border border-border bg-[#111111] px-2 py-1 text-xs font-medium focus:outline-none ${
                         goal.status === 'completed' ? 'text-emerald-400' : goal.status === 'paused' ? 'text-yellow-400' : 'text-slate-300'
                       }`}
                     >

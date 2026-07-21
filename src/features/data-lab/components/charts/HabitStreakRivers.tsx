@@ -57,7 +57,7 @@ function HabitStreakRivers({ lanes }: HabitStreakRiversProps) {
       </div>
 
       {/* Summary */}
-      <div className="mt-3 border-t border-[#222222] pt-3 flex gap-4 text-[10px] font-mono text-slate-500">
+      <div className="mt-3 border-t border-border pt-3 flex gap-4 text-[10px] font-mono text-slate-500">
         <span>
           Longest:{' '}
           <span className="text-slate-300">

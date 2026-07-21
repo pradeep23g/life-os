@@ -21,17 +21,17 @@ function TimeInsights() {
   }, [data])
 
   return (
-    <section className="grid gap-4 rounded-xl border border-[#222222] bg-[#0a0a0a] p-4 lg:grid-cols-3">
-      <article className="rounded-lg border border-[#222222] bg-black p-4">
+    <section className="grid gap-4 rounded-xl border border-border bg-surface p-4 lg:grid-cols-3">
+      <article className="rounded-lg border border-border bg-[#111111] p-4">
         <p className="text-xs uppercase tracking-wide text-slate-400">Today's Total</p>
         {isLoading ? <p className="mt-3 text-sm text-slate-400">Loading insights...</p> : null}
         {isError ? <p className="mt-3 text-sm text-red-400">{error instanceof Error ? error.message : 'Failed to load insights.'}</p> : null}
         {!isLoading && !isError ? <p className="mt-3 text-3xl font-semibold text-slate-100">{formatMinutes(data?.todayTotalMinutes ?? 0)}</p> : null}
       </article>
 
-      <article className="rounded-lg border border-[#222222] bg-black p-4">
+      <article className="rounded-lg border border-border bg-[#111111] p-4">
         <p className="text-xs uppercase tracking-wide text-slate-400">Distribution</p>
-        <div className="mt-3 h-4 overflow-hidden rounded-full border border-[#222222] bg-[#0a0a0a]">
+        <div className="mt-3 h-4 overflow-hidden rounded-full border border-border bg-black">
           <div className="flex h-full w-full">
             {(data?.todayDistribution ?? []).map((segment) => (
               <div
@@ -56,7 +56,7 @@ function TimeInsights() {
         </ul>
       </article>
 
-      <article className="rounded-lg border border-[#222222] bg-black p-4">
+      <article className="rounded-lg border border-border bg-[#111111] p-4">
         <p className="text-xs uppercase tracking-wide text-slate-400">7-Day Trend</p>
         <div className="mt-3 flex h-24 items-end gap-2">
           {(data?.sevenDayTrend ?? []).map((day) => {
@@ -64,7 +64,7 @@ function TimeInsights() {
 
             return (
               <div key={day.dateKey} className="flex flex-1 flex-col items-center gap-1">
-                <div className="relative h-16 w-full overflow-hidden rounded-sm bg-surface" title={`${day.label}: ${day.minutes} mins`}>
+                <div className="relative h-16 w-full overflow-hidden rounded-sm bg-[#222222]" title={`${day.label}: ${day.minutes} mins`}>
                   <div className="absolute bottom-0 left-0 w-full rounded-sm bg-emerald-700" style={{ height: `${fillPercent}%` }} />
                 </div>
                 <span className="text-[10px] text-slate-400">{day.label}</span>

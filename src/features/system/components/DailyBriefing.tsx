@@ -32,7 +32,7 @@ function DailyBriefing({ momentum }: DailyBriefingProps) {
   const tone = getBriefingTone(momentum)
 
   return (
-    <section className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
+    <section className="rounded-xl border border-border bg-surface p-4">
       <p className="text-xs uppercase tracking-wide text-slate-400">Daily Briefing</p>
       <p className="mt-2 text-sm font-semibold text-slate-100">{tone.heading}</p>
       <p className="mt-1 text-sm text-slate-300">{tone.message}</p>

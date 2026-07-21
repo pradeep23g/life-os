@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 
 import {
@@ -8,6 +8,7 @@ import {
   useFitnessExercises,
   useUpdateFitnessExercise,
 } from '../api/useFitness'
+import { DeleteButton } from '../../../components/DeleteButton'
 import CreateExerciseForm, { type ExerciseFormState } from './CreateExerciseForm'
 
 const emptyExerciseForm: ExerciseFormState = {
@@ -165,16 +166,16 @@ function FitnessLibraryPage() {
         </article>
       ) : null}
 
-      <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
-        <h2 className="text-lg font-semibold text-slate-100">Exercise Library</h2>
+      <article className="rounded-xl border border-border bg-surface p-4">
+        <h2 className="text-base font-semibold text-slate-100">Exercise Library</h2>
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <button
             type="button"
             onClick={() => setSelectedMuscle('All')}
             className={`rounded-full border px-3 py-1 text-xs transition-colors ${
               selectedMuscle === 'All'
-                ? 'border-slate-500 bg-[#111111] text-slate-100'
-                : 'border-[#222222] bg-black text-slate-300 hover:bg-surface'
+                ? 'border-slate-500 bg-[#222222] text-slate-100'
+                : 'border-border bg-[#111111] text-slate-300 hover:bg-[#222222]'
             }`}
           >
             All
@@ -186,8 +187,8 @@ function FitnessLibraryPage() {
               onClick={() => setSelectedMuscle(muscle)}
               className={`rounded-full border px-3 py-1 text-xs transition-colors ${
                 selectedMuscle === muscle
-                  ? 'border-slate-500 bg-[#111111] text-slate-100'
-                  : 'border-[#222222] bg-black text-slate-300 hover:bg-surface'
+                  ? 'border-slate-500 bg-[#222222] text-slate-100'
+                  : 'border-border bg-[#111111] text-slate-300 hover:bg-[#222222]'
               }`}
             >
               {muscle}
@@ -195,10 +196,10 @@ function FitnessLibraryPage() {
           ))}
           {muscleStats.more.length > 0 ? (
             <details className="relative" open={moreOpen} onToggle={(event) => setMoreOpen((event.currentTarget as HTMLDetailsElement).open)}>
-              <summary className="cursor-pointer list-none rounded-full border border-[#222222] bg-black px-3 py-1 text-xs text-slate-300 hover:bg-surface">
+              <summary className="cursor-pointer list-none rounded-full border border-border bg-[#111111] px-3 py-1 text-xs text-slate-300 hover:bg-[#222222]">
                 More ▾
               </summary>
-              <div className="absolute right-0 z-10 mt-2 w-40 rounded-md border border-[#222222] bg-black p-2 shadow-2xl">
+              <div className="absolute right-0 z-10 mt-2 w-40 rounded-md border border-border bg-[#111111] p-2 shadow-2xl">
                 <div className="flex flex-col gap-1">
                   {muscleStats.more.map((muscle) => (
                     <button
@@ -209,7 +210,7 @@ function FitnessLibraryPage() {
                         setMoreOpen(false)
                       }}
                       className={`rounded px-2 py-1 text-left text-xs transition-colors ${
-                        selectedMuscle === muscle ? 'bg-[#111111] text-slate-100' : 'text-slate-300 hover:bg-surface'
+                        selectedMuscle === muscle ? 'bg-[#222222] text-slate-100' : 'text-slate-300 hover:bg-[#222222]'
                       }`}
                     >
                       {muscle}
@@ -229,7 +230,7 @@ function FitnessLibraryPage() {
 
         <ul className="mt-3 space-y-3">
           {filteredExercises.map((exercise) => (
-            <li key={exercise.id} className="rounded-lg border border-[#222222] bg-black p-3">
+            <li key={exercise.id} className="rounded-lg border border-border bg-[#111111] p-3">
               {editingId === exercise.id ? (
                 <CreateExerciseForm
                   value={editingForm}
@@ -252,18 +253,14 @@ function FitnessLibraryPage() {
                     <button
                       type="button"
                       onClick={() => beginEdit(exercise)}
-                      className="rounded-md border border-[#222222] bg-[#0a0a0a] px-3 py-1 text-xs text-slate-100 transition-colors hover:bg-surface"
+                      className="rounded-md border border-border bg-black px-3 py-1 text-xs text-slate-100 transition-colors hover:bg-[#222222]"
                     >
                       Edit
                     </button>
-                    <button
-                      type="button"
+                    <DeleteButton
                       onClick={() => deleteExercise({ id: exercise.id })}
                       disabled={isDeleting}
-                      className="rounded-md border border-red-700/80 bg-red-900/20 px-3 py-1 text-xs text-red-200 hover:bg-red-900/40 disabled:opacity-60"
-                    >
-                      Delete
-                    </button>
+                    />
                   </div>
                 </>
               )}
@@ -275,7 +272,7 @@ function FitnessLibraryPage() {
                       setEditingId(null)
                       setEditingForm(emptyExerciseForm)
                     }}
-                    className="rounded-md border border-[#222222] px-3 py-1 text-sm text-slate-300 transition-colors hover:bg-surface"
+                    className="rounded-md border border-border px-3 py-1 text-sm text-slate-300 transition-colors hover:bg-[#222222]"
                   >
                     Cancel
                   </button>
@@ -302,16 +299,16 @@ function FitnessLibraryPage() {
             className="absolute inset-0"
             aria-label="Close create exercise modal"
           />
-          <article className="relative z-10 w-full max-w-3xl rounded-xl border border-[#222222] bg-[#0a0a0a] p-4 sm:p-5">
+          <article className="relative z-10 w-full max-w-3xl rounded-xl border border-border bg-surface p-4 sm:p-5">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <h2 className="text-lg font-semibold text-slate-100">Create Exercise</h2>
+                <h2 className="text-base font-semibold text-slate-100">Create Exercise</h2>
                 <p className="mt-1 text-xs text-slate-400">Custom-only exercise library for quick reuse in workout logs.</p>
               </div>
               <button
                 type="button"
                 onClick={() => setIsCreateModalOpen(false)}
-                className="rounded-md border border-[#222222] bg-black px-3 py-1 text-sm text-slate-100 hover:bg-surface"
+                className="rounded-md border border-border bg-[#111111] px-3 py-1 text-sm text-slate-100 hover:bg-[#222222]"
               >
                 Close
               </button>

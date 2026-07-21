@@ -39,7 +39,7 @@ function RecentEventStream({ events }: RecentEventStreamProps) {
       <div className="space-y-4 max-h-[480px] overflow-y-auto">
         {Array.from(grouped.entries()).map(([dateKey, dayEvents]) => (
           <div key={dateKey}>
-            <p className="text-[10px] uppercase tracking-wider text-slate-600 font-mono mb-2 sticky top-0 bg-[#0a0a0a] py-1">
+            <p className="text-[10px] uppercase tracking-wider text-slate-600 font-mono mb-2 sticky top-0 bg-surface py-1">
               {formatDateShort(dateKey)}
             </p>
 

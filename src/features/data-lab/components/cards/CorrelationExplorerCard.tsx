@@ -46,7 +46,7 @@ function CorrelationExplorerCard({ dailyRows }: CorrelationExplorerCardProps) {
           {correlations.map((entry) => (
             <div
               key={entry.metric}
-              className="flex items-center justify-between border border-[#222222] bg-black px-3 py-2"
+              className="flex items-center justify-between border border-border bg-black px-3 py-2"
             >
               <span className="text-xs font-mono text-slate-300">{entry.metric}</span>
               <div className="flex items-center gap-2">

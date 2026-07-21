@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 
 import { useChallenges, useCreateChallenge, useUpdateChallengeStatus } from '../api/useProgress'
@@ -46,8 +46,8 @@ function ChallengesPage() {
 
   return (
     <section className="space-y-4">
-      <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
-        <h2 className="text-lg font-semibold text-[#f1f5f9]">Challenges</h2>
+      <article className="rounded-xl border border-border bg-surface p-4">
+        <h2 className="text-base font-semibold text-slate-100">Challenges</h2>
         <p className="mt-1 text-sm text-[#a1a1aa]">
           Completion: {completedCount}/{challenges.length} ({completionPercent}%)
         </p>
@@ -58,7 +58,7 @@ function ChallengesPage() {
             value={title}
             onChange={(event) => setTitle(event.target.value)}
             placeholder="Challenge title"
-            className="rounded-md border border-[#222222] bg-black p-2 text-[#f1f5f9]"
+            className="rounded-md border border-border bg-black p-2 text-slate-100"
           />
 
           <textarea
@@ -66,13 +66,13 @@ function ChallengesPage() {
             onChange={(event) => setDescription(event.target.value)}
             rows={3}
             placeholder="Challenge description"
-            className="rounded-md border border-[#222222] bg-black p-2 text-[#f1f5f9]"
+            className="rounded-md border border-border bg-black p-2 text-slate-100"
           />
 
           <button
             type="submit"
             disabled={isCreating || !title.trim()}
-            className="w-full rounded-md border border-[#222222] bg-black px-4 py-2 text-sm text-[#f1f5f9] hover:bg-[#111111] disabled:opacity-60 md:w-auto"
+            className="w-full rounded-md border border-border bg-black px-4 py-2 text-sm text-slate-100 hover:bg-[#111111] disabled:opacity-60 md:w-auto"
           >
             {isCreating ? 'Adding...' : 'Add Challenge'}
           </button>
@@ -90,8 +90,8 @@ function ChallengesPage() {
         {!isLoading && challenges.length === 0 ? <p className="text-sm text-[#a1a1aa]">No challenges yet.</p> : null}
 
         {challenges.map((challenge) => (
-          <article key={challenge.id} className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
-            <p className="text-base font-semibold text-[#f1f5f9]">{challenge.title}</p>
+          <article key={challenge.id} className="rounded-xl border border-border bg-surface p-4">
+            <p className="text-base font-semibold text-slate-100">{challenge.title}</p>
             <p className="mt-1 text-sm text-[#a1a1aa]">{challenge.description || 'No description provided.'}</p>
             <p className="mt-2 text-xs text-[#a1a1aa]">Status: {challenge.status}</p>
 
@@ -102,7 +102,7 @@ function ChallengesPage() {
                     type="button"
                     onClick={() => updateStatus({ id: challenge.id, status: 'Completed' })}
                     disabled={isUpdating}
-                    className="rounded-md border border-[#222222] bg-black px-3 py-1 text-xs text-[#f1f5f9] hover:bg-[#111111] disabled:opacity-60"
+                    className="rounded-md border border-border bg-black px-3 py-1 text-xs text-slate-100 hover:bg-[#111111] disabled:opacity-60"
                   >
                     Mark Completed
                   </button>
@@ -110,7 +110,7 @@ function ChallengesPage() {
                     type="button"
                     onClick={() => updateStatus({ id: challenge.id, status: 'Failed' })}
                     disabled={isUpdating}
-                    className="rounded-md border border-[#222222] bg-black px-3 py-1 text-xs text-[#f1f5f9] hover:bg-[#111111] disabled:opacity-60"
+                    className="rounded-md border border-border bg-black px-3 py-1 text-xs text-slate-100 hover:bg-[#111111] disabled:opacity-60"
                   >
                     Mark Failed
                   </button>
@@ -120,7 +120,7 @@ function ChallengesPage() {
                   type="button"
                   onClick={() => updateStatus({ id: challenge.id, status: 'Active' })}
                   disabled={isUpdating}
-                  className="rounded-md border border-[#222222] bg-black px-3 py-1 text-xs text-[#f1f5f9] hover:bg-[#111111] disabled:opacity-60"
+                  className="rounded-md border border-border bg-black px-3 py-1 text-xs text-slate-100 hover:bg-[#111111] disabled:opacity-60"
                 >
                   Reopen
                 </button>

@@ -8,8 +8,8 @@ type DataLabSectionProps = {
 
 function DataLabSection({ title, subtitle, children }: DataLabSectionProps) {
   return (
-    <article className="rounded-none border border-[#222222] bg-[#0a0a0a] p-4">
-      <div className="border-b border-[#222222] pb-3 mb-4">
+    <article className="rounded-xl border border-border bg-surface p-4">
+      <div className="border-b border-border pb-3 mb-4">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-100">
           {title}
         </h2>

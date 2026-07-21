@@ -1,6 +1,7 @@
-﻿
+
 import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
+import { DeleteButton } from '../../../components/DeleteButton'
 
 import {
   type HabitType,
@@ -453,7 +454,7 @@ function HabitsPage() {
     <section className="space-y-4 pb-24">
       <article className="rounded-xl border border-border bg-surface p-4">
         <div className="flex flex-wrap items-center gap-2">
-          <h2 className="text-lg font-semibold text-slate-100">Habits Overview</h2>
+          <h2 className="text-base font-semibold text-slate-100">Habits Overview</h2>
           <span className="rounded-full border border-border bg-[#111111] px-2 py-0.5 text-xs text-slate-300">
             Active habits: {data.habits.length}
           </span>
@@ -503,19 +504,15 @@ function HabitsPage() {
                   </div>
 
                   <div className="flex items-center gap-1">
-                    <button
-                      type="button"
+                    <DeleteButton
                       disabled={isDeletingHabit}
                       onClick={() => {
                         const confirmed = window.confirm(`Delete habit "${habit.title}"?`)
                         if (!confirmed) return
                         deleteHabit({ habitId: habit.id })
                       }}
-                      className="text-neutral-600 transition-colors hover:text-red-500"
                       aria-label={`Delete ${habit.title}`}
-                    >
-                      ×
-                    </button>
+                    />
                     <span className={`rounded-md border px-2 py-0.5 text-[11px] ${tone.statusBadge}`}>
                       {habit.completedToday ? 'Completed' : 'Pending'}
                     </span>
@@ -544,7 +541,7 @@ function HabitsPage() {
                           type="button"
                           onClick={() => handleAdjustCount(habit.id, -1)}
                           disabled={isAdjustingCount || habit.todayValue <= 0}
-                          className="h-10 w-10 rounded-md border border-[#333333] bg-black text-lg font-semibold text-slate-100 hover:bg-surface disabled:opacity-60"
+                          className="h-10 w-10 rounded-md border border-[#333333] bg-black text-base font-semibold text-slate-100 hover:bg-surface disabled:opacity-60"
                         >
                           -
                         </button>
@@ -555,7 +552,7 @@ function HabitsPage() {
                           type="button"
                           onClick={() => handleAdjustCount(habit.id, 1)}
                           disabled={isAdjustingCount}
-                          className="h-10 w-10 rounded-md border border-[#333333] bg-black text-lg font-semibold text-slate-100 hover:bg-surface disabled:opacity-60"
+                          className="h-10 w-10 rounded-md border border-[#333333] bg-black text-base font-semibold text-slate-100 hover:bg-surface disabled:opacity-60"
                         >
                           +
                         </button>
@@ -711,7 +708,7 @@ function HabitsPage() {
       <section className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         <article className="rounded-xl border border-border bg-surface p-4">
           <div className="flex flex-wrap items-center gap-2">
-            <h2 className="text-xl font-semibold text-slate-100">Mistakes (Streak Losses)</h2>
+            <h2 className="text-base font-semibold text-slate-100">Mistakes (Streak Losses)</h2>
             {data.lowHealTokenWarning ? (
               <span className="rounded-full border border-amber-500/70 bg-amber-500/20 px-2 py-0.5 text-xs text-amber-200">Be careful: low heal tokens</span>
             ) : null}
@@ -908,7 +905,7 @@ function HabitsPage() {
         </article>
 
         <article className="rounded-xl border border-border bg-surface p-4">
-          <h2 className="text-xl font-semibold text-slate-100">Streak Heal Tokens</h2>
+          <h2 className="text-base font-semibold text-slate-100">Streak Heal Tokens</h2>
           <p className="mt-2 text-sm text-slate-300">
             Remaining this month: <span className="font-semibold text-slate-100">{data.healTokensRemaining} / 5</span>
           </p>
@@ -947,7 +944,7 @@ function HabitsPage() {
           <article className="relative z-10 max-h-[85vh] w-[96vw] max-w-3xl overflow-auto rounded-xl border border-border bg-surface p-4 sm:p-6">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <h3 className="text-lg font-semibold text-slate-100">Missed Habits (Last 5 Days)</h3>
+                <h3 className="text-base font-semibold text-slate-100">Missed Habits (Last 5 Days)</h3>
                 <p className="text-xs text-slate-400">Full list of streak losses recorded in the past 5 days.</p>
               </div>
               <button
@@ -1014,7 +1011,7 @@ function HabitsPage() {
           <article className="relative z-10 h-[88vh] w-[96vw] max-w-4xl overflow-auto rounded-xl border border-border bg-surface p-4 sm:p-6">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h2 className="text-xl font-semibold text-slate-100">Create Habit</h2>
+                <h2 className="text-base font-semibold text-slate-100">Create Habit</h2>
                 <p className="text-sm text-slate-400">Set up binary or target habits in a focused creation flow.</p>
               </div>
               <button
@@ -1096,7 +1093,7 @@ function HabitsPage() {
           <section className="h-[92vh] w-[96vw] max-w-6xl overflow-auto rounded-xl border border-border bg-surface p-4">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h3 className="text-xl font-semibold text-slate-100">{selectedHabit.title} Calendar</h3>
+                <h3 className="text-base font-semibold text-slate-100">{selectedHabit.title} Calendar</h3>
                 <p className="text-xs text-slate-400">Yellow: done • Red: streak break • Blue: healed break</p>
               </div>
               <button

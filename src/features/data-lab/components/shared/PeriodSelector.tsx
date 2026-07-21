@@ -13,7 +13,7 @@ function PeriodSelector() {
   const setPeriod = useDataLabStore((s) => s.setPeriod)
 
   return (
-    <div className="flex items-center border border-[#222222] bg-black" role="radiogroup" aria-label="Analytics period">
+    <div className="flex items-center border border-border bg-black" role="radiogroup" aria-label="Analytics period">
       {PERIODS.map((option) => (
         <button
           key={option.value}

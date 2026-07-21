@@ -25,7 +25,7 @@ function BehaviorDriftCard({ metrics }: BehaviorDriftCardProps) {
         {rows.map((row) => (
           <div
             key={row.moduleName}
-            className="border border-[#222222] bg-black p-3"
+            className="border border-border bg-black p-3"
           >
             <p className="text-[10px] uppercase tracking-wider text-slate-500 font-mono">
               {row.moduleName}
@@ -33,9 +33,9 @@ function BehaviorDriftCard({ metrics }: BehaviorDriftCardProps) {
             <div className="mt-1 flex items-baseline gap-1">
               <span className="text-sm font-mono">
                 {row.direction === 'up' ? (
-                  <span className="text-emerald-400">↑</span>
+                  <span className="text-emerald-400">â†‘</span>
                 ) : row.direction === 'down' ? (
-                  <span className="text-rose-400">↓</span>
+                  <span className="text-rose-400">â†“</span>
                 ) : (
                   <span className="text-slate-500">−</span>
                 )}

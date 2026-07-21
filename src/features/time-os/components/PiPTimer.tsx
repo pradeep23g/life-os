@@ -36,8 +36,8 @@ export default function PiPTimer({
   }, [pipWindow])
 
   return createPortal(
-    <div className="flex h-screen w-screen items-center justify-center bg-[#0a0a0a] p-3 text-slate-100">
-      <article className="w-full rounded-xl border border-[#222222] bg-black p-3">
+    <div className="flex h-screen w-screen items-center justify-center bg-surface p-3 text-slate-100">
+      <article className="w-full rounded-xl border border-border bg-[#111111] p-3">
         <p className="text-[11px] uppercase tracking-wide text-slate-400">Active Focus Session</p>
         <p className="mt-1 text-xs text-slate-300">{bucket}</p>
         <p className="mt-2 text-3xl font-semibold text-slate-100">{elapsedLabel}</p>
@@ -45,7 +45,7 @@ export default function PiPTimer({
           <button
             type="button"
             onClick={onTogglePause}
-            className="rounded border border-[#222222] bg-[#0a0a0a] px-3 py-2 text-xs text-slate-100 hover:bg-[#222222]"
+            className="rounded-md border border-border bg-[#222222] px-3 py-2 text-xs text-slate-100 hover:bg-[#333333]"
           >
             {isPaused ? 'Play' : 'Pause'}
           </button>

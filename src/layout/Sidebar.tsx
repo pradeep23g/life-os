@@ -1,4 +1,4 @@
-﻿import { useState } from 'react'
+import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
 
 import { useAuth } from '../lib/AuthContext'
@@ -156,7 +156,7 @@ function Sidebar({ compact = false, onNavigate, onToggleDesktopExpanded, desktop
             type="button"
             onClick={onToggleDesktopExpanded}
             title={compact ? (desktopExpanded ? 'Collapse sidebar' : 'Expand sidebar') : undefined}
-            className={`mb-2 flex items-center rounded-md border border-border bg-[#111111]/80 text-slate-100 transition-colors hover:bg-[#222222] ${
+            className={`mb-2 flex items-center rounded-lg border border-border bg-[#111111] text-slate-100 transition-colors hover:bg-[#222222] ${
               compact ? 'h-10 w-10 justify-center px-0' : 'w-full gap-2 px-3 py-2 text-sm'
             }`}
           >
@@ -175,7 +175,7 @@ function Sidebar({ compact = false, onNavigate, onToggleDesktopExpanded, desktop
               onClick={onNavigate}
               title={compact ? item.label : undefined}
               className={({ isActive }) =>
-                `flex items-center gap-2 rounded-md px-2 py-2 text-sm transition-colors ${
+                `flex items-center gap-2 rounded-lg px-2 py-2 text-sm transition-colors ${
                   compact ? 'w-10 justify-center px-0' : 'w-full'
                 } ${isActive ? 'bg-[#222222] text-slate-100' : 'text-slate-200 hover:bg-[#111111] hover:text-white'}`
               }
@@ -189,11 +189,11 @@ function Sidebar({ compact = false, onNavigate, onToggleDesktopExpanded, desktop
         <button
           type="button"
           title={compact ? user?.email ?? 'Profile' : undefined}
-          className={`mt-auto flex items-center rounded-md border border-border bg-[#111111]/80 text-sm text-slate-100 ${
+          className={`mt-auto flex items-center rounded-lg border border-border bg-[#111111] text-sm text-slate-100 transition-colors hover:bg-[#222222] ${
             compact ? 'h-10 w-10 justify-center px-0' : 'w-full gap-2 px-3 py-2'
           }`}
         >
-          <span className="flex h-6 w-6 items-center justify-center rounded-full border border-[#333333] bg-[#222222] text-[11px] font-semibold">
+          <span className="flex h-6 w-6 items-center justify-center rounded-full border border-border bg-[#222222] text-xs font-semibold">
             {userInitial}
           </span>
           {!compact ? <span className="truncate">Profile</span> : null}
@@ -204,7 +204,7 @@ function Sidebar({ compact = false, onNavigate, onToggleDesktopExpanded, desktop
           onClick={handleSignOut}
           disabled={isSigningOut}
           title={compact ? 'Sign Out' : undefined}
-          className={`mt-2 flex items-center rounded-md border border-[#333333] bg-[#111111] text-sm text-slate-100 hover:bg-[#222222] disabled:opacity-60 ${
+          className={`mt-2 flex items-center rounded-lg border border-border bg-[#111111] text-sm text-slate-100 transition-colors hover:bg-[#222222] disabled:opacity-60 ${
             compact ? 'h-10 w-10 justify-center px-0' : 'w-full gap-2 px-3 py-2'
           }`}
         >

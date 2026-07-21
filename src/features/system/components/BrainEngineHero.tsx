@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import type { BrainState, ThreatSeverity } from '../../mission-control/types/snapshot'
 import DailyBriefing from './DailyBriefing'
+import { Brain, Clock, Zap } from 'lucide-react'
 
 interface BrainEngineHeroProps {
   brain: BrainState
@@ -56,14 +57,14 @@ export default function BrainEngineHero({ brain }: BrainEngineHeroProps) {
                 <p className="text-sm text-slate-400 leading-relaxed mb-6">{brain.mission.reason}</p>
                 
                 <div className="flex flex-wrap items-center gap-3 text-xs mb-8">
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-[#222222] bg-[#0a0a0a] px-3 py-1.5 text-slate-300">
-                    <span className="text-slate-500">🕒</span> {brain.mission.estimatedTime}
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1.5 text-slate-300">
+                    <span className="text-slate-500"><Clock className="h-4 w-4" /></span> {brain.mission.estimatedTime}
                   </span>
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-[#222222] bg-[#0a0a0a] px-3 py-1.5 text-emerald-400">
-                    <span className="text-emerald-500/70">⚡</span> {brain.mission.expectedMomentumGain}
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1.5 text-emerald-400">
+                    <span className="text-emerald-500/70"><Zap className="h-4 w-4 fill-current" /></span> {brain.mission.expectedMomentumGain}
                   </span>
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-[#222222] bg-[#0a0a0a] px-3 py-1.5 text-slate-400">
-                    <span className="text-slate-500">🧠</span> {brain.mission.recommendationSource}
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1.5 text-slate-400">
+                    <span className="text-slate-500"><Brain className="h-4 w-4" /></span> {brain.mission.recommendationSource}
                   </span>
                 </div>
               </div>

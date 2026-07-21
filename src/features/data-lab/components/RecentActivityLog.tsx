@@ -16,8 +16,8 @@ function RecentActivityLog() {
   const rows = useMemo(() => data.slice(0, 14), [data])
 
   return (
-    <article className="rounded-none border border-[#222222] bg-[#0a0a0a] p-4">
-      <div className="border-b border-[#222222] pb-3">
+    <article className="rounded-xl border border-border bg-surface p-4">
+      <div className="border-b border-border pb-3">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-100">Recent Activity Log</h2>
         <p className="mt-1 text-xs text-slate-400">Last 14 days from the daily activity view.</p>
       </div>
@@ -37,7 +37,7 @@ function RecentActivityLog() {
             rows.map((row) => (
               <div
                 key={row.activity_date}
-                className="grid grid-cols-1 gap-2 border border-[#222222] bg-black px-3 py-2 text-slate-300 md:grid-cols-[72px_minmax(0,1fr)]"
+                className="grid grid-cols-1 gap-2 border border-border bg-black px-3 py-2 text-slate-300 md:grid-cols-[72px_minmax(0,1fr)]"
               >
                 <div className="text-slate-100">{formatDay(row.activity_date)}</div>
                 <div className="flex flex-wrap gap-x-4 gap-y-1">

@@ -31,7 +31,7 @@ function SystemHealthPanel({ entries }: SystemHealthPanelProps) {
           return (
             <div
               key={entry.moduleName}
-              className="border border-[#222222] bg-black p-3"
+              className="border border-border bg-black p-3"
             >
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-mono text-slate-200">{entry.moduleName}</span>

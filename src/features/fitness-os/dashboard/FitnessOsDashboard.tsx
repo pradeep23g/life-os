@@ -135,22 +135,22 @@ function FitnessOsDashboard() {
     <section className="space-y-4">
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         <article className="min-h-[120px] rounded-xl border border-border bg-surface p-3 sm:p-4">
-          <p className="text-xs text-slate-300 sm:text-sm">Workouts This Week</p>
-          <p className="mt-2 text-xl font-semibold text-slate-100 sm:text-2xl">{isLoading ? '--' : data?.workoutsThisWeek ?? 0}</p>
+          <p className="text-sm font-medium text-slate-400">Workouts This Week</p>
+          <p className="mt-2 text-2xl font-semibold text-slate-100">{isLoading ? '--' : data?.workoutsThisWeek ?? 0}</p>
         </article>
         <article className="min-h-[120px] rounded-xl border border-border bg-surface p-3 sm:p-4">
-          <p className="text-xs text-slate-300 sm:text-sm">Active Workout Days</p>
-          <p className="mt-2 text-xl font-semibold text-slate-100 sm:text-2xl">
+          <p className="text-sm font-medium text-slate-400">Active Workout Days</p>
+          <p className="mt-2 text-2xl font-semibold text-slate-100">
             {isLoading ? '--' : data?.activeWorkoutDaysThisWeek ?? 0} / 7
           </p>
         </article>
         <article className="min-h-[120px] rounded-xl border border-border bg-surface p-3 sm:p-4">
-          <p className="text-xs text-slate-300 sm:text-sm">Session Minutes</p>
-          <p className="mt-2 text-xl font-semibold text-slate-100 sm:text-2xl">{isLoading ? '--' : data?.totalSessionMinutesThisWeek ?? 0}</p>
+          <p className="text-sm font-medium text-slate-400">Session Minutes</p>
+          <p className="mt-2 text-2xl font-semibold text-slate-100">{isLoading ? '--' : data?.totalSessionMinutesThisWeek ?? 0}</p>
         </article>
         <article className="min-h-[120px] rounded-xl border border-border bg-surface p-3 sm:p-4">
-          <p className="text-xs text-slate-300 sm:text-sm">Consistency</p>
-          <p className="mt-2 text-xl font-semibold text-slate-100 sm:text-2xl">{isLoading ? '--' : `${data?.consistencyScore ?? 0}%`}</p>
+          <p className="text-sm font-medium text-slate-400">Consistency</p>
+          <p className="mt-2 text-2xl font-semibold text-slate-100">{isLoading ? '--' : `${data?.consistencyScore ?? 0}%`}</p>
         </article>
       </div>
 
@@ -162,7 +162,7 @@ function FitnessOsDashboard() {
         <article className="rounded-xl border border-border bg-surface p-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-slate-100">Workout Calendar</h2>
+              <h2 className="text-base font-semibold text-slate-100">Workout Calendar</h2>
               <p className="mt-1 text-xs text-slate-400">Open month view for quick past insights and day-level workout summaries.</p>
             </div>
             <button
@@ -171,13 +171,13 @@ function FitnessOsDashboard() {
                 setCalendarMonth(new Date())
                 setIsCalendarOpen(true)
               }}
-              className="rounded-md border border-[#333333] bg-[#111111] px-3 py-1.5 text-sm text-slate-100 hover:bg-[#222222]"
+              className="rounded-md border border-border bg-[#111111] px-3 py-1.5 text-sm text-slate-100 hover:bg-[#222222]"
             >
               Open Calendar
             </button>
           </div>
 
-          <div className="mt-3 grid grid-cols-7 gap-1 text-center text-[11px] text-slate-500">
+          <div className="mt-3 grid grid-cols-7 gap-1 text-center text-xs text-slate-500">
             {weekdayHeaders.map((weekday) => (
               <p key={weekday}>{weekday}</p>
             ))}
@@ -203,7 +203,7 @@ function FitnessOsDashboard() {
                   {dayInsight && dayInsight.minutes > 0 ? (
                     <>
                       <p className="leading-none mt-0.5">{dayInsight.minutes}m</p>
-                      <p className="leading-none mt-1 truncate w-full px-0.5 text-[9px] opacity-75">{title}</p>
+                      <p className="leading-none mt-1 truncate w-full px-0.5 text-xs opacity-75">{title}</p>
                     </>
                   ) : null}
                 </button>
@@ -213,7 +213,7 @@ function FitnessOsDashboard() {
         </article>
 
         <article className="rounded-xl border border-border bg-surface p-4">
-          <h2 className="text-lg font-semibold text-slate-100">90-Day Effort Heatmap</h2>
+          <h2 className="text-base font-semibold text-slate-100">90-Day Effort Heatmap</h2>
           <p className="mt-1 text-xs text-slate-400">Intensity is based on session minutes per day.</p>
           <div className="mt-4 w-full overflow-x-auto pb-2">
             <div className="flex min-w-max gap-2">
@@ -263,7 +263,7 @@ function FitnessOsDashboard() {
       </div>
 
       <article className="rounded-xl border border-border bg-surface p-4">
-        <h2 className="text-lg font-semibold text-slate-100">Recent Workouts</h2>
+        <h2 className="text-base font-semibold text-slate-100">Recent Workouts</h2>
         {isLoading ? <p className="mt-3 text-sm text-slate-400">Loading recent workouts...</p> : null}
         {!isLoading && (data?.recentWorkouts.length ?? 0) === 0 ? <p className="mt-3 text-sm text-slate-400">No workouts logged yet.</p> : null}
         <ul className="mt-3 space-y-2">
@@ -283,13 +283,13 @@ function FitnessOsDashboard() {
           <section className="h-[92vh] w-[96vw] max-w-6xl overflow-auto rounded-xl border border-border bg-surface p-4">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <h3 className="text-xl font-semibold text-slate-100">Fitness Calendar View</h3>
+                <h3 className="text-base font-semibold text-slate-100">Fitness Calendar View</h3>
                 <p className="text-xs text-slate-400">Click any day to jump to its workouts.</p>
               </div>
               <button
                 type="button"
                 onClick={() => setIsCalendarOpen(false)}
-                className="rounded-md border border-[#333333] px-3 py-1 text-sm text-slate-100 hover:bg-[#111111]"
+                className="rounded-md border border-border px-3 py-1 text-sm text-slate-100 hover:bg-[#111111]"
               >
                 Close
               </button>
@@ -299,7 +299,7 @@ function FitnessOsDashboard() {
               <button
                 type="button"
                 onClick={() => setCalendarMonth((previous) => shiftMonth(previous, -1))}
-                className="rounded-md border border-[#333333] px-3 py-1 text-sm text-slate-100 hover:bg-[#111111]"
+                className="rounded-md border border-border px-3 py-1 text-sm text-slate-100 hover:bg-[#111111]"
               >
                 Previous
               </button>
@@ -307,7 +307,7 @@ function FitnessOsDashboard() {
               <button
                 type="button"
                 onClick={() => setCalendarMonth((previous) => shiftMonth(previous, 1))}
-                className="rounded-md border border-[#333333] px-3 py-1 text-sm text-slate-100 hover:bg-[#111111]"
+                className="rounded-md border border-border px-3 py-1 text-sm text-slate-100 hover:bg-[#111111]"
               >
                 Next
               </button>
@@ -346,13 +346,13 @@ function FitnessOsDashboard() {
                         <p className="text-sm font-semibold">{day.day}</p>
                         {dayInsight.minutes > 0 ? (
                           <>
-                            <p className="mt-1 text-[11px]">
+                            <p className="mt-1 text-xs">
                               {dayInsight.minutes}m • {dayInsight.workoutCount}
                             </p>
-                            {title ? <p className="mt-1 truncate w-full text-[11px] opacity-75">{title}</p> : null}
+                            {title ? <p className="mt-1 truncate w-full text-xs opacity-75">{title}</p> : null}
                           </>
                         ) : (
-                          <p className="mt-1 text-[11px] text-slate-500">No workout</p>
+                          <p className="mt-1 text-xs text-slate-500">No workout</p>
                         )}
                       </button>
                     )

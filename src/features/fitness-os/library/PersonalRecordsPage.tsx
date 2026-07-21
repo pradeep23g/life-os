@@ -31,7 +31,7 @@ function MuscleDropdown({ value, options, onChange }: { value: string | null, op
       </button>
       
       {isOpen && (
-        <div className="absolute left-0 z-20 mt-1 max-h-60 w-44 overflow-y-auto rounded-lg border border-[#222] bg-[#111] py-1 shadow-xl">
+        <div className="absolute left-0 z-20 mt-1 max-h-60 w-44 overflow-y-auto rounded-lg border border-border bg-surface py-1 shadow-xl">
           <button
             onClick={() => {
               onChange(null)
@@ -90,7 +90,7 @@ function SortDropdown({ value, onChange }: { value: 'recent' | 'alphabetical' | 
       </button>
       
       {isOpen && (
-        <div className="absolute right-0 z-10 mt-1 w-44 rounded-lg border border-[#222] bg-[#111] py-1 shadow-xl">
+        <div className="absolute right-0 z-10 mt-1 w-44 rounded-lg border border-border bg-surface py-1 shadow-xl">
           {options.map((opt) => (
             <button
               key={opt.id}
@@ -261,7 +261,7 @@ export default function PersonalRecordsPage() {
               placeholder="Search exercise or muscle..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-lg border border-border bg-black/50 px-4 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-emerald-500/50 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 sm:max-w-xs"
+              className="w-full rounded-lg border border-border bg-black px-4 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-slate-600 focus:outline-none focus:ring-1 focus:ring-slate-600 sm:max-w-xs"
             />
 
             <SortDropdown value={sortBy} onChange={setSortBy} />
@@ -356,7 +356,7 @@ export default function PersonalRecordsPage() {
                 return (
                   <div className="grid grid-cols-2 gap-4">
                     {/* Weekly stacked */}
-                    <div className="rounded-xl border border-border bg-black/40 p-4">
+                    <div className="rounded-xl border border-border bg-[#111111] p-4">
                       <h4 className="text-xs font-semibold text-slate-400 mb-3 uppercase tracking-wider">Weekly Highs</h4>
                       <div className="space-y-3">
                         <div className="flex justify-between items-center">
@@ -375,7 +375,7 @@ export default function PersonalRecordsPage() {
                     </div>
 
                     {/* Monthly */}
-                    <div className="rounded-xl border border-border bg-black/40 p-4">
+                    <div className="rounded-xl border border-border bg-[#111111] p-4">
                       <h4 className="text-xs font-semibold text-slate-400 mb-3 uppercase tracking-wider">Month Highs</h4>
                       <div className="space-y-3">
                         <div className="flex justify-between items-center">

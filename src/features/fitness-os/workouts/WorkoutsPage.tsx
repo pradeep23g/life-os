@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { DeleteButton } from '../../../components/DeleteButton'
 
 import ActiveWorkoutPanel from './ActiveWorkoutPanel'
 import {
@@ -15,17 +16,6 @@ import { formatIndiaDate } from '../utils/date'
 
 const greenReplicaButtonClass =
   'border border-emerald-900 text-emerald-500 hover:bg-emerald-950/30 transition-colors rounded px-4 py-2'
-
-function TrashIcon({ className = 'h-4 w-4' }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true">
-      <path d="M4 7h16" strokeLinecap="round" />
-      <path d="M10 3h4a1 1 0 011 1v2H9V4a1 1 0 011-1z" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M7 7l1 13a1 1 0 001 1h6a1 1 0 001-1l1-13" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M10 11v6M14 11v6" strokeLinecap="round" />
-    </svg>
-  )
-}
 
 function WorkoutsPage() {
   const [searchParams] = useSearchParams()
@@ -51,11 +41,11 @@ function WorkoutsPage() {
   const hasActiveSession = Boolean(activeWorkout)
 
   return (
-    <section className="space-y-4 bg-[#000000]">
-      <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
+    <section className="space-y-4 bg-black">
+      <article className="rounded-xl border border-border bg-surface p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="text-xl font-semibold text-slate-100">Workout Sessions</h2>
+            <h2 className="text-base font-semibold text-slate-100">Workout Sessions</h2>
             <p className="mt-1 text-sm text-slate-400">Run a live session and log sets in real time.</p>
           </div>
 
@@ -87,13 +77,13 @@ function WorkoutsPage() {
             value={sessionTitle}
             onChange={(event) => setSessionTitle(event.target.value)}
             placeholder="Session title (e.g., Push Day)"
-            className="rounded border border-[#222222] bg-black px-3 py-2 text-sm text-slate-100"
+            className="rounded-lg border border-border bg-[#111111] px-3 py-2 text-sm text-slate-100 outline-none focus:border-slate-600"
           />
           <input
             value={sessionType}
             onChange={(event) => setSessionType(event.target.value)}
             placeholder="Session type (e.g., Strength / Calisthenics)"
-            className="rounded border border-[#222222] bg-black px-3 py-2 text-sm text-slate-100"
+            className="rounded-lg border border-border bg-[#111111] px-3 py-2 text-sm text-slate-100 outline-none focus:border-slate-600"
           />
         </div>
       </article>
@@ -127,15 +117,15 @@ function WorkoutsPage() {
           }
         />
       ) : (
-        <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4 text-sm text-slate-400">
+        <article className="rounded-xl border border-border bg-surface p-4 text-sm text-slate-400">
           No active workout session. Start a workout to enter Live Session Mode.
         </article>
       )}
 
 
       {selectedDate ? (
-        <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
-          <h3 className="text-lg font-semibold text-slate-100">Workouts on {formatIndiaDate(selectedDate)}</h3>
+        <article className="rounded-xl border border-border bg-surface p-4">
+          <h3 className="text-base font-semibold text-slate-100">Workouts on {formatIndiaDate(selectedDate)}</h3>
           {workoutsForSelectedDate.length === 0 ? (
             <p className="mt-2 text-sm text-slate-400">No workouts logged for this date.</p>
           ) : (
@@ -143,7 +133,7 @@ function WorkoutsPage() {
               {workoutsForSelectedDate.map((workout) => {
                 const isExpanded = expandedWorkoutId === workout.id
                 return (
-                  <li key={`day-${workout.id}`} className="rounded-md border border-[#222222] bg-black p-3">
+                  <li key={`day-${workout.id}`} className="rounded-lg border border-border bg-[#111111] p-3">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <p className="text-sm font-semibold text-slate-100">{workout.title}</p>
                       <div className="flex items-center gap-2">
@@ -151,7 +141,7 @@ function WorkoutsPage() {
                         <button
                           type="button"
                           onClick={() => setExpandedWorkoutId(isExpanded ? null : workout.id)}
-                          className="rounded border border-[#222222] px-2 py-1 text-xs text-slate-300 hover:bg-[#111111]"
+                          className="rounded-md border border-border px-2 py-1 text-xs text-slate-300 hover:bg-[#222222]"
                         >
                           {isExpanded ? 'Hide' : 'Details'}
                         </button>
@@ -185,19 +175,14 @@ function WorkoutsPage() {
                             </button>
                           </div>
                         ) : (
-                          <button
-                            type="button"
+                          <DeleteButton
                             disabled={isDeletingWorkout}
                             onClick={(e) => {
                               e.preventDefault()
                               e.stopPropagation()
                               setConfirmDeleteId(workout.id)
                             }}
-                            className="p-3 text-neutral-600 transition-colors hover:text-red-500 sm:p-2"
-                            aria-label="Delete workout"
-                          >
-                            <TrashIcon />
-                          </button>
+                          />
                         )}
                       </div>
                     </div>
@@ -207,7 +192,7 @@ function WorkoutsPage() {
                     {workout.notes ? <p className="mt-1 text-xs text-slate-300">{workout.notes}</p> : null}
 
                     {isExpanded ? (
-                      <div className="mt-3 rounded-md border border-[#222222] bg-[#111111] p-2">
+                      <div className="mt-3 rounded-lg border border-border bg-black p-2">
                         {(expandedWorkoutDetail?.logs ?? []).length === 0 ? (
                           <p className="text-xs text-slate-400">No exercise logs captured.</p>
                         ) : (
@@ -235,8 +220,8 @@ function WorkoutsPage() {
           )}
         </article>
       ) : null}
-      <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
-        <h3 className="text-lg font-semibold text-slate-100">Recent Completed Sessions</h3>
+      <article className="rounded-xl border border-border bg-surface p-4">
+        <h3 className="text-base font-semibold text-slate-100">Recent Completed Sessions</h3>
         <p className="mt-1 text-sm text-slate-400">Latest saved sessions with duration and type.</p>
 
         {workoutsLoading ? <p className="mt-3 text-sm text-slate-400">Loading completed workouts...</p> : null}
@@ -252,7 +237,7 @@ function WorkoutsPage() {
             {recentCompletedWorkouts.map((workout) => {
               const isExpanded = expandedWorkoutId === workout.id
               return (
-                <li key={workout.id} className="rounded-md border border-[#222222] bg-black p-3">
+                <li key={workout.id} className="rounded-lg border border-border bg-[#111111] p-3">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <p className="text-sm font-semibold text-slate-100">{workout.title}</p>
                     <div className="flex items-center gap-2">
@@ -260,7 +245,7 @@ function WorkoutsPage() {
                       <button
                         type="button"
                         onClick={() => setExpandedWorkoutId(isExpanded ? null : workout.id)}
-                        className="rounded border border-[#222222] px-2 py-1 text-xs text-slate-300 hover:bg-[#111111]"
+                        className="rounded-md border border-border px-2 py-1 text-xs text-slate-300 hover:bg-[#222222]"
                       >
                         {isExpanded ? 'Hide' : 'Details'}
                       </button>
@@ -294,19 +279,14 @@ function WorkoutsPage() {
                           </button>
                         </div>
                       ) : (
-                        <button
-                          type="button"
+                        <DeleteButton
                           disabled={isDeletingWorkout}
                           onClick={(e) => {
                             e.preventDefault()
                             e.stopPropagation()
                             setConfirmDeleteId(workout.id)
                           }}
-                          className="p-3 text-neutral-600 transition-colors hover:text-red-500 sm:p-2"
-                          aria-label="Delete workout"
-                        >
-                          <TrashIcon />
-                        </button>
+                        />
                       )}
                     </div>
                   </div>
@@ -315,7 +295,7 @@ function WorkoutsPage() {
                   </p>
 
                   {isExpanded ? (
-                    <div className="mt-3 rounded-md border border-[#222222] bg-[#111111] p-2">
+                    <div className="mt-3 rounded-lg border border-border bg-black p-2">
                       {(expandedWorkoutDetail?.logs ?? []).length === 0 ? (
                         <p className="text-xs text-slate-400">No exercise logs captured.</p>
                       ) : (

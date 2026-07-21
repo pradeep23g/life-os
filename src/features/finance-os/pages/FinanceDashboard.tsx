@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 
 import { type FinanceTransaction, useAddTransaction, useDeleteTransaction, useTransactions } from '../api/useFinance'
 import TransactionForm from '../components/TransactionForm'
+import { DeleteButton } from '../../../components/DeleteButton'
 import { buildMonthGrid, formatIndiaDate, formatIndiaDateTime, getMonthLabel, toIndiaDateKey } from '../../mind-os/utils/date'
 
 const weekdayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const
@@ -42,13 +43,13 @@ function getCalendarCellTone(hasIncome: boolean, hasExpense: boolean) {
     return 'border-rose-500/40 bg-rose-500/10 text-rose-100'
   }
 
-  return 'border-[#222222] bg-[#0a0a0a] text-slate-400'
+  return 'border-border bg-[#111111] text-slate-400'
 }
 
 function FinanceDashboard() {
   const { data, isLoading, isError, error } = useTransactions()
   const { mutate: addTransaction, isPending, error: addError } = useAddTransaction()
-  const { mutate: deleteTransaction, isPending: isDeletingTransaction } = useDeleteTransaction()
+  const { mutate: deleteTransaction } = useDeleteTransaction()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedDateKey, setSelectedDateKey] = useState<string | null>(null)
 
@@ -82,20 +83,20 @@ function FinanceDashboard() {
 
   return (
     <section className="space-y-4 bg-black pb-24">
-      <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
+      <article className="rounded-xl border border-border bg-surface p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-sm text-slate-400">Finance OS</p>
             <h1 className="mt-2 text-2xl font-semibold text-slate-100">{monthLabel}</h1>
             <p className="mt-2 text-sm text-slate-400">Bidirectional wallet ledger for the current month. Income builds the wallet. Expenses consume it.</p>
           </div>
-          <div className="rounded-lg border border-[#222222] bg-black px-3 py-2 text-right">
+          <div className="rounded-lg border border-border bg-[#111111] px-3 py-2 text-right">
             <p className="text-xs text-slate-400">Spend Ratio</p>
-            <p className="mt-1 text-lg font-semibold text-slate-100">{isLoading ? '--' : `${(summary?.progressPercentage ?? 0).toFixed(1)}%`}</p>
+            <p className="mt-1 text-base font-semibold text-slate-100">{isLoading ? '--' : `${(summary?.progressPercentage ?? 0).toFixed(1)}%`}</p>
           </div>
         </div>
 
-        <div className="mt-4 h-3 overflow-hidden rounded-full border border-[#222222] bg-black">
+        <div className="mt-4 h-3 overflow-hidden rounded-full border border-border bg-black">
           <div
             className="h-full bg-rose-500/80"
             style={{
@@ -113,37 +114,37 @@ function FinanceDashboard() {
       </article>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
+        <article className="rounded-xl border border-border bg-surface p-4">
           <p className="text-xs text-slate-400">Total Available</p>
           <p className="mt-3 text-2xl font-semibold text-emerald-300">{isLoading ? '--' : formatCurrency(summary?.totalAvailable ?? 0)}</p>
         </article>
-        <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
+        <article className="rounded-xl border border-border bg-surface p-4">
           <p className="text-xs text-slate-400">Total Spent</p>
           <p className="mt-3 text-2xl font-semibold text-rose-300">{isLoading ? '--' : formatCurrency(summary?.totalSpent ?? 0)}</p>
         </article>
-        <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
+        <article className="rounded-xl border border-border bg-surface p-4">
           <p className="text-xs text-slate-400">Wallet Balance</p>
           <p className={`mt-3 text-2xl font-semibold ${((summary?.walletBalance ?? 0) < 0) ? 'text-rose-300' : 'text-slate-100'}`}>
             {isLoading ? '--' : formatCurrency(summary?.walletBalance ?? 0)}
           </p>
         </article>
-        <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
+        <article className="rounded-xl border border-border bg-surface p-4">
           <p className="text-xs text-slate-400">Transactions</p>
           <p className="mt-3 text-2xl font-semibold text-slate-100">{isLoading ? '--' : data?.transactions.length ?? 0}</p>
         </article>
       </div>
 
-      <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
+      <article className="rounded-xl border border-border bg-surface p-4">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-slate-100">Monthly Calendar</h2>
+            <h2 className="text-base font-semibold text-slate-100">Monthly Calendar</h2>
             <p className="mt-1 text-xs text-slate-400">Green marks income days. Red marks expense days. Click a day to filter the ledger below.</p>
           </div>
           {selectedDateKey ? (
             <button
               type="button"
               onClick={() => setSelectedDateKey(null)}
-              className="rounded-md border border-[#222222] bg-black px-3 py-1.5 text-sm text-slate-200 hover:bg-[#111111]"
+              className="rounded-md border border-border bg-[#111111] px-3 py-1.5 text-sm text-slate-200 hover:bg-[#222222]"
             >
               Clear Filter
             </button>
@@ -193,10 +194,10 @@ function FinanceDashboard() {
         </div>
       </article>
 
-      <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
+      <article className="rounded-xl border border-border bg-surface p-4">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-slate-100">Recent Transactions</h2>
+            <h2 className="text-base font-semibold text-slate-100">Recent Transactions</h2>
             <p className="mt-1 text-xs text-slate-400">
               {selectedDateLabel ? `Filtered to ${selectedDateLabel}. Click the same day again or clear the filter to return to the full month.` : 'Showing all transactions logged this month.'}
             </p>
@@ -216,7 +217,7 @@ function FinanceDashboard() {
               const isIncome = item.transaction_type === 'INCOME'
 
               return (
-                <li key={item.id} className="group rounded-md border border-[#222222] bg-black p-3">
+                <li key={item.id} className="group rounded-md border border-border bg-[#111111] p-3">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
@@ -238,9 +239,7 @@ function FinanceDashboard() {
                       <p className={`text-sm font-semibold ${isIncome ? 'text-emerald-300' : 'text-rose-300'}`}>
                         {isIncome ? '+' : '-'} {formatCurrency(item.amount)}
                       </p>
-                      <button
-                        type="button"
-                        disabled={isDeletingTransaction}
+                      <DeleteButton
                         onClick={() => {
                           const confirmed = window.confirm('Delete this transaction?')
                           if (!confirmed) {
@@ -249,11 +248,7 @@ function FinanceDashboard() {
 
                           deleteTransaction({ id: item.id })
                         }}
-                        className="border border-transparent px-2 py-1 text-sm text-neutral-600 transition-colors hover:text-red-500"
-                        aria-label="Delete transaction"
-                      >
-                        X
-                      </button>
+                      />
                     </div>
                   </div>
                 </li>
@@ -266,7 +261,7 @@ function FinanceDashboard() {
       <button
         type="button"
         onClick={() => setIsModalOpen(true)}
-        className="fixed bottom-6 right-6 z-50 h-14 w-14 rounded-2xl border border-[#222222] bg-[#0a0a0a] text-2xl text-slate-100 shadow-xl shadow-black/60 transition hover:bg-[#222222]"
+        className="fixed bottom-6 right-6 z-50 h-14 w-14 rounded-2xl border border-border bg-surface text-2xl text-slate-100 shadow-[0_8px_24px_rgba(0,0,0,0.45)] transition hover:bg-[#111111]"
         aria-label="Add transaction"
       >
         +
@@ -275,13 +270,13 @@ function FinanceDashboard() {
       {isModalOpen ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
           <button type="button" onClick={() => setIsModalOpen(false)} className="absolute inset-0" aria-label="Close transaction modal" />
-          <article className="relative z-10 max-h-[88vh] w-[92%] max-w-md overflow-y-auto rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
+          <article className="relative z-10 max-h-[88vh] w-[92%] max-w-md overflow-y-auto rounded-xl border border-border bg-surface p-4">
             <div className="mb-3 flex items-center justify-between gap-3">
-              <h2 className="text-lg font-semibold text-slate-100">Quick Log</h2>
+              <h2 className="text-base font-semibold text-slate-100">Quick Log</h2>
               <button
                 type="button"
                 onClick={() => setIsModalOpen(false)}
-                className="rounded border border-[#222222] bg-black px-3 py-1 text-sm text-slate-200 hover:bg-[#111111]"
+                className="rounded border border-border bg-[#111111] px-3 py-1 text-sm text-slate-200 hover:bg-[#222222]"
               >
                 Close
               </button>

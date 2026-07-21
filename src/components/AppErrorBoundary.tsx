@@ -34,19 +34,19 @@ class AppErrorBoundary extends Component<AppErrorBoundaryProps, AppErrorBoundary
     if (this.state.hasError) {
       return (
         <section className="rounded-xl border border-border bg-surface p-4">
-          <h2 className="text-lg font-semibold text-slate-100">Something went wrong in this workspace.</h2>
+          <h2 className="text-base font-semibold text-slate-100">Something went wrong in this workspace.</h2>
           <p className="mt-1 text-sm text-slate-300">
             Try refreshing this page. If the issue continues, check your latest migration status.
           </p>
           {this.state.message ? (
-            <p className="mt-2 rounded border border-border bg-black p-2 text-xs text-red-300">
+            <p className="mt-2 rounded-lg border border-border bg-black p-2 text-xs text-red-400">
               Runtime error: {this.state.message}
             </p>
           ) : null}
           <button
             type="button"
             onClick={() => window.location.reload()}
-            className="mt-3 rounded-md border border-[#333333] bg-[#111111] px-3 py-1.5 text-sm text-slate-100 hover:bg-[#222222]"
+            className="mt-3 rounded-lg border border-border px-4 py-2 text-sm text-slate-300 hover:bg-[#111111]"
           >
             Reload Workspace
           </button>

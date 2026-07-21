@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
+import { DeleteButton } from '../../../components/DeleteButton'
 
 import type { JournalEntry } from '../api/useJournal'
 import { formatIndiaDateTime, toIndiaDateKey } from '../utils/date'
@@ -13,18 +14,7 @@ const moodOptions = [
 ] as const
 
 const greenReplicaButtonClass =
-  'border border-emerald-900 text-emerald-500 hover:bg-emerald-950/30 transition-colors rounded px-4 py-2'
-
-function TrashIcon({ className = 'h-4 w-4' }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true">
-      <path d="M4 7h16" strokeLinecap="round" />
-      <path d="M10 3h4a1 1 0 011 1v2H9V4a1 1 0 011-1z" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M7 7l1 13a1 1 0 001 1h6a1 1 0 001-1l1-13" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M10 11v6M14 11v6" strokeLinecap="round" />
-    </svg>
-  )
-}
+  'rounded-lg border border-border bg-[#111111] px-4 py-2 text-sm font-medium text-slate-300 transition-colors hover:bg-[#222222]'
 
 function getReadableErrorMessage(error: unknown): string {
   if (error instanceof Error && error.message) {
@@ -71,11 +61,10 @@ type JournalDateModalProps = {
   saveError: unknown
   onCreateEntry: (payload: CreatePayload, callbacks: { onSuccess: () => void }) => void
   onDeleteEntry: (id: string) => void
-  isDeleting: boolean
   onClose: () => void
 }
 
-function JournalDateModal({ selectedDate, entries, isSaving, saveError, onCreateEntry, onDeleteEntry, isDeleting, onClose }: JournalDateModalProps) {
+function JournalDateModal({ selectedDate, entries, isSaving, saveError, onCreateEntry, onDeleteEntry, onClose }: JournalDateModalProps) {
   const [isCreateMode, setIsCreateMode] = useState(false)
   const [mood, setMood] = useState<number>(3)
   const [whatWentGood, setWhatWentGood] = useState('')
@@ -117,16 +106,16 @@ function JournalDateModal({ selectedDate, entries, isSaving, saveError, onCreate
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
       <button type="button" onClick={onClose} className="absolute inset-0" aria-label="Close journal date modal" />
 
-      <article className="relative z-10 w-full max-w-3xl rounded-xl border border-[#222222] bg-[#0a0a0a] p-4 sm:p-5">
+      <article className="relative z-10 w-full max-w-3xl rounded-xl border border-border bg-surface p-4 sm:p-5">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h3 className="text-xl font-semibold text-slate-100">{formatSelectedDateLabel(selectedDate)}</h3>
+            <h3 className="text-base font-semibold text-slate-100">{formatSelectedDateLabel(selectedDate)}</h3>
             <p className="text-xs text-slate-400">Journal timeline for selected date</p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded border border-[#222222] bg-black px-3 py-1 text-sm text-slate-200 hover:bg-[#222222]"
+            className="rounded-lg border border-border bg-[#111111] px-3 py-1 text-sm text-slate-200 transition-colors hover:bg-[#222222]"
           >
             Close
           </button>
@@ -136,39 +125,33 @@ function JournalDateModal({ selectedDate, entries, isSaving, saveError, onCreate
           <div className="mt-4 space-y-3">
             <div className="max-h-[45vh] space-y-2 overflow-auto pr-1">
               {entriesForDate.length === 0 ? (
-                <p className="rounded border border-[#222222] bg-black p-3 text-sm text-slate-400">No entries logged for this day yet.</p>
+                <p className="rounded-lg border border-border bg-[#111111] p-3 text-sm text-slate-400">No entries logged for this day yet.</p>
               ) : (
                 entriesForDate.map((entry) => (
-                  <article key={entry.id} className="rounded border border-[#222222] bg-black p-3">
+                  <article key={entry.id} className="rounded-lg border border-border bg-[#111111] p-3">
                     <div className="flex items-center justify-between gap-2">
                       <p className="text-sm text-slate-300">
                         {moodToEmoji(entry.mood)} {formatIndiaDateTime(entry.updated_at || entry.created_at)}
                       </p>
-                      <button
-                        type="button"
-                        disabled={isDeleting}
+                      <DeleteButton
                         onClick={() => {
                           const confirmed = window.confirm('Delete this journal entry?')
                           if (!confirmed) return
                           onDeleteEntry(entry.id)
                         }}
-                        className="p-3 text-neutral-600 transition-colors hover:text-red-500 sm:p-2"
-                        aria-label="Delete journal entry"
-                      >
-                        <TrashIcon />
-                      </button>
+                      />
                     </div>
-                    <div className="mt-2 space-y-2 text-sm text-slate-300 whitespace-pre-wrap">
+                    <div className="mt-2 space-y-2 whitespace-pre-wrap text-sm text-slate-300">
                       <div>
-                        <p className="text-[11px] uppercase tracking-wide text-slate-500">Topic of the day</p>
+                        <p className="font-mono text-xs tracking-widest text-slate-500 uppercase">Topic of the day</p>
                         <p>{entry.what_went_good || 'No note added.'}</p>
                       </div>
                       <div>
-                        <p className="text-[11px] uppercase tracking-wide text-slate-500">What you've learned</p>
+                        <p className="font-mono text-xs tracking-widest text-slate-500 uppercase">What you've learned</p>
                         <p>{entry.what_you_learned || 'No note added.'}</p>
                       </div>
                       <div>
-                        <p className="text-[11px] uppercase tracking-wide text-slate-500">Brief about day</p>
+                        <p className="font-mono text-xs tracking-widest text-slate-500 uppercase">Brief about day</p>
                         <p>{entry.brief_about_day || 'No note added.'}</p>
                       </div>
                     </div>
@@ -192,7 +175,7 @@ function JournalDateModal({ selectedDate, entries, isSaving, saveError, onCreate
                     type="button"
                     onClick={() => setMood(option.value)}
                     className={`rounded-md border px-3 py-1 text-lg ${
-                      mood === option.value ? 'border-emerald-700 bg-emerald-950/20' : 'border-[#222222] bg-black hover:bg-[#222222]'
+                      mood === option.value ? 'border-green-700 bg-green-950/20' : 'border-border bg-[#111111] hover:bg-[#222222]'
                     }`}
                     title={option.label}
                   >
@@ -208,7 +191,7 @@ function JournalDateModal({ selectedDate, entries, isSaving, saveError, onCreate
                 value={whatWentGood}
                 onChange={(event) => setWhatWentGood(event.target.value)}
                 rows={3}
-                className="mt-1 w-full rounded border border-[#222222] bg-black p-2 text-slate-100"
+                className="mt-1 w-full rounded-lg border border-border bg-[#111111] p-2 text-slate-100"
               />
             </label>
 
@@ -218,7 +201,7 @@ function JournalDateModal({ selectedDate, entries, isSaving, saveError, onCreate
                 value={whatYouLearned}
                 onChange={(event) => setWhatYouLearned(event.target.value)}
                 rows={3}
-                className="mt-1 w-full rounded border border-[#222222] bg-black p-2 text-slate-100"
+                className="mt-1 w-full rounded-lg border border-border bg-[#111111] p-2 text-slate-100"
               />
             </label>
 
@@ -228,7 +211,7 @@ function JournalDateModal({ selectedDate, entries, isSaving, saveError, onCreate
                 value={briefAboutDay}
                 onChange={(event) => setBriefAboutDay(event.target.value)}
                 rows={4}
-                className="mt-1 w-full rounded border border-[#222222] bg-black p-2 text-slate-100"
+                className="mt-1 w-full rounded-lg border border-border bg-[#111111] p-2 text-slate-100"
               />
             </label>
 
@@ -241,7 +224,7 @@ function JournalDateModal({ selectedDate, entries, isSaving, saveError, onCreate
               <button
                 type="button"
                 onClick={() => setIsCreateMode(false)}
-                className="rounded border border-[#222222] bg-black px-4 py-2 text-slate-200 hover:bg-[#222222]"
+                className="rounded-lg border border-border bg-[#111111] px-4 py-2 text-sm text-slate-300 transition-colors hover:bg-[#222222]"
               >
                 Back to Entries
               </button>

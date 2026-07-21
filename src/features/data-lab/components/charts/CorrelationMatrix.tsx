@@ -84,9 +84,9 @@ function CorrelationMatrix({ grid, labels }: CorrelationMatrixProps) {
 
       {/* Hover detail */}
       {hoveredCell && hoveredCell.row !== hoveredCell.col ? (
-        <div className="mt-2 text-xs font-mono text-slate-400 border-t border-[#222222] pt-2">
+        <div className="mt-2 text-xs font-mono text-slate-400 border-t border-border pt-2">
           <span className="text-slate-200">{hoveredCell.labelA}</span>
-          <span className="mx-2">×</span>
+          <span className="mx-2">Ã—</span>
           <span className="text-slate-200">{hoveredCell.labelB}</span>
           <span className="mx-2">=</span>
           <span className={hoveredCell.value >= 0 ? 'text-emerald-400' : 'text-rose-400'}>

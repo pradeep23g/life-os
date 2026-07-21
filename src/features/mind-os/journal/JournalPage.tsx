@@ -1,8 +1,9 @@
-﻿import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 
 import { useCreateJournalEntry, useDeleteJournalEntry, useJournalEntries } from '../api/useJournal'
 import JournalDateModal from './JournalDateModal'
+import { DeleteButton } from '../../../components/DeleteButton'
 import {
   buildMonthGrid,
   formatIndiaDateTime,
@@ -23,7 +24,7 @@ const moodOptions = [
 ] as const
 
 const greenReplicaButtonClass =
-  'border border-emerald-900 text-emerald-500 hover:bg-emerald-950/30 transition-colors rounded px-4 py-2'
+  'rounded-lg border border-border bg-[#111111] px-4 py-2 text-sm font-medium text-slate-300 transition-colors hover:bg-[#222222]'
 
 function moodToEmoji(mood: number) {
   return moodOptions.find((option) => option.value === mood)?.emoji ?? '\u{1F642}'
@@ -63,12 +64,12 @@ function AnalogClockWidget() {
   const secondDegrees = second * 6
 
   return (
-    <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
-      <h2 className="text-lg font-semibold text-slate-100">IST Clock</h2>
+    <article className="rounded-xl border border-border bg-surface p-4">
+      <h2 className="text-base font-semibold text-slate-100">IST Clock</h2>
       <p className="mt-1 text-xs text-slate-400">Asia/Kolkata</p>
 
-      <div className="mx-auto mt-4 h-40 w-40 rounded-full border border-[#222222] bg-black p-2">
-        <div className="relative h-full w-full rounded-full border border-[#222222]">
+      <div className="mx-auto mt-4 h-40 w-40 rounded-full border border-border bg-black p-2">
+        <div className="relative h-full w-full rounded-full border border-border">
           {[...Array(12)].map((_, index) => (
             <span
               key={index}
@@ -89,7 +90,7 @@ function AnalogClockWidget() {
             style={{ transform: `translate(-50%, -100%) rotate(${minuteDegrees}deg)`, transformOrigin: 'bottom center' }}
           />
           <span
-            className="absolute left-1/2 top-1/2 block h-16 w-[2px] -translate-x-1/2 -translate-y-full rounded bg-emerald-400"
+            className="absolute left-1/2 top-1/2 block h-16 w-[2px] -translate-x-1/2 -translate-y-full rounded bg-green-400"
             style={{ transform: `translate(-50%, -100%) rotate(${secondDegrees}deg)`, transformOrigin: 'bottom center' }}
           />
           <span className="absolute left-1/2 top-1/2 block h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-slate-100" />
@@ -118,21 +119,10 @@ function CloseIcon({ className = 'h-5 w-5' }: { className?: string }) {
   )
 }
 
-function TrashIcon({ className = 'h-4 w-4' }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true">
-      <path d="M4 7h16" strokeLinecap="round" />
-      <path d="M10 3h4a1 1 0 011 1v2H9V4a1 1 0 011-1z" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M7 7l1 13a1 1 0 001 1h6a1 1 0 001-1l1-13" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M10 11v6M14 11v6" strokeLinecap="round" />
-    </svg>
-  )
-}
-
 function JournalPage() {
   const { data: entries = [], isLoading, isError } = useJournalEntries()
   const { mutate: createEntry, isPending, error: createError } = useCreateJournalEntry()
-  const { mutate: deleteEntry, isPending: isDeletingEntry } = useDeleteJournalEntry()
+  const { mutate: deleteEntry } = useDeleteJournalEntry()
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [mood, setMood] = useState<number>(3)
@@ -245,19 +235,19 @@ function JournalPage() {
     <section className="space-y-4 bg-black pb-24">
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1.2fr_1fr]">
         <article
-          className="cursor-pointer rounded-xl border border-[#222222] bg-[#0a0a0a] p-4"
+          className="cursor-pointer rounded-xl border border-border bg-surface p-4"
           onClick={() => {
             setCalendarMonth(new Date())
             setIsCalendarOpen(true)
           }}
         >
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-slate-100">Journal Calendar</h2>
-            <span className="rounded-md border border-[#222222] px-2 py-1 text-xs text-slate-300">Open</span>
+            <h2 className="text-base font-semibold text-slate-100">Journal Calendar</h2>
+            <span className="rounded-md border border-border px-2 py-1 text-xs text-slate-300">Open</span>
           </div>
           <p className="mt-1 text-xs text-slate-400">Logged days are green with mood emoji.</p>
 
-          <div className="mt-3 grid grid-cols-7 gap-1 text-center text-[11px] text-slate-500">
+          <div className="mt-3 grid grid-cols-7 gap-1 text-center text-xs text-slate-500">
             {weekdayHeaders.map((weekday) => (
               <p key={weekday}>{weekday}</p>
             ))}
@@ -277,16 +267,16 @@ function JournalPage() {
                     event.stopPropagation()
                     setSelectedDate(day.dateKey)
                   }}
-                  className={`rounded border p-1 text-center text-xs ${
+                  className={`cursor-pointer rounded border p-1 text-center text-xs transition-colors hover:bg-[#222222] ${
                     isLogged
-                      ? 'border-emerald-500/60 bg-emerald-500/20 text-emerald-100'
-                      : 'border-[#222222] bg-[#0a0a0a] text-slate-400'
-                  } cursor-pointer transition-colors hover:bg-[#222222] ${day.inCurrentMonth ? '' : 'opacity-40'}`}
+                      ? 'border-green-500/60 bg-green-500/20 text-green-100'
+                      : 'border-border bg-black text-slate-400'
+                  } ${day.inCurrentMonth ? '' : 'opacity-40'}`}
                 >
                   <p>{day.day}</p>
                   <p className="leading-none">{summary ? moodToEmoji(summary.averageMood) : ''}</p>
                   {entryCount > 1 ? (
-                    <span className="absolute right-0.5 top-0.5 rounded-full border border-[#222222] bg-black px-1 text-[9px] leading-4 text-slate-300">
+                    <span className="absolute right-0.5 top-0.5 rounded-full border border-border bg-black px-1 text-xs leading-4 text-slate-300">
                       x{entryCount}
                     </span>
                   ) : null}
@@ -299,8 +289,8 @@ function JournalPage() {
         <AnalogClockWidget />
       </div>
 
-      <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
-        <h2 className="text-lg font-semibold text-slate-100">Recent Journal Entries</h2>
+      <article className="rounded-xl border border-border bg-surface p-4">
+        <h2 className="text-base font-semibold text-slate-100">Recent Journal Entries</h2>
 
         {isLoading ? <p className="mt-3 text-sm text-slate-400">Loading entries...</p> : null}
         {isError ? <p className="mt-3 text-sm text-red-400">Failed to load entries.</p> : null}
@@ -309,24 +299,19 @@ function JournalPage() {
 
         <ul className="mt-3 space-y-3">
             {entries.slice(0, 5).map((entry) => (
-              <li key={entry.id} className="group rounded-lg border border-[#222222] bg-black p-3">
+              <li key={entry.id} className="group rounded-lg border border-border bg-black p-3">
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-sm text-slate-300">
                     {moodToEmoji(entry.mood)} {formatIndiaDateTime(entry.updated_at || entry.created_at)}
                   </p>
-                  <button
-                    type="button"
-                    disabled={isDeletingEntry}
+                  <DeleteButton
+                    className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
                     onClick={() => {
                       const confirmed = window.confirm('Delete this journal entry?')
                       if (!confirmed) return
                       deleteEntry(entry.id)
                     }}
-                    className="p-3 text-neutral-600 opacity-100 transition-colors hover:text-red-500 sm:p-2 sm:opacity-0 sm:group-hover:opacity-100"
-                    aria-label="Delete journal entry"
-                  >
-                    <TrashIcon />
-                  </button>
+                  />
                 </div>
                 <p className="mt-1 text-sm text-slate-200">{entry.what_went_good || 'No note added.'}</p>
               </li>
@@ -337,7 +322,7 @@ function JournalPage() {
       <button
         type="button"
         onClick={() => setIsCreateModalOpen(true)}
-        className="fixed bottom-6 right-6 z-30 inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-[#222222] bg-[#0a0a0a] text-slate-100 shadow-xl shadow-black/60 transition hover:bg-[#222222]"
+        className="fixed bottom-6 right-6 z-30 inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-border bg-[#111111] text-slate-100 shadow-xl shadow-black/60 transition hover:bg-[#222222]"
         aria-label="Create journal entry"
       >
         <PenIcon />
@@ -352,16 +337,16 @@ function JournalPage() {
             aria-label="Close journal entry modal"
           />
 
-          <article className="relative z-10 h-[88vh] w-[90%] max-w-4xl overflow-auto rounded-xl border border-[#222222] bg-[#0a0a0a] p-4 sm:p-6">
+          <article className="relative z-10 h-[88vh] w-[90%] max-w-4xl overflow-auto rounded-xl border border-border bg-surface p-4 sm:p-6">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h2 className="text-xl font-semibold text-slate-100">New Journal Entry</h2>
+                <h2 className="text-base font-semibold text-slate-100">New Journal Entry</h2>
                 <p className="text-sm text-slate-400">Capture what went good, your mood, learnings, and day summary.</p>
               </div>
               <button
                 type="button"
                 onClick={() => setIsCreateModalOpen(false)}
-                className="flex h-9 w-9 items-center justify-center rounded-md border border-[#222222] bg-black text-slate-100 hover:bg-[#222222]"
+                className="flex h-9 w-9 items-center justify-center rounded-md border border-border bg-[#111111] text-slate-100 hover:bg-[#222222]"
                 aria-label="Close"
               >
                 <CloseIcon />
@@ -382,8 +367,8 @@ function JournalPage() {
                       }}
                       className={`rounded-md border px-3 py-1 text-lg ${
                         mood === option.value
-                          ? 'border-emerald-500 bg-emerald-500/10'
-                          : 'border-[#222222] bg-black hover:bg-[#222222]'
+                          ? 'border-green-500 bg-green-500/10'
+                          : 'border-border bg-[#111111] hover:bg-[#222222]'
                       }`}
                       title={option.label}
                     >
@@ -399,7 +384,7 @@ function JournalPage() {
                   value={whatWentGood}
                   onChange={(event) => setWhatWentGood(event.target.value)}
                   rows={4}
-                  className="mt-1 w-full rounded-md border border-[#222222] bg-black p-2 text-slate-100"
+                  className="mt-1 w-full rounded-lg border border-border bg-[#111111] p-2 text-slate-100"
                 />
               </label>
 
@@ -409,7 +394,7 @@ function JournalPage() {
                   value={whatYouLearned}
                   onChange={(event) => setWhatYouLearned(event.target.value)}
                   rows={4}
-                  className="mt-1 w-full rounded-md border border-[#222222] bg-black p-2 text-slate-100"
+                  className="mt-1 w-full rounded-lg border border-border bg-[#111111] p-2 text-slate-100"
                 />
               </label>
 
@@ -419,7 +404,7 @@ function JournalPage() {
                   value={briefAboutDay}
                   onChange={(event) => setBriefAboutDay(event.target.value)}
                   rows={5}
-                  className="mt-1 w-full rounded-md border border-[#222222] bg-black p-2 text-slate-100"
+                  className="mt-1 w-full rounded-lg border border-border bg-[#111111] p-2 text-slate-100"
                 />
               </label>
 
@@ -437,16 +422,16 @@ function JournalPage() {
 
       {isCalendarOpen ? (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/85 p-3">
-          <section className="h-[92vh] w-[96vw] max-w-6xl overflow-auto rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
+          <section className="h-[92vh] w-[96vw] max-w-6xl overflow-auto rounded-xl border border-border bg-surface p-4">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <h3 className="text-xl font-semibold text-slate-100">Journal Calendar View</h3>
+                <h3 className="text-base font-semibold text-slate-100">Journal Calendar View</h3>
                 <p className="text-xs text-slate-400">Click any date to open timeline and add retroactive entries.</p>
               </div>
               <button
                 type="button"
                 onClick={() => setIsCalendarOpen(false)}
-                className="rounded-md border border-[#222222] px-3 py-1 text-sm text-slate-100 hover:bg-[#222222]"
+                className="rounded-md border border-border px-3 py-1 text-sm text-slate-100 hover:bg-[#111111]"
               >
                 Close
               </button>
@@ -456,7 +441,7 @@ function JournalPage() {
               <button
                 type="button"
                 onClick={() => setCalendarMonth((previous) => shiftMonth(previous, -1))}
-                className="rounded-md border border-[#222222] px-3 py-1 text-sm text-slate-100 hover:bg-[#222222]"
+                className="rounded-md border border-border px-3 py-1 text-sm text-slate-100 hover:bg-[#111111]"
               >
                 Previous
               </button>
@@ -464,7 +449,7 @@ function JournalPage() {
               <button
                 type="button"
                 onClick={() => setCalendarMonth((previous) => shiftMonth(previous, 1))}
-                className="rounded-md border border-[#222222] px-3 py-1 text-sm text-slate-100 hover:bg-[#222222]"
+                className="rounded-md border border-border px-3 py-1 text-sm text-slate-100 hover:bg-[#111111]"
               >
                 Next
               </button>
@@ -487,23 +472,23 @@ function JournalPage() {
                     <button
                       type="button"
                       onClick={() => setSelectedDate(day.dateKey)}
-                      className={`w-full rounded-md border p-2 text-left transition ${
+                      className={`w-full cursor-pointer rounded-md border p-2 text-left transition-colors hover:bg-[#222222] ${
                         isLogged
-                          ? 'cursor-pointer border-emerald-500/70 bg-emerald-500/20 text-emerald-100 hover:bg-emerald-500/30'
-                          : 'cursor-pointer border-[#222222] bg-[#0a0a0a] text-slate-400 hover:bg-[#222222]'
-                      } ${day.inCurrentMonth ? '' : 'opacity-40'} cursor-pointer hover:bg-[#222222] transition-colors`}
+                          ? 'border-green-500/70 bg-green-500/20 text-green-100 hover:bg-green-500/30'
+                          : 'border-border bg-black text-slate-400 hover:bg-[#111111]'
+                      } ${day.inCurrentMonth ? '' : 'opacity-40'}`}
                     >
                       <p className="text-sm font-semibold">{day.day}</p>
                       <p className="mt-2 text-lg leading-none">{summary ? moodToEmoji(summary.averageMood) : ''}</p>
                       {entryCount > 1 ? (
-                        <span className="absolute right-1 top-1 rounded-full border border-[#222222] bg-black px-1.5 text-[10px] leading-4 text-slate-300">
+                        <span className="absolute right-1 top-1 rounded-full border border-border bg-black px-1.5 text-xs leading-4 text-slate-300">
                           x{entryCount}
                         </span>
                       ) : null}
                     </button>
 
                     {summary ? (
-                      <div className="pointer-events-none absolute left-1/2 top-full z-30 mt-1 hidden -translate-x-1/2 whitespace-nowrap rounded-md border border-[#222222] bg-black px-2 py-1 text-[11px] text-slate-100 group-hover:block">
+                      <div className="pointer-events-none absolute left-1/2 top-full z-30 mt-1 hidden -translate-x-1/2 whitespace-nowrap rounded-md border border-border bg-black px-2 py-1 text-xs text-slate-100 group-hover:block">
                         Avg mood: {moodToEmoji(summary.averageMood)} ({entryCount} entries)
                       </div>
                     ) : null}
@@ -523,7 +508,6 @@ function JournalPage() {
           saveError={createError}
           onCreateEntry={createEntry}
           onDeleteEntry={(id) => deleteEntry(id)}
-          isDeleting={isDeletingEntry}
           onClose={() => setSelectedDate(null)}
         />
       ) : null}

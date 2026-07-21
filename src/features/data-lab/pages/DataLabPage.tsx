@@ -9,7 +9,7 @@ function DataLabPage() {
   const setActiveTab = useDataLabStore((s) => s.setActiveTab)
 
   return (
-    <section className="space-y-6 bg-[#000000] pb-24 px-4 sm:px-6 lg:px-8 pt-8">
+    <section className="space-y-6 bg-black pb-24 px-4 sm:px-6 lg:px-8 pt-8">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-[10px] text-slate-500 font-mono tracking-widest uppercase mb-1">Life OS</p>
@@ -20,14 +20,14 @@ function DataLabPage() {
       </header>
 
       {/* Tab navigation */}
-      <nav className="flex gap-2 border-b border-[#111111] pb-4">
+      <nav className="flex gap-2 border-b border-border pb-4">
         <button
           type="button"
           onClick={() => setActiveTab('overview')}
           className={`relative shrink-0 rounded-md px-3 py-1.5 text-[10px] font-mono tracking-widest uppercase transition-colors border ${
             activeTab === 'overview'
-              ? 'bg-[#111111] text-slate-200 border-[#333333]'
-              : 'bg-black text-slate-500 border-[#1a1a1a] hover:text-slate-300'
+              ? 'bg-[#111111] text-slate-200 border-slate-500'
+              : 'bg-black text-slate-500 border-border hover:text-slate-300'
           }`}
         >
           Overview
@@ -37,8 +37,8 @@ function DataLabPage() {
           onClick={() => setActiveTab('behavior')}
           className={`relative shrink-0 rounded-md px-3 py-1.5 text-[10px] font-mono tracking-widest uppercase transition-colors border ${
             activeTab === 'behavior'
-              ? 'bg-[#111111] text-slate-200 border-[#333333]'
-              : 'bg-black text-slate-500 border-[#1a1a1a] hover:text-slate-300'
+              ? 'bg-[#111111] text-slate-200 border-slate-500'
+              : 'bg-black text-slate-500 border-border hover:text-slate-300'
           }`}
         >
           Behavior
@@ -48,8 +48,8 @@ function DataLabPage() {
           onClick={() => setActiveTab('telemetry')}
           className={`relative shrink-0 rounded-md px-3 py-1.5 text-[10px] font-mono tracking-widest uppercase transition-colors border ${
             activeTab === 'telemetry'
-              ? 'bg-[#111111] text-slate-200 border-[#333333]'
-              : 'bg-black text-slate-500 border-[#1a1a1a] hover:text-slate-300'
+              ? 'bg-[#111111] text-slate-200 border-slate-500'
+              : 'bg-black text-slate-500 border-border hover:text-slate-300'
           }`}
         >
           Telemetry

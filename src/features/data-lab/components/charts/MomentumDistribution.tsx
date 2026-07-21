@@ -51,7 +51,7 @@ function MomentumDistribution({ bars, currentLevel, totalWeeks }: MomentumDistri
         ))}
       </div>
 
-      <div className="mt-3 border-t border-[#222222] pt-3 text-[10px] font-mono text-slate-500">
+      <div className="mt-3 border-t border-border pt-3 text-[10px] font-mono text-slate-500">
         Current:{' '}
         <span className={LEVEL_TEXT[currentLevel === 'low' ? 'Low' : currentLevel === 'medium' ? 'Medium' : 'High'] ?? 'text-slate-300'}>
           {currentLevel === 'low' ? 'Low' : currentLevel === 'medium' ? 'Medium' : 'High'} Momentum

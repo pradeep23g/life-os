@@ -56,7 +56,7 @@ function ActivityHistogram({ bars, peakHour }: ActivityHistogramProps) {
         ))}
       </div>
 
-      <div className="mt-3 border-t border-[#222222] pt-3 text-[10px] font-mono text-slate-500">
+      <div className="mt-3 border-t border-border pt-3 text-[10px] font-mono text-slate-500">
         Peak:{' '}
         <span className="text-emerald-400">
           {bars[peakHour]?.label} ({bars[peakHour]?.value} events)

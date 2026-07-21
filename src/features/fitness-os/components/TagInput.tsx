@@ -43,17 +43,17 @@ function TagInput({ value, onChange, placeholder, className }: TagInputProps) {
 
   return (
     <div
-      className={`mt-1 flex min-h-[42px] w-full flex-wrap items-center gap-1 rounded-md border border-[#222222] bg-black px-2 py-1 ${
+      className={`mt-1 flex min-h-[42px] w-full flex-wrap items-center gap-1 rounded-lg border border-border bg-[#111111] px-2 py-1 focus-within:border-slate-600 focus-within:ring-1 focus-within:ring-slate-600 ${
         className ?? ''
       }`}
     >
       {value.map((tag) => (
-        <span key={tag} className="inline-flex items-center gap-1 rounded-full bg-[#111111] px-2 py-1 text-xs text-white">
+        <span key={tag} className="inline-flex items-center gap-1 rounded-full bg-[#222222] px-2 py-1 text-xs text-slate-100">
           {tag}
           <button
             type="button"
             onClick={() => onChange(value.filter((item) => item !== tag))}
-            className="rounded-full px-1 text-slate-300 transition-colors hover:bg-[#222222] hover:text-white"
+            className="rounded-full px-1 text-slate-400 transition-colors hover:bg-[#333333] hover:text-white"
             aria-label={`Remove ${tag}`}
           >
             ×

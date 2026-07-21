@@ -158,10 +158,10 @@ function ActiveWorkoutPanel({ activeWorkout, exercises, onEndWorkout, isEnding }
   }
 
   return (
-    <section className="space-y-4 rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
+    <section className="space-y-4 rounded-xl border border-border bg-surface p-4">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-xl font-semibold text-slate-100">Live Session</h2>
+          <h2 className="text-base font-semibold text-slate-100">Live Session</h2>
           <p className="mt-1 text-sm text-slate-300">{activeWorkout.title} - {elapsed}</p>
         </div>
         <button
@@ -183,7 +183,7 @@ function ActiveWorkoutPanel({ activeWorkout, exercises, onEndWorkout, isEnding }
 
       <div className="space-y-3">
         {selectedExerciseIds.length === 0 ? (
-          <article className="rounded-md border border-[#222222] bg-black p-3 text-sm text-slate-400">
+          <article className="rounded-md border border-border bg-black p-3 text-sm text-slate-400">
             No exercises added yet.
           </article>
         ) : null}
@@ -200,7 +200,7 @@ function ActiveWorkoutPanel({ activeWorkout, exercises, onEndWorkout, isEnding }
           const lastLog = exerciseLogs.length > 0 ? exerciseLogs[exerciseLogs.length - 1] : null
 
           return (
-            <article key={exerciseId} id={`exercise-card-${exerciseId}`} className="rounded-md border border-[#222222] bg-black p-3">
+            <article key={exerciseId} id={`exercise-card-${exerciseId}`} className="rounded-md border border-border bg-black p-3">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex-1">
                   <p className="text-sm font-semibold text-slate-100">{exercise?.name ?? 'Unknown Exercise'}</p>
@@ -219,14 +219,14 @@ function ActiveWorkoutPanel({ activeWorkout, exercises, onEndWorkout, isEnding }
                 <button
                   type="button"
                   onClick={() => setOpenComposerExerciseId(showComposer ? null : exerciseId)}
-                  className="rounded border border-[#222222] px-3 py-1 text-xs text-slate-200 hover:bg-surface"
+                  className="rounded-md border border-border px-3 py-1 text-xs text-slate-200 hover:bg-[#111111]"
                 >
                   {showComposer ? 'Hide' : 'Expand'}
                 </button>
               </div>
 
               {showComposer ? (
-                <div className="mt-4 space-y-2 border-t border-[#222222] pt-3">
+                <div className="mt-4 space-y-2 border-t border-border pt-3">
                   {exerciseLogs.map((log, index) => (
                     <div key={log.id} className="flex items-center gap-3 text-sm text-slate-300">
                       <span className="w-12 text-slate-500">Set {index + 1}</span>
@@ -243,7 +243,7 @@ function ActiveWorkoutPanel({ activeWorkout, exercises, onEndWorkout, isEnding }
                     <input
                       value={`Set ${nextSetNumber}`}
                       readOnly
-                      className="rounded border border-[#222222] bg-[#0a0a0a] px-3 py-2 text-sm text-slate-400 focus:outline-none"
+                      className="rounded-lg border border-border bg-[#111111] px-3 py-2 text-sm text-slate-400 focus:outline-none"
                     />
                     <input
                       type="number"
@@ -260,7 +260,7 @@ function ActiveWorkoutPanel({ activeWorkout, exercises, onEndWorkout, isEnding }
                         }))
                       }
                       placeholder={valueLabel}
-                      className="rounded border border-[#222222] bg-[#0a0a0a] px-3 py-2 text-sm text-slate-100"
+                      className="rounded-lg border border-border bg-[#111111] px-3 py-2 text-sm text-slate-100 outline-none focus:border-slate-600"
                     />
                     {!isBodyweight ? (
                       <input
@@ -278,10 +278,10 @@ function ActiveWorkoutPanel({ activeWorkout, exercises, onEndWorkout, isEnding }
                           }))
                         }
                         placeholder="Weight (kg)"
-                        className="rounded border border-[#222222] bg-[#0a0a0a] px-3 py-2 text-sm text-slate-100"
+                        className="rounded-lg border border-border bg-[#111111] px-3 py-2 text-sm text-slate-100 outline-none focus:border-slate-600"
                       />
                     ) : (
-                      <div className="rounded border border-[#222222] bg-[#0a0a0a] px-3 py-2 text-sm text-slate-400">Bodyweight</div>
+                      <div className="rounded-lg border border-border bg-[#111111] px-3 py-2 text-sm text-slate-400">Bodyweight</div>
                     )}
                     <button
                       type="button"

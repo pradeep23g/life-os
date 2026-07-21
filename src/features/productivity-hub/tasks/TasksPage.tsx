@@ -19,6 +19,7 @@ import {
   shiftMonth,
   toIndiaDateKey,
 } from '../../mind-os/utils/date'
+import { DeleteButton } from '../../../components/DeleteButton'
 
 const weekdayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const
 const deadlineOptions: Array<{ value: TaskDeadlineType; label: string }> = [
@@ -69,7 +70,7 @@ function TasksPage() {
   const { data: tasks = [], isLoading, isError, error } = useTasks()
   const { mutate: createTask, isPending: isCreating, error: createError } = useCreateTask()
   const { mutate: toggleCompletion, isPending: isUpdating, error: updateError } = useToggleTaskCompletion()
-  const { mutate: deleteTask, isPending: isDeleting, error: deleteError } = useDeleteTask()
+  const { mutate: deleteTask, error: deleteError } = useDeleteTask()
   const { data: activeTimer } = useActiveTimer()
   const { mutate: startTimer, isPending: isStartingTimer, error: startTimerError } = useStartTimer()
 
@@ -164,15 +165,15 @@ function TasksPage() {
 
   return (
     <section className="space-y-4 bg-black pb-24">
-      <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
+      <article className="rounded-xl border border-border bg-surface p-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-slate-100">Task Ledger</h2>
+            <h2 className="text-base font-semibold text-slate-100">Task Ledger</h2>
             <p className="mt-1 text-sm text-slate-400">Calendar-first execution tracking with historical visibility and active task pressure.</p>
           </div>
-          <div className="rounded-lg border border-[#222222] bg-black px-3 py-2">
+          <div className="rounded-lg border border-border bg-black px-3 py-2">
             <p className="text-xs text-slate-400">Active Queue</p>
-            <p className="mt-1 text-lg font-semibold text-slate-100">{isLoading ? '--' : activeTasks.length}</p>
+            <p className="mt-1 text-base font-semibold text-slate-100">{isLoading ? '--' : activeTasks.length}</p>
           </div>
         </div>
 
@@ -182,10 +183,10 @@ function TasksPage() {
             value={title}
             onChange={(event) => setTitle(event.target.value)}
             placeholder="Log a new task"
-            className="rounded-md border border-[#222222] bg-black p-3 text-sm text-slate-100 outline-none placeholder:text-slate-500 focus:border-emerald-900"
+            className="rounded-lg border border-border bg-black p-3 text-sm text-slate-100 outline-none placeholder:text-slate-500 focus:border-slate-600"
           />
 
-          <div className="rounded-lg border border-[#222222] bg-black p-2">
+          <div className="rounded-lg border border-border bg-black p-2">
             <p className="text-xs text-slate-400">Deadline Type</p>
             <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3">
               {deadlineOptions.map((option) => (
@@ -195,8 +196,8 @@ function TasksPage() {
                   onClick={() => setDeadlineType(option.value)}
                   className={`rounded-md border px-3 py-2 text-sm transition-colors ${
                     deadlineType === option.value
-                      ? 'border-emerald-900 bg-emerald-950/20 text-emerald-300'
-                      : 'border-[#222222] bg-[#0a0a0a] text-slate-300 hover:bg-[#111111]'
+                      ? 'border-green-900 bg-green-950/20 text-green-300'
+                      : 'border-border bg-surface text-slate-300 hover:bg-[#111111]'
                   }`}
                 >
                   {option.label}
@@ -208,7 +209,7 @@ function TasksPage() {
                 type="date"
                 value={deadlineDate}
                 onChange={(event) => setDeadlineDate(event.target.value)}
-                className="mt-2 w-full rounded-md border border-[#222222] bg-[#0a0a0a] p-2 text-sm text-slate-100 outline-none focus:border-emerald-900"
+                className="mt-2 w-full rounded-lg border border-border bg-black p-2 text-sm text-slate-100 outline-none focus:border-slate-600"
               />
             ) : null}
           </div>
@@ -216,7 +217,7 @@ function TasksPage() {
           <button
             type="submit"
             disabled={isCreating || !title.trim() || (deadlineType === 'specific_date' && !deadlineDate)}
-            className="rounded-md border border-[#222222] bg-black px-4 py-3 text-sm text-slate-100 transition-colors hover:bg-[#111111] disabled:opacity-60"
+            className="rounded-lg border border-border bg-[#111111] px-4 py-3 text-sm text-slate-300 transition-colors hover:bg-[#222222] disabled:opacity-60"
           >
             {isCreating ? 'Creating...' : 'Add Task'}
           </button>
@@ -231,17 +232,17 @@ function TasksPage() {
       {startTimerError ? <p className="text-sm text-red-400">{startTimerError.message}</p> : null}
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1.35fr_0.95fr]">
-        <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
+        <article className="rounded-xl border border-border bg-surface p-4">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <h3 className="text-lg font-semibold text-slate-100">Monthly Calendar Ledger</h3>
+              <h3 className="text-base font-semibold text-slate-100">Monthly Calendar Ledger</h3>
               <p className="mt-1 text-xs text-slate-400">Cells warn when pending specific-date tasks land on that exact day.</p>
             </div>
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => setCalendarMonth((previous) => shiftMonth(previous, -1))}
-                className="rounded-md border border-[#222222] bg-black px-3 py-1.5 text-sm text-slate-100 hover:bg-[#111111]"
+                className="rounded-md border border-border bg-[#111111] px-3 py-1.5 text-sm text-slate-100 hover:bg-[#222222]"
               >
                 Previous
               </button>
@@ -249,14 +250,14 @@ function TasksPage() {
               <button
                 type="button"
                 onClick={() => setCalendarMonth((previous) => shiftMonth(previous, 1))}
-                className="rounded-md border border-[#222222] bg-black px-3 py-1.5 text-sm text-slate-100 hover:bg-[#111111]"
+                className="rounded-md border border-border bg-[#111111] px-3 py-1.5 text-sm text-slate-100 hover:bg-[#222222]"
               >
                 Next
               </button>
             </div>
           </div>
 
-          <div className="mt-4 grid grid-cols-7 gap-2 text-center text-[11px] text-slate-500">
+          <div className="mt-4 grid grid-cols-7 gap-2 text-center text-xs text-slate-500">
             {weekdayHeaders.map((weekday) => (
               <p key={weekday}>{weekday}</p>
             ))}
@@ -279,14 +280,14 @@ function TasksPage() {
                     hasWarning
                       ? 'border-amber-500/60 bg-amber-500/10'
                       : hasCompleted
-                        ? 'border-emerald-500/35 bg-emerald-500/10'
+                        ? 'border-green-500/35 bg-green-500/10'
                         : hasCreated
                           ? 'border-sky-500/35 bg-sky-500/10'
-                          : 'border-[#222222] bg-black'
+                          : 'border-border bg-black'
                   } ${day.inCurrentMonth ? '' : 'opacity-35'} ${isSelected ? 'ring-1 ring-slate-300/70' : ''}`}
                 >
                   <p className="text-sm font-semibold text-slate-100">{day.day}</p>
-                  <div className="mt-3 space-y-1 text-[11px]">
+                  <div className="mt-3 space-y-1 text-xs">
                     <p className="text-slate-400">Created: <span className="text-slate-200">{activity.created.length}</span></p>
                     <p className="text-slate-400">Done: <span className="text-slate-200">{activity.completed.length}</span></p>
                     <p className={`${hasWarning ? 'text-amber-300' : 'text-slate-500'}`}>Due: {activity.duePending.length}</p>
@@ -297,7 +298,7 @@ function TasksPage() {
           </div>
 
           {selectedDayActivity ? (
-            <div className="mt-4 rounded-xl border border-[#222222] bg-black p-4">
+            <div className="mt-4 rounded-xl border border-border bg-[#111111] p-4">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <h4 className="text-sm font-semibold text-slate-100">{selectedDateLabel}</h4>
@@ -306,7 +307,7 @@ function TasksPage() {
                 <button
                   type="button"
                   onClick={() => setSelectedDateKey(null)}
-                  className="rounded-md border border-[#222222] px-3 py-1 text-sm text-slate-200 hover:bg-[#111111]"
+                  className="rounded-md border border-border px-3 py-1 text-sm text-slate-200 hover:bg-[#222222]"
                 >
                   Collapse
                 </button>
@@ -318,7 +319,7 @@ function TasksPage() {
                   {selectedDayActivity.created.length === 0 ? <p className="mt-2 text-sm text-slate-500">No tasks created.</p> : null}
                   <ul className="mt-2 space-y-2">
                     {selectedDayActivity.created.map((task) => (
-                      <li key={`created-${task.id}`} className="rounded-md border border-[#222222] bg-[#0a0a0a] p-3">
+                      <li key={`created-${task.id}`} className="rounded-md border border-border bg-surface p-3">
                         <p className="text-sm font-medium text-slate-100">{task.title}</p>
                         <p className="mt-1 text-xs text-slate-400">
                           {getTaskTimelineLabel(task)} • {formatIndiaDateTime(task.created_at)}
@@ -333,7 +334,7 @@ function TasksPage() {
                   {selectedDayActivity.completed.length === 0 ? <p className="mt-2 text-sm text-slate-500">No tasks completed.</p> : null}
                   <ul className="mt-2 space-y-2">
                     {selectedDayActivity.completed.map((task) => (
-                      <li key={`completed-${task.id}`} className="rounded-md border border-[#222222] bg-[#0a0a0a] p-3">
+                      <li key={`completed-${task.id}`} className="rounded-md border border-border bg-surface p-3">
                         <p className="text-sm font-medium text-slate-100">{task.title}</p>
                         <p className="mt-1 text-xs text-slate-400">
                           Completed • {formatIndiaDateTime(task.updated_at)}
@@ -347,13 +348,13 @@ function TasksPage() {
           ) : null}
         </article>
 
-        <article className="rounded-xl border border-[#222222] bg-[#0a0a0a] p-4">
+        <article className="rounded-xl border border-border bg-surface p-4">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <h3 className="text-lg font-semibold text-slate-100">Active Focus Ledger</h3>
+              <h3 className="text-base font-semibold text-slate-100">Active Focus Ledger</h3>
               <p className="mt-1 text-xs text-slate-400">Pending tasks that are still actionable right now.</p>
             </div>
-            <span className="rounded-md border border-[#222222] bg-black px-2 py-1 text-xs text-slate-300">
+            <span className="rounded-md border border-border bg-black px-2 py-1 text-xs text-slate-300">
               {isLoading ? '--' : `${activeTasks.length} active`}
             </span>
           </div>
@@ -363,7 +364,7 @@ function TasksPage() {
 
           <ul className="mt-4 space-y-3">
             {activeTasks.map((task) => (
-              <li key={task.id} className="rounded-lg border border-[#222222] bg-black p-3">
+              <li key={task.id} className="rounded-lg border border-border bg-black p-3">
                 <div className="flex items-start justify-between gap-3">
                   <label className="flex min-w-0 flex-1 items-start gap-3">
                     <input
@@ -371,7 +372,7 @@ function TasksPage() {
                       checked={task.is_completed}
                       onChange={(event) => toggleCompletion({ id: task.id, isCompleted: event.target.checked })}
                       disabled={isUpdating}
-                      className="mt-1 h-4 w-4 rounded border-[#222222] bg-black text-emerald-500 focus:ring-emerald-900"
+                      className="mt-1 h-4 w-4 rounded border-border bg-black text-green-500 focus:ring-green-900"
                     />
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-slate-100">{task.title}</p>
@@ -381,10 +382,9 @@ function TasksPage() {
                     </div>
                   </label>
 
-                  <button
-                    type="button"
-                    disabled={isDeleting}
-                    onClick={() => {
+                  <DeleteButton
+                    onClick={(e) => {
+                      e.stopPropagation()
                       const confirmed = window.confirm('Archive this task?')
                       if (!confirmed) {
                         return
@@ -392,11 +392,7 @@ function TasksPage() {
 
                       deleteTask({ id: task.id })
                     }}
-                    className="rounded border border-transparent px-2 py-1 text-sm text-neutral-500 transition-colors hover:text-red-500"
-                    aria-label="Delete task"
-                  >
-                    X
-                  </button>
+                  />
                 </div>
 
                 <div className="mt-3 flex flex-wrap gap-2">
@@ -408,19 +404,19 @@ function TasksPage() {
                       setFocusDescription('')
                     }}
                     disabled={Boolean(activeTimer) || isStartingTimer}
-                    className="rounded-md border border-[#222222] bg-[#0a0a0a] px-2 py-1 text-xs text-slate-100 hover:bg-[#111111] disabled:opacity-50"
+                    className="rounded-md border border-border bg-[#111111] px-2 py-1 text-xs text-slate-300 hover:bg-[#222222] disabled:opacity-50 transition-colors"
                   >
                     {activeTimer?.task_id === task.id ? 'Running' : 'Start Focus'}
                   </button>
                 </div>
 
                 {focusTaskId === task.id ? (
-                  <div className="mt-3 rounded-lg border border-[#222222] bg-[#0a0a0a] p-3">
+                  <div className="mt-3 rounded-lg border border-border bg-surface p-3">
                     <label className="text-xs font-medium text-slate-300">Bucket</label>
                     <select
                       value={focusBucket}
                       onChange={(event) => setFocusBucket(event.target.value as TimeBucket)}
-                      className="mt-1 w-full rounded-md border border-[#222222] bg-black p-2 text-sm text-slate-100"
+                      className="mt-1 w-full rounded-md border border-border bg-[#111111] p-2 text-sm text-slate-100"
                     >
                       {TIME_BUCKETS.map((bucket) => (
                         <option key={bucket} value={bucket}>
@@ -434,7 +430,7 @@ function TasksPage() {
                       value={focusDescription}
                       onChange={(event) => setFocusDescription(event.target.value)}
                       placeholder="Quick focus note (optional)"
-                      className="mt-2 w-full rounded-md border border-[#222222] bg-black p-2 text-sm text-slate-100"
+                      className="mt-2 w-full rounded-md border border-border bg-[#111111] p-2 text-sm text-slate-100"
                     />
 
                     <div className="mt-2 flex gap-2">
@@ -442,14 +438,14 @@ function TasksPage() {
                         type="button"
                         onClick={() => handleStartFocus(task.id)}
                         disabled={isStartingTimer || Boolean(activeTimer)}
-                        className="rounded-md border border-[#222222] bg-black px-2 py-1 text-xs text-slate-100 hover:bg-black disabled:opacity-50"
+                        className="rounded-md border border-border bg-slate-100 px-3 py-1 text-xs font-medium text-black hover:bg-slate-200 disabled:opacity-50 transition-colors"
                       >
                         {isStartingTimer ? 'Starting...' : 'Start'}
                       </button>
                       <button
                         type="button"
                         onClick={() => setFocusTaskId(null)}
-                        className="rounded-md border border-[#222222] bg-[#0a0a0a] px-2 py-1 text-xs text-slate-300 hover:bg-black"
+                        className="rounded-md border border-transparent bg-transparent px-3 py-1 text-xs text-slate-400 hover:bg-surface transition-colors"
                       >
                         Cancel
                       </button>

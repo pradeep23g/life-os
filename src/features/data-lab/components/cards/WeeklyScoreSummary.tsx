@@ -6,8 +6,8 @@ type WeeklyScoreSummaryProps = {
 }
 
 function TrendArrow({ direction }: { direction: 'up' | 'down' | 'stable' }) {
-  if (direction === 'up') return <span className="text-emerald-400 text-sm">↑</span>
-  if (direction === 'down') return <span className="text-rose-400 text-sm">↓</span>
+  if (direction === 'up') return <span className="text-emerald-400 text-sm">â†‘</span>
+  if (direction === 'down') return <span className="text-rose-400 text-sm">â†“</span>
   return <span className="text-slate-500 text-sm">−</span>
 }
 
@@ -53,7 +53,7 @@ function WeeklyScoreSummary({ metrics }: WeeklyScoreSummaryProps) {
     <DataLabSection title="Weekly System Score" subtitle="Behavioral engagement composite">
       <div className="flex flex-col sm:flex-row gap-4">
         {/* Current score */}
-        <div className="flex-1 border border-[#222222] bg-black p-4">
+        <div className="flex-1 border border-border bg-black p-4">
           <p className="text-[10px] uppercase tracking-widest text-slate-500 font-mono">Current</p>
           <div className="mt-2 flex items-baseline gap-2">
             <span className="font-mono text-4xl font-bold text-slate-100">

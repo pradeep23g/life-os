@@ -32,8 +32,8 @@ function EventCoverageTable() {
   )
 
   return (
-    <article className="rounded-none border border-[#222222] bg-[#0a0a0a] p-4">
-      <div className="border-b border-[#222222] pb-3">
+    <article className="rounded-xl border border-border bg-surface p-4">
+      <div className="border-b border-border pb-3">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-100">Event Coverage</h2>
         <p className="mt-1 text-xs text-slate-400">Telemetry Health Diagnostics (30d)</p>
       </div>
@@ -49,7 +49,7 @@ function EventCoverageTable() {
         <div className="mt-4 overflow-x-auto">
           <table className="min-w-full border-collapse text-left text-xs">
             <thead className="font-mono uppercase tracking-wide text-slate-500">
-              <tr className="border-b border-[#222222]">
+              <tr className="border-b border-border">
                 <th className="px-3 py-2 font-medium">Domain</th>
                 <th className="px-3 py-2 font-medium">Event Type</th>
                 <th className="px-3 py-2 font-medium">Total Events</th>
@@ -66,7 +66,7 @@ function EventCoverageTable() {
                 </tr>
               ) : (
                 rows.map((row) => (
-                  <tr key={`${row.domain}:${row.event_type}`} className="border-b border-[#222222] last:border-b-0">
+                  <tr key={`${row.domain}:${row.event_type}`} className="border-b border-border last:border-b-0">
                     <td className="px-3 py-3 text-slate-300">{row.domain}</td>
                     <td className="px-3 py-3 text-slate-100">{row.event_type}</td>
                     <td className="px-3 py-3 text-slate-100">{row.event_count}</td>
