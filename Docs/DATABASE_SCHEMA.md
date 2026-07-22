@@ -77,16 +77,14 @@ Multi-entry daily journal with mood and structured reflection.
 
 ### `public.tasks`
 
-Kanban task management with deadline metadata.
+Deadline-based task management.
 
 | Column | Type | Notes |
 |---|---|---|
 | `id` | `uuid` | Primary key |
 | `user_id` | `uuid` | RLS scope |
 | `title` | `text` | Task title |
-| `status` | `text` | `To Do`, `Doing`, `Done` |
-| `priority` | `text` | Priority level |
-| `is_completed` | `boolean` | `NOT NULL DEFAULT false` — true when status = Done |
+| `is_completed` | `boolean` | `NOT NULL DEFAULT false` |
 | `deadline_type` | `text` | `same_day`, `no_deadline`, `specific_date` |
 | `deadline_date` | `date` | Required when `deadline_type = 'specific_date'` |
 | `created_at` | `timestamptz` | |
@@ -286,7 +284,7 @@ Behavioral spending ledger. (Migrated from legacy `finance_transactions`.)
 | `amount` | `numeric` | Transaction amount |
 | `type` | `text` | `'expense'` (future: `'income'`) |
 | `category` | `text` | Spending category |
-| `is_need` | `boolean` | Need vs. want distinction |
+| `is_need` | `boolean` | Not currently present (defensive handling in UI) |
 | `note` | `text` | Optional description |
 | `timestamp` | `timestamptz` | Transaction time |
 | `created_at` | `timestamptz` | |

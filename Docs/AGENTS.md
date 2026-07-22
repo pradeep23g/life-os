@@ -54,7 +54,7 @@ Pillar 6 is an architectural invariant, not a preference. Reflection and executi
 ### Productivity Hub
 - Path: `/productivity-hub`, `/productivity-hub/tasks`, `/productivity-hub/planning`
 - Execution workspace.
-- **Tasks:** Kanban (To Do / Doing / Done), task creation, priority, Start Focus timer integration.
+- **Tasks:** Deadline-based tracking, task creation, Start Focus timer integration.
 - **Planning:** weekly focus, goals CRUD, weekly plan items, weekly review, alignment health.
 - **Strict rule:** No journaling or emotional reflection UI here.
 

@@ -41,6 +41,8 @@ When documents conflict, consult in this order:
 7. `ARCHITECTURE_DECISIONS.md` (for WHY decisions were made)
 8. `RELEASE_GATE_CHECKLIST.md`
 
+*(Note: `PRADEEP_PROFILE.md` is intentionally private and local-only and not expected to exist in the repository.)*
+
 Never invent architecture that contradicts these documents.
 
 ---

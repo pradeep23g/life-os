@@ -15,7 +15,7 @@ This file is the entry point for all Life OS documentation. Start here.
 | [UI_SYSTEM.md](UI_SYSTEM.md) | Color system, typography, layout, navigation, component specs, responsive rules | Before building any UI |
 | [MODULE_GUIDE.md](MODULE_GUIDE.md) | Deep per-module reference: internal structure, data contracts, event emission, rules | When working inside a specific feature module |
 | [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md) | Complete table/column reference and migration history | Before any schema work |
-| [ARCHITECTURE_DECISIONS.md](ARCHITECTURE_DECISIOINS.md) | WHY major architectural decisions were made | When questioning an existing pattern or proposing changes |
+| [ARCHITECTURE_DECISIONS.md](ARCHITECTURE_DECISIONS.md) | WHY major architectural decisions were made | When questioning an existing pattern or proposing changes |
 | [PROJECT_ROADMAP.md](PROJECT_ROADMAP.md) | Implemented phases and next priorities | Planning new features |
 | [CHANGELOG.md](CHANGELOG.md) | Chronological project evolution | Understanding how the system evolved |
 | [RELEASE_GATE_CHECKLIST.md](RELEASE_GATE_CHECKLIST.md) | Pre-deployment verification checklist | Before every release |
