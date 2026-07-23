@@ -61,7 +61,7 @@ function ContributionCalendar({ cells }: ContributionCalendarProps) {
   }
 
   return (
-    <DataLabSection title="Life Activity Calendar" subtitle="Each cell = 1 day. Intensity = active systems (0â€“6).">
+    <DataLabSection title="Life Activity Calendar" subtitle="Each cell = 1 day. Intensity = active systems (0–6).">
       <div className="flex gap-1 overflow-x-auto pb-2">
         {/* Day labels column */}
         <div className="flex flex-col gap-[3px] pr-1">

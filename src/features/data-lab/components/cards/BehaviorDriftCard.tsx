@@ -33,9 +33,9 @@ function BehaviorDriftCard({ metrics }: BehaviorDriftCardProps) {
             <div className="mt-1 flex items-baseline gap-1">
               <span className="text-sm font-mono">
                 {row.direction === 'up' ? (
-                  <span className="text-emerald-400">â†‘</span>
+                  <span className="text-emerald-400">↑</span>
                 ) : row.direction === 'down' ? (
-                  <span className="text-rose-400">â†“</span>
+                  <span className="text-rose-400">↓</span>
                 ) : (
                   <span className="text-slate-500">−</span>
                 )}

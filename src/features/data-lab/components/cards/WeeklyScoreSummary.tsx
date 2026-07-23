@@ -6,8 +6,8 @@ type WeeklyScoreSummaryProps = {
 }
 
 function TrendArrow({ direction }: { direction: 'up' | 'down' | 'stable' }) {
-  if (direction === 'up') return <span className="text-emerald-400 text-sm">â†‘</span>
-  if (direction === 'down') return <span className="text-rose-400 text-sm">â†“</span>
+  if (direction === 'up') return <span className="text-emerald-400 text-sm">↑</span>
+  if (direction === 'down') return <span className="text-rose-400 text-sm">↓</span>
   return <span className="text-slate-500 text-sm">−</span>
 }
 
