@@ -9,7 +9,7 @@ type EventWaterfallProps = {
 const DOMAIN_COLORS: Record<string, string> = {
   'mind-os': 'border-l-blue-500',
   'productivity-hub': 'border-l-amber-500',
-  'progress-hub': 'border-l-purple-500',
+  'learning-os': 'border-l-purple-500',
   'mission-control': 'border-l-slate-500',
   'fitness-os': 'border-l-emerald-500',
   'time-os': 'border-l-cyan-500',

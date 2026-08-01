@@ -82,7 +82,7 @@ function FinanceDashboard() {
   const clampedProgressWidth = Math.max(0, Math.min(summary?.progressPercentage ?? 0, 100))
 
   return (
-    <section className="space-y-4 bg-black pb-24">
+    <section className="space-y-4 bg-black pb-28 sm:pb-24">
       <article className="rounded-xl border border-border bg-surface p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
@@ -98,7 +98,7 @@ function FinanceDashboard() {
 
         <div className="mt-4 h-3 overflow-hidden rounded-full border border-border bg-black">
           <div
-            className="h-full bg-rose-500/80"
+            className="h-full bg-gradient-to-r from-rose-600 to-rose-500 transition-all duration-500 ease-out"
             style={{
               width: `${clampedProgressWidth}%`,
             }}

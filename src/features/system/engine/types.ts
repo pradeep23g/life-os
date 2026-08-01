@@ -18,6 +18,8 @@ export type CurrentDaySnapshot = {
   deep_work_minutes_today: number
   oldest_pending_task_title: string | null
   newest_active_habit_title: string | null
+  learning_sessions_logged_7d: number
+  active_roadmaps_count: number
   snapshot_date: string
 }
 
@@ -42,9 +44,10 @@ export type UrgencyScores = {
   journal: number
   fitness: number
   deep_work: number
+  learning: number
 }
 
-export type DirectiveDomain = 'task' | 'habit' | 'journal' | 'fitness' | 'deep-work' | 'none'
+export type DirectiveDomain = 'task' | 'habit' | 'journal' | 'fitness' | 'deep-work' | 'learning' | 'none'
 
 export type DirectiveResult = {
   action: DirectiveDomain
@@ -56,6 +59,13 @@ export type DirectiveResult = {
 }
 
 export type IssueSeverity = 'critical' | 'high' | 'medium' | 'low'
+
+export type DomainSignal = {
+  issueText: string
+  momentumText: string
+  severity: IssueSeverity
+  domain: string
+}
 
 export type SystemIssue = {
   text: string

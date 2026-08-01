@@ -60,7 +60,7 @@ async function fetchSnapshotWithDeepWorkFallback() {
   const latestSelect = await supabase
     .from('current_day_snapshot')
     .select(
-      'user_id, pending_tasks_count, habits_completed_today, total_active_habits, journal_logged_today, workout_days_this_week, deep_work_minutes_today, oldest_pending_task_title, newest_active_habit_title, snapshot_date',
+      'user_id, pending_tasks_count, habits_completed_today, total_active_habits, journal_logged_today, workout_days_this_week, deep_work_minutes_today, oldest_pending_task_title, newest_active_habit_title, learning_sessions_logged_7d, active_roadmaps_count, snapshot_date',
     )
     .maybeSingle()
 

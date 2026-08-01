@@ -43,7 +43,7 @@ export function toContributionCalendarCells(
 
   return sorted.map((row) => ({
     date: row.activity_date,
-    intensity: clampIntensity(row.active_system_count, 6, 4),
+    intensity: clampIntensity(row.active_system_count, 7, 4),
     activeSystemCount: row.active_system_count,
     systems: {
       habits: row.habits_completed > 0,
@@ -52,6 +52,7 @@ export function toContributionCalendarCells(
       deepWork: row.deep_work_minutes > 0,
       workout: row.workouts_logged > 0,
       finance: row.finance_entries > 0,
+      learning: row.learning_sessions_logged > 0,
     },
   }))
 }

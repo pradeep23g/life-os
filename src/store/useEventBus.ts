@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-
+import type { Json } from '../types/database.types'
 import { supabase } from '../lib/supabase'
 
 export type EventBusType =
@@ -44,7 +44,7 @@ async function queueEventInBackground(event: EventBusEvent) {
   const { error } = await supabase.from('system_event_queue').insert({
     user_id: user.id,
     event_type: event.type,
-    payload: event.payload,
+    payload: event.payload as unknown as Json,
     created_at: event.createdAt,
   })
 

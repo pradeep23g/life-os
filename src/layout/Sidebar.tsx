@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
+import { GraduationCap } from 'lucide-react'
 
 import { useAuth } from '../lib/AuthContext'
 import { supabase } from '../lib/supabase'
@@ -38,19 +39,6 @@ function ProductivityIcon({ className = 'h-5 w-5' }: IconProps) {
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true">
       <path d="M4 6h16v12H4z" strokeLinecap="round" strokeLinejoin="round" />
       <path d="M8 10h8M8 14h5" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function ProgressIcon({ className = 'h-5 w-5' }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true">
-      <path d="M4 18h16" strokeLinecap="round" />
-      <path d="M7 15l3-3 3 2 4-5" strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx="7" cy="15" r="1" fill="currentColor" />
-      <circle cx="10" cy="12" r="1" fill="currentColor" />
-      <circle cx="13" cy="14" r="1" fill="currentColor" />
-      <circle cx="17" cy="9" r="1" fill="currentColor" />
     </svg>
   )
 }
@@ -126,7 +114,7 @@ const navItems = [
   { to: '/finance-os', label: 'Finance OS', Icon: FinanceIcon },
   { to: '/data-lab', label: 'Data Lab', Icon: DataLabIcon },
   { to: '/fitness-os', label: 'Fitness OS', Icon: FitnessIcon },
-  { to: '/progress-hub', label: 'Progress Hub', Icon: ProgressIcon },
+  { to: '/learning-os', label: 'Learning OS', Icon: GraduationCap },
 ] as const
 
 function Sidebar({ compact = false, onNavigate, onToggleDesktopExpanded, desktopExpanded = false }: SidebarProps) {

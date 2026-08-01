@@ -73,10 +73,9 @@ function AnalogClockWidget() {
           {[...Array(12)].map((_, index) => (
             <span
               key={index}
-              className="absolute left-1/2 top-1/2 block h-1 w-1 rounded-full bg-slate-400"
+              className="absolute left-1/2 top-1/2 block h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-slate-500"
               style={{
-                transform: `rotate(${index * 30}deg) translateY(-64px)`,
-                transformOrigin: 'center',
+                transform: `translate(-50%, -50%) rotate(${index * 30}deg) translateY(-54px)`,
               }}
             />
           ))}
@@ -90,7 +89,7 @@ function AnalogClockWidget() {
             style={{ transform: `translate(-50%, -100%) rotate(${minuteDegrees}deg)`, transformOrigin: 'bottom center' }}
           />
           <span
-            className="absolute left-1/2 top-1/2 block h-16 w-[2px] -translate-x-1/2 -translate-y-full rounded bg-green-400"
+            className="absolute left-1/2 top-1/2 block h-16 w-[2px] -translate-x-1/2 -translate-y-full rounded bg-emerald-400"
             style={{ transform: `translate(-50%, -100%) rotate(${secondDegrees}deg)`, transformOrigin: 'bottom center' }}
           />
           <span className="absolute left-1/2 top-1/2 block h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-slate-100" />
@@ -232,7 +231,7 @@ function JournalPage() {
   }
 
   return (
-    <section className="space-y-4 bg-black pb-24">
+    <section className="space-y-4 bg-black pb-28 sm:pb-24">
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1.2fr_1fr]">
         <article
           className="cursor-pointer rounded-xl border border-border bg-surface p-4"

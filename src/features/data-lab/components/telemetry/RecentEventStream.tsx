@@ -9,7 +9,7 @@ type RecentEventStreamProps = {
 const DOMAIN_BADGE_COLORS: Record<string, string> = {
   'mind-os': 'border-blue-800 text-blue-400',
   'productivity-hub': 'border-amber-800 text-amber-400',
-  'progress-hub': 'border-purple-800 text-purple-400',
+  'learning-os': 'border-purple-800 text-purple-400',
   'mission-control': 'border-slate-700 text-slate-400',
   'fitness-os': 'border-emerald-800 text-emerald-400',
   'time-os': 'border-cyan-800 text-cyan-400',

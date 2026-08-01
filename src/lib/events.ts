@@ -1,9 +1,10 @@
+import type { Json } from '../types/database.types'
 import { supabase } from './supabase'
 
 export type LifeOsDomain =
   | 'mind-os'
   | 'productivity-hub'
-  | 'progress-hub'
+  | 'learning-os'
   | 'mission-control'
   | 'fitness-os'
   | 'finance-os'
@@ -116,7 +117,7 @@ export async function logEventSafe(event: LifeOsEventInput): Promise<void> {
       entity_id: event.entityId ?? null,
       event_type: event.eventType,
       event_date_ist: toIndiaDateKey(createdAt),
-      payload: event.payload ?? {},
+      payload: (event.payload ?? {}) as unknown as Json,
       created_at: createdAt,
     })
 

@@ -1,27 +1,22 @@
 import { analyzeMomentum } from './analyzeMomentum'
+import {
+  getExecutionOSSignals,
+  getFitnessOSSignals,
+  getMindOSSignals,
+  getTimeOSSignals,
+  getLearningOSSignals,
+} from './domainSignals'
 import { generateDirectives } from './generateDirectives'
-import type { CurrentDaySnapshot, IssueSeverity, SystemHistoryDay, SystemIssue, SystemSignalEvent, SystemStatus } from './types'
+import type { CurrentDaySnapshot, DomainSignal, SystemHistoryDay, SystemIssue, SystemSignalEvent, SystemStatus } from './types'
 
-function isPastWednesdayInIndia() {
-  const indiaNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }))
-  const day = indiaNow.getDay()
-  return day === 0 || day > 3
-}
-
-function getIssueSeverity(issue: string): IssueSeverity {
-  if (issue.includes('No habits')) {
-    return 'critical'
-  }
-
-  if (issue.includes('pending') || issue.includes('Execution is slipping')) {
-    return 'high'
-  }
-
-  if (issue.includes('journal')) {
-    return 'medium'
-  }
-
-  return 'low'
+function collectDomainSignals(snapshot: CurrentDaySnapshot): DomainSignal[] {
+  return [
+    ...getMindOSSignals(snapshot),
+    ...getExecutionOSSignals(snapshot),
+    ...getFitnessOSSignals(snapshot),
+    ...getTimeOSSignals(snapshot),
+    ...getLearningOSSignals(snapshot),
+  ]
 }
 
 function detectIssues(snapshot: CurrentDaySnapshot | null | undefined): SystemIssue[] {
@@ -29,37 +24,11 @@ function detectIssues(snapshot: CurrentDaySnapshot | null | undefined): SystemIs
     return [{ text: 'System snapshot unavailable', severity: 'low' }]
   }
 
-  const issues: string[] = []
+  const signals = collectDomainSignals(snapshot)
 
-  if (snapshot.total_active_habits <= 0) {
-    issues.push('No habits active')
-  } else if (snapshot.habits_completed_today <= 0) {
-    issues.push('Habit system inactive today')
-  }
-
-  if (snapshot.pending_tasks_count > 0) {
-    issues.push(`${snapshot.pending_tasks_count} pending tasks`)
-  }
-
-  if (!snapshot.journal_logged_today) {
-    issues.push('Low awareness: journal not logged today')
-  }
-
-  if (snapshot.workout_days_this_week < 2) {
-    issues.push('Low physical activity this week')
-  }
-
-  if (snapshot.workout_days_this_week === 0 && isPastWednesdayInIndia()) {
-    issues.push('Execution is slipping: no workouts logged yet this week')
-  }
-
-  if (snapshot.deep_work_minutes_today < 60) {
-    issues.push(`Low deep work today (${snapshot.deep_work_minutes_today} mins)`)
-  }
-
-  return issues.map((issue) => ({
-    text: issue,
-    severity: getIssueSeverity(issue),
+  return signals.map((signal) => ({
+    text: signal.issueText,
+    severity: signal.severity,
   }))
 }
 
@@ -68,35 +37,8 @@ function buildMomentumExplanation(snapshot: CurrentDaySnapshot | null | undefine
     return ['System snapshot unavailable']
   }
 
-  const reasons: string[] = []
-
-  if (snapshot.total_active_habits <= 0) {
-    reasons.push('No habits active')
-  } else if (snapshot.habits_completed_today <= 0) {
-    reasons.push('No habit completed today')
-  }
-
-  if (snapshot.pending_tasks_count > 1) {
-    reasons.push(`${snapshot.pending_tasks_count} pending tasks remain`)
-  } else if (snapshot.pending_tasks_count === 1) {
-    reasons.push('Only 1 task in progress')
-  }
-
-  if (!snapshot.journal_logged_today) {
-    reasons.push('Journal reflection missing today')
-  }
-
-  if (snapshot.workout_days_this_week < 2) {
-    reasons.push('Physical consistency is below target')
-  }
-
-  if (snapshot.workout_days_this_week === 0 && isPastWednesdayInIndia()) {
-    reasons.push('No workouts logged and the week is already past Wednesday')
-  }
-
-  if (snapshot.deep_work_minutes_today < 60) {
-    reasons.push(`Deep work is below target (${snapshot.deep_work_minutes_today} mins)`)
-  }
+  const signals = collectDomainSignals(snapshot)
+  const reasons = signals.map((signal) => signal.momentumText)
 
   return reasons.length ? reasons : ['Execution baseline looks stable']
 }

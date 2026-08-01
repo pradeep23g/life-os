@@ -18,9 +18,10 @@ import {
   useUpdateHabitBreakReason,
   useUpdateRecoveryCommitment,
 } from '../api/useHabits'
-import { addDays, buildMonthGrid, formatIndiaDate, formatIndiaDateTime, getMonthLabel, getTodayIndiaDateKey, shiftMonth } from '../utils/date'
-
-const weekdayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const
+import { HabitCreateModal } from './components/HabitCreateModal'
+import { HabitCalendarModal } from './components/HabitCalendarModal'
+import { RecentMistakesModal } from './components/RecentMistakesModal'
+import { addDays, buildMonthGrid, formatIndiaDate, formatIndiaDateTime, getTodayIndiaDateKey } from '../utils/date'
 
 const recoveryPromptChips = ['Stress spike', 'Sleep drop', 'Unexpected work', 'Travel disruption', 'Focus drift'] as const
 
@@ -67,13 +68,6 @@ function PlusIcon({ className = 'h-5 w-5' }: { className?: string }) {
   )
 }
 
-function CloseIcon({ className = 'h-5 w-5' }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true">
-      <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
-    </svg>
-  )
-}
 
 function ChevronIcon({ expanded, className = 'h-4 w-4' }: { expanded: boolean; className?: string }) {
   return (
@@ -932,48 +926,11 @@ function HabitsPage() {
         </article>
       </section>
 
-      {isRecentMistakesOpen ? (
-        <div className="fixed inset-0 z-40 flex items-center justify-center p-3">
-          <button
-            type="button"
-            onClick={() => setIsRecentMistakesOpen(false)}
-            className="absolute inset-0 bg-black/85"
-            aria-label="Close missed habits modal"
-          />
-
-          <article className="relative z-10 max-h-[85vh] w-[96vw] max-w-3xl overflow-auto rounded-xl border border-border bg-surface p-4 sm:p-6">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <h3 className="text-base font-semibold text-slate-100">Missed Habits (Last 5 Days)</h3>
-                <p className="text-xs text-slate-400">Full list of streak losses recorded in the past 5 days.</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsRecentMistakesOpen(false)}
-                className="rounded-md border border-[#333333] px-2 py-1 text-sm text-slate-100 hover:bg-[#222222]"
-              >
-                Close
-              </button>
-            </div>
-
-            {recentFiveDayMistakes.length === 0 ? (
-              <p className="mt-4 text-sm text-slate-400">No missed habits in the last 5 days.</p>
-            ) : (
-              <ul className="mt-4 space-y-2">
-                {recentFiveDayMistakes.map((mistake) => (
-                  <li key={`recent-${mistake.id}`} className="rounded-md border border-border bg-[#111111] p-3">
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="text-sm font-semibold text-slate-100">{mistake.habitTitle}</p>
-                      <span className="text-xs text-slate-400">{formatIndiaDate(mistake.break_date)}</span>
-                    </div>
-                    <p className="mt-1 text-xs text-slate-300">{mistake.reason || 'No reason added.'}</p>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </article>
-        </div>
-      ) : null}
+      <RecentMistakesModal
+        isOpen={isRecentMistakesOpen}
+        onClose={() => setIsRecentMistakesOpen(false)}
+        mistakes={recentFiveDayMistakes}
+      />
 
       <button
         type="button"
@@ -999,234 +956,45 @@ function HabitsPage() {
         </article>
       ) : null}
 
-      {isCreateModalOpen ? (
-        <div className="fixed inset-0 z-40 flex items-center justify-center p-3">
-          <button
-            type="button"
-            onClick={() => setIsCreateModalOpen(false)}
-            className="absolute inset-0 bg-black/85"
-            aria-label="Close create habit modal"
-          />
+      <HabitCreateModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        title={title}
+        setTitle={setTitle}
+        habitType={habitType}
+        setHabitType={setHabitType}
+        targetValue={targetValue}
+        setTargetValue={setTargetValue}
+        unit={unit}
+        setUnit={setUnit}
+        onSubmit={handleCreateHabit}
+        isCreating={isCreatingHabit}
+        createError={createHabitError}
+      />
 
-          <article className="relative z-10 h-[88vh] w-[96vw] max-w-4xl overflow-auto rounded-xl border border-border bg-surface p-4 sm:p-6">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <h2 className="text-base font-semibold text-slate-100">Create Habit</h2>
-                <p className="text-sm text-slate-400">Set up binary or target habits in a focused creation flow.</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsCreateModalOpen(false)}
-                className="flex h-9 w-9 items-center justify-center rounded-md border border-[#333333] bg-[#111111] text-slate-100 hover:bg-[#222222]"
-                aria-label="Close"
-              >
-                <CloseIcon />
-              </button>
-            </div>
-
-            <form onSubmit={handleCreateHabit} className="mt-4 space-y-4">
-              <label className="block text-sm text-slate-300">
-                Habit title
-                <input
-                  value={title}
-                  onChange={(event) => setTitle(event.target.value)}
-                  placeholder="Read 20 pages"
-                  className="mt-1 w-full rounded-md border border-[#333333] bg-[#111111] px-3 py-2 text-sm text-slate-100"
-                />
-              </label>
-
-              <label className="block text-sm text-slate-300">
-                Habit type
-                <select
-                  value={habitType}
-                  onChange={(event) => setHabitType(event.target.value as HabitType)}
-                  className="mt-1 w-full rounded-md border border-[#333333] bg-[#111111] px-3 py-2 text-sm text-slate-100"
-                >
-                  <option value="binary">Binary (done / not done)</option>
-                  <option value="target">Target habit (count based)</option>
-                </select>
-              </label>
-
-              {habitType === 'target' ? (
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  <label className="block text-sm text-slate-300">
-                    Goal count
-                    <input
-                      type="number"
-                      min={1}
-                      value={targetValue}
-                      onChange={(event) => setTargetValue(event.target.value)}
-                      className="mt-1 w-full rounded-md border border-[#333333] bg-[#111111] px-3 py-2 text-sm text-slate-100"
-                    />
-                  </label>
-
-                  <label className="block text-sm text-slate-300">
-                    Unit (optional)
-                    <input
-                      value={unit}
-                      onChange={(event) => setUnit(event.target.value)}
-                      placeholder="pages"
-                      className="mt-1 w-full rounded-md border border-[#333333] bg-[#111111] px-3 py-2 text-sm text-slate-100"
-                    />
-                  </label>
-                </div>
-              ) : null}
-
-              {createHabitError ? (
-                <p className="text-sm text-red-400">Failed to create habit: {getReadableErrorMessage(createHabitError)}</p>
-              ) : null}
-
-              <button
-                type="submit"
-                disabled={isCreatingHabit || title.trim().length === 0}
-                className="w-full rounded-md border border-[#333333] bg-[#111111] px-4 py-2 text-sm text-slate-100 hover:bg-[#222222] disabled:opacity-60"
-              >
-                {isCreatingHabit ? 'Creating...' : 'Create Habit'}
-              </button>
-            </form>
-          </article>
-        </div>
-      ) : null}
-
-      {calendarHabitId && selectedHabit ? (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/85 p-3">
-          <section className="h-[92vh] w-[96vw] max-w-6xl overflow-auto rounded-xl border border-border bg-surface p-4">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <h3 className="text-base font-semibold text-slate-100">{selectedHabit.title} Calendar</h3>
-                <p className="text-xs text-slate-400">Yellow: done • Red: streak break • Blue: healed break</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setCalendarHabitId(null)}
-                className="rounded-md border border-[#333333] px-3 py-1 text-sm text-slate-100 hover:bg-[#111111]"
-              >
-                Close
-              </button>
-            </div>
-
-            {selectedHabit.habit_type === 'target' ? (
-              <div className="mt-3 rounded-lg border border-border bg-surface/70 p-3">
-                <p className="text-sm text-slate-200">Set today's count (keyboard input)</p>
-                <p className="text-xs text-slate-400">This updates only today and does not modify historical entries.</p>
-                <div className="mt-2 flex flex-wrap items-center gap-2">
-                  <input
-                    type="number"
-                    min={0}
-                    value={calendarCountInput}
-                    onChange={(event) => setCalendarCountInput(event.target.value)}
-                    className="h-9 w-32 rounded-md border border-[#333333] bg-[#111111] px-2 text-sm text-slate-100"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleSetCalendarCount}
-                    disabled={isSettingCount}
-                    className="h-9 rounded-md border border-[#333333] bg-[#111111] px-3 text-sm text-slate-100 hover:bg-[#222222] disabled:opacity-60"
-                  >
-                    {isSettingCount ? 'Saving...' : 'Set'}
-                  </button>
-                  <p className="text-xs text-slate-400">
-                    Current: {selectedHabit.todayValue} / Goal: {selectedHabit.target_value} {selectedHabit.unit ?? 'units'}
-                  </p>
-                </div>
-                {setCountError ? <p className="mt-2 text-xs text-red-400">Failed to set count: {getReadableErrorMessage(setCountError)}</p> : null}
-              </div>
-            ) : null}
-
-            <div className="mt-3 flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() => setCalendarFilters((previous) => ({ ...previous, done: !previous.done }))}
-                className={`rounded-full border px-3 py-1 text-xs ${
-                  calendarFilters.done
-                    ? 'border-amber-400/70 bg-amber-400/20 text-amber-100'
-                    : 'border-[#333333] bg-surface text-slate-300'
-                }`}
-              >
-                Done
-              </button>
-              <button
-                type="button"
-                onClick={() => setCalendarFilters((previous) => ({ ...previous, break: !previous.break }))}
-                className={`rounded-full border px-3 py-1 text-xs ${
-                  calendarFilters.break
-                    ? 'border-red-500/70 bg-red-500/20 text-red-100'
-                    : 'border-[#333333] bg-surface text-slate-300'
-                }`}
-              >
-                Break
-              </button>
-              <button
-                type="button"
-                onClick={() => setCalendarFilters((previous) => ({ ...previous, healed: !previous.healed }))}
-                className={`rounded-full border px-3 py-1 text-xs ${
-                  calendarFilters.healed
-                    ? 'border-sky-500/70 bg-sky-500/20 text-sky-100'
-                    : 'border-[#333333] bg-surface text-slate-300'
-                }`}
-              >
-                Healed
-              </button>
-            </div>
-
-            <div className="mt-4 flex items-center justify-between">
-              <button
-                type="button"
-                onClick={() => setCalendarMonth((previous) => shiftMonth(previous, -1))}
-                className="rounded-md border border-[#333333] px-3 py-1 text-sm text-slate-100 hover:bg-[#111111]"
-              >
-                Previous
-              </button>
-              <p className="text-base font-semibold text-slate-200">{getMonthLabel(calendarMonth)}</p>
-              <button
-                type="button"
-                onClick={() => setCalendarMonth((previous) => shiftMonth(previous, 1))}
-                className="rounded-md border border-[#333333] px-3 py-1 text-sm text-slate-100 hover:bg-[#111111]"
-              >
-                Next
-              </button>
-            </div>
-
-            <div className="mt-4 grid grid-cols-7 gap-2 text-center text-xs text-slate-400">
-              {weekdayHeaders.map((weekday) => (
-                <p key={weekday}>{weekday}</p>
-              ))}
-            </div>
-
-            <div className="mt-2 grid grid-cols-7 gap-2">
-              {monthCells.map((day) => {
-                const showHeal = calendarFilters.healed && calendarHealDates.has(day.dateKey)
-                const showBreak = calendarFilters.break && calendarBreakDates.has(day.dateKey)
-                const showDone = calendarFilters.done && calendarCompletionDates.has(day.dateKey)
-
-                let toneClass = 'border-border bg-[#111111] text-slate-300'
-                if (showHeal) {
-                  toneClass = 'border-sky-500/60 bg-sky-500/20 text-sky-100'
-                } else if (showBreak) {
-                  toneClass = 'border-red-500/60 bg-red-500/20 text-red-100'
-                } else if (showDone) {
-                  toneClass = 'border-amber-400/70 bg-amber-300/20 text-amber-100'
-                }
-
-                const logValue = data.logValueByHabitDate[`${selectedHabit.id}:${day.dateKey}`] ?? 0
-
-                return (
-                  <div
-                    key={day.dateKey}
-                    className={`rounded-md border p-2 text-left ${toneClass} ${day.inCurrentMonth ? '' : 'opacity-40'}`}
-                  >
-                    <p className="text-sm font-semibold">{day.day}</p>
-                    {selectedHabit.habit_type === 'target' && logValue > 0 ? <p className="mt-1 text-[11px]">Count: {logValue}</p> : null}
-                  </div>
-                )
-              })}
-            </div>
-          </section>
-        </div>
-      ) : null}
+      <HabitCalendarModal
+        isOpen={Boolean(calendarHabitId && selectedHabit)}
+        onClose={() => setCalendarHabitId(null)}
+        selectedHabit={selectedHabit}
+        calendarCountInput={calendarCountInput}
+        setCalendarCountInput={setCalendarCountInput}
+        onSetCalendarCount={handleSetCalendarCount}
+        isSettingCount={isSettingCount}
+        setCountError={setCountError}
+        calendarFilters={calendarFilters}
+        setCalendarFilters={setCalendarFilters}
+        calendarMonth={calendarMonth}
+        setCalendarMonth={setCalendarMonth}
+        monthCells={monthCells}
+        calendarHealDates={calendarHealDates}
+        calendarBreakDates={calendarBreakDates}
+        calendarCompletionDates={calendarCompletionDates}
+        logValueByHabitDate={data.logValueByHabitDate}
+      />
     </section>
   )
 }
 
 export default HabitsPage
+
 

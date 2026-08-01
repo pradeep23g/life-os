@@ -14,12 +14,12 @@ export const productivityWeeklyPlanItemsQueryKey = (weekStartDate: string) =>
 export type WeeklyPlan = {
   id: string
   user_id: string
-  focus_text: string
+  focus_text: string | null
   week_start_date: string
   created_at: string
 }
 
-export type GoalDomain = 'mind-os' | 'productivity-hub' | 'progress-hub' | 'fitness-os' | 'finance-os'
+export type GoalDomain = 'mind-os' | 'productivity-hub' | 'learning-os' | 'fitness-os' | 'finance-os' | 'progress-hub'
 export type GoalStatus = 'active' | 'paused' | 'completed'
 export type PlanItemPriority = 'Low' | 'Medium' | 'High'
 export type PlanItemStatus = 'Planned' | 'Doing' | 'Done' | 'Dropped'
@@ -271,7 +271,11 @@ async function fetchGoals(): Promise<Goal[]> {
     throw new Error(`Failed to fetch goals: ${extractErrorMessage(error)}`)
   }
 
-  return data ?? []
+  return (data ?? []).map((goal) => ({
+    ...goal,
+    status: goal.status as GoalStatus,
+    domain: goal.domain as GoalDomain,
+  }))
 }
 
 async function createGoal({ title, domain, targetDate, notes }: CreateGoalInput): Promise<void> {

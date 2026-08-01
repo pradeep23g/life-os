@@ -58,7 +58,7 @@ function getDailyInsight(workoutsByDate: Record<string, Workout[]>, dateKey: str
   return {
     date: dateKey,
     workoutCount: workouts.length,
-    minutes: workouts.reduce((total, workout) => total + Math.max(0, workout.duration_minutes), 0),
+    minutes: workouts.reduce((total, workout) => total + Math.max(0, workout.duration_minutes ?? 0), 0),
   }
 }
 
@@ -132,7 +132,7 @@ function FitnessOsDashboard() {
   }, [maxHeatmapMinutes])
 
   return (
-    <section className="space-y-4">
+    <section className="space-y-4 pb-28 sm:pb-24">
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         <article className="min-h-[120px] rounded-xl border border-border bg-surface p-3 sm:p-4">
           <p className="text-sm font-medium text-slate-400">Workouts This Week</p>
@@ -215,7 +215,7 @@ function FitnessOsDashboard() {
         <article className="rounded-xl border border-border bg-surface p-4">
           <h2 className="text-base font-semibold text-slate-100">90-Day Effort Heatmap</h2>
           <p className="mt-1 text-xs text-slate-400">Intensity is based on session minutes per day.</p>
-          <div className="mt-4 w-full overflow-x-auto pb-2">
+          <div className="mt-4 w-full overflow-x-auto pb-6">
             <div className="flex min-w-max gap-2">
               <div className="flex flex-col justify-between pt-[2px] pb-[2px] text-[10px] text-slate-500 mr-1 h-[142px]">
                 {Array.from({ length: 7 }, (_, index) => (
@@ -250,7 +250,7 @@ function FitnessOsDashboard() {
                 <div key={i} className="flex flex-col items-center group relative">
                   <span className={`h-[14px] w-[14px] rounded-sm border ${getHeatmapLevelClass(threshold, maxHeatmapMinutes)}`} />
                   {threshold > 0 ? (
-                    <span className="absolute top-full mt-1 text-[9px] opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                    <span className="absolute bottom-full mb-1 text-[9px] bg-black border border-border px-1 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
                       {threshold}m{i === legendThresholds.length - 1 ? '+' : ''}
                     </span>
                   ) : null}

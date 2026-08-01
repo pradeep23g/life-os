@@ -284,7 +284,7 @@ Behavioral spending ledger. (Migrated from legacy `finance_transactions`.)
 | `amount` | `numeric` | Transaction amount |
 | `type` | `text` | `'expense'` (future: `'income'`) |
 | `category` | `text` | Spending category |
-| `is_need` | `boolean` | Not currently present (defensive handling in UI) |
+| `is_need` | `boolean` | Need/want classification (nullable) |
 | `note` | `text` | Optional description |
 | `timestamp` | `timestamptz` | Transaction time |
 | `created_at` | `timestamptz` | |
@@ -355,9 +355,44 @@ All views use `security_invoker = true` and `auth.uid()` for RLS. They return fa
 | View | Window | Description |
 |---|---|---|
 | `data_lab_daily_activity_90d` | 90 days | Per-day: all domain activity counts (habits, journal, tasks, focus, workouts, finance) |
-| `data_lab_weekly_system_score_12w` | 12 weeks | Per-week: all domain day counts, totals, and `weekly_system_score` |
-| `data_lab_module_consistency_30d` | 30 days | Per-module: active days and consistency percentage |
+| `data_lab_weekly_system_score_12w` | 12 weeks | Per-week: all domain day counts, totals, and `weekly_system_score` (weighted from signal config) |
+| `data_lab_module_consistency_30d` | 30 days | Per-module: active days and consistency percentage (reads from signal views + config) |
 | `data_lab_event_coverage_30d` | 30 days | Per event type: count, active days, date range |
+
+### Signal Views
+
+Signal views are thin wrappers on `data_lab_daily_activity_90d`, each following a fixed contract:
+
+| Column | Type | Meaning |
+|---|---|---|
+| `user_id` | `uuid` | |
+| `activity_date` | `date` | Asia/Kolkata-bucketed |
+| `was_active` | `boolean` | Did this signal have meaningful activity that day |
+| `magnitude` | `integer`/`numeric` | A single "how much" number (domain-defined) |
+| `metrics` | `jsonb` | Domain-specific detail |
+
+| View | Signal Key | `was_active` source | `magnitude` |
+|---|---|---|---|
+| `data_lab_signal_mind_habits` | `mind-habits` | `habits_completed > 0` | `habits_completed` |
+| `data_lab_signal_mind_journal` | `mind-journal` | `journal_entries > 0` | `journal_entries` |
+| `data_lab_signal_execution_tasks` | `execution-tasks` | `tasks_completed > 0` | `tasks_completed` |
+| `data_lab_signal_time_os` | `time-os` | `deep_work_minutes > 0` | `deep_work_minutes` |
+| `data_lab_signal_fitness_os` | `fitness-os` | `workouts_logged > 0` | `workouts_logged` |
+| `data_lab_signal_finance_os` | `finance-os` | `finance_entries > 0` | `finance_entries` |
+
+### Signal Configuration
+
+#### `public.data_lab_signal_config`
+
+Domain/signal configuration for Data Lab scoring and consistency views.
+
+| Column | Type | Notes |
+|---|---|---|
+| `signal_key` | `text` | Primary key (e.g. `mind-habits`) |
+| `display_name` | `text` | UI label (e.g. "Mind / Habits") |
+| `weight_percent` | `numeric` | Share of weekly system score |
+| `weight_cap_days` | `int` | Day-cap for scoring (7 for most, 4 for workouts) |
+| `is_active` | `boolean` | Soft-disable without migration |
 
 ---
 
@@ -387,3 +422,5 @@ All views use `security_invoker = true` and `auth.uid()` for RLS. They return fa
 | `202606200001_data_integrity_indexes.sql` | Performance indexes |
 | `202606200002_data_lab_base_views.sql` | All Data Lab SQL views |
 | `202606230001_database_cleanup.sql` | Finance migration, task schema overhaul, view recreation |
+| `202607270001_signal_views.sql` | Signal config table, six signal views, Finance `is_need` restoration, daily activity view rebuild |
+| `202607270002_signal_cutover.sql` | Rebuild module consistency and weekly score views to use signal views + config table |

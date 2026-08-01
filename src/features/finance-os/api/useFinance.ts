@@ -236,7 +236,39 @@ async function fetchTransactions(): Promise<FinanceTransactionsResult> {
 }
 
 async function insertTransactionAttempt(attempt: TransactionInsertAttempt): Promise<string | null> {
-  const { data, error } = await supabase.from(attempt.table).insert(attempt.payload).select('id').single()
+  let data: { id: string } | null = null
+  let error: unknown = null
+
+  if (attempt.table === 'finance_transactions') {
+    const res = await supabase
+      .from('finance_transactions')
+      .insert({
+        amount: Number(attempt.payload.amount ?? 0),
+        category: String(attempt.payload.category ?? ''),
+        is_need: Boolean(attempt.payload.is_need ?? true),
+        note: (attempt.payload.note as string) ?? null,
+        user_id: String(attempt.payload.user_id ?? ''),
+      })
+      .select('id')
+      .single()
+    data = res.data
+    error = res.error
+  } else {
+    const res = await supabase
+      .from('transactions')
+      .insert({
+        amount: Number(attempt.payload.amount ?? 0),
+        category: String(attempt.payload.category ?? ''),
+        type: attempt.payload.type === 'income' ? 'income' : 'expense',
+        user_id: String(attempt.payload.user_id ?? ''),
+        is_need: attempt.payload.is_need as boolean | null,
+        timestamp: attempt.payload.timestamp as string | undefined,
+      })
+      .select('id')
+      .single()
+    data = res.data
+    error = res.error
+  }
 
   if (error) {
     const missingColumnNames = ['transaction_type', 'created_at', 'note', 'type', 'timestamp', 'is_need']
@@ -250,7 +282,7 @@ async function insertTransactionAttempt(attempt: TransactionInsertAttempt): Prom
     throw buildError(`Failed to add finance transaction via ${attempt.table}`, error)
   }
 
-  return data.id
+  return data?.id ?? null
 }
 
 async function addTransaction({ amount, category, transactionType, note }: AddTransactionInput): Promise<void> {

@@ -13,6 +13,37 @@ export type DataLabDailyActivity = {
   activity_date: string
   active_habits: number
   habits_completed: number
+  habit_completion_percent: number
+  journal_entries: number
+  avg_mood: number
+  tasks_created: number
+  tasks_completed: number
+  total_focus_minutes: number
+  deep_work_minutes: number
+  focus_sessions: number
+  workouts_logged: number
+  workout_minutes: number
+  finance_entries: number
+  total_spent: number
+  need_spent: number
+  want_spent: number
+  learning_sessions_logged: number
+  active_system_count: number
+}
+
+export type DataLabWeeklyScore = {
+  user_id: string
+  week_start_date: string
+  days_observed: number
+  habit_active_days: number
+  journal_days: number
+  task_completion_days: number
+  deep_work_days: number
+  workout_days: number
+  finance_logged_days: number
+  learning_logged_days: number
+  habits_completed: number
+  avg_habit_completion_percent: number
   journal_entries: number
   avg_mood: number
   tasks_created: number
@@ -21,35 +52,11 @@ export type DataLabDailyActivity = {
   deep_work_minutes: number
   workouts_logged: number
   workout_minutes: number
-  finance_entries: number
   total_spent: number
   need_spent: number
   want_spent: number
-  active_system_count: number
-}
-
-export type DataLabWeeklyScore = {
-  user_id: string
-  week_start_date: string
-  days_observed: number
-  habit_days: number
-  journal_days: number
-  task_days: number
-  deep_work_days: number
-  workout_days: number
-  avg_active_system_count: number
-  habits_completed: number
-  journal_entries: number
-  tasks_created: number
-  tasks_completed: number
-  total_focus_minutes: number
-  deep_work_minutes: number
-  workouts_logged: number
-  workout_minutes: number
-  finance_entries: number
-  total_spent: number
-  need_spent: number
-  want_spent: number
+  avg_active_systems: number
+  events_logged: number
   weekly_system_score: number
 }
 
@@ -130,7 +137,7 @@ async function fetchDataLabDailyActivity(): Promise<DataLabDailyActivity[]> {
   const { data, error } = await supabase
     .from('data_lab_daily_activity_90d')
     .select(
-      'user_id, activity_date, active_habits, habits_completed, journal_entries, avg_mood, tasks_created, tasks_completed, total_focus_minutes, deep_work_minutes, workouts_logged, workout_minutes, finance_entries, total_spent, need_spent, want_spent, active_system_count',
+      'user_id, activity_date, active_habits, habits_completed, habit_completion_percent, journal_entries, avg_mood, tasks_created, tasks_completed, total_focus_minutes, deep_work_minutes, focus_sessions, workouts_logged, workout_minutes, finance_entries, total_spent, need_spent, want_spent, learning_sessions_logged, active_system_count',
     )
     .order('activity_date', { ascending: false })
 
@@ -160,7 +167,7 @@ async function fetchDataLabWeeklyScore(): Promise<DataLabWeeklyScore[]> {
   const { data, error } = await supabase
     .from('data_lab_weekly_system_score_12w')
     .select(
-      'user_id, week_start_date, days_observed, habit_days, journal_days, task_days, deep_work_days, workout_days, avg_active_system_count, habits_completed, journal_entries, tasks_created, tasks_completed, total_focus_minutes, deep_work_minutes, workouts_logged, workout_minutes, finance_entries, total_spent, need_spent, want_spent, weekly_system_score',
+      'user_id, week_start_date, days_observed, habit_active_days, journal_days, task_completion_days, deep_work_days, workout_days, finance_logged_days, learning_logged_days, habits_completed, avg_habit_completion_percent, journal_entries, avg_mood, tasks_created, tasks_completed, total_focus_minutes, deep_work_minutes, workouts_logged, workout_minutes, total_spent, need_spent, want_spent, avg_active_systems, events_logged, weekly_system_score',
     )
     .order('week_start_date', { ascending: false })
 
@@ -172,14 +179,18 @@ async function fetchDataLabWeeklyScore(): Promise<DataLabWeeklyScore[]> {
     throw buildError('Failed to fetch Data Lab weekly score', error)
   }
 
-  return ((data ?? []) as Array<Omit<DataLabWeeklyScore, 'avg_active_system_count' | 'total_spent' | 'need_spent' | 'want_spent'> & {
-    avg_active_system_count: number | string
+  return ((data ?? []) as Array<Omit<DataLabWeeklyScore, 'avg_habit_completion_percent' | 'avg_mood' | 'avg_active_systems' | 'total_spent' | 'need_spent' | 'want_spent'> & {
+    avg_habit_completion_percent: number | string
+    avg_mood: number | string
+    avg_active_systems: number | string
     total_spent: number | string
     need_spent: number | string
     want_spent: number | string
   }>).map((row) => ({
     ...row,
-    avg_active_system_count: Number(row.avg_active_system_count),
+    avg_habit_completion_percent: Number(row.avg_habit_completion_percent),
+    avg_mood: Number(row.avg_mood),
+    avg_active_systems: Number(row.avg_active_systems),
     total_spent: Number(row.total_spent),
     need_spent: Number(row.need_spent),
     want_spent: Number(row.want_spent),

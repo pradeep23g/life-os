@@ -23,14 +23,14 @@ function MissionControl() {
   }
 
   return (
-    <section className="space-y-10 bg-black pb-24">
+    <section className="space-y-10 bg-black pb-28 sm:pb-24">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="mb-1 font-mono text-xs tracking-widest text-slate-500 uppercase">Life OS</p>
           <h1 className="text-2xl font-semibold text-slate-100">Mission Control</h1>
         </div>
         <div className="mt-1 font-mono text-xs tracking-widest text-slate-500 uppercase">
-          {new Date().toISOString().split('T')[0]} // Snapshot 00:00
+          {new Date().toISOString().split('T')[0]} • Snapshot 00:00
         </div>
       </header>
 
@@ -41,17 +41,21 @@ function MissionControl() {
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
           {systems.map((sys) => (
             <div key={sys.id} className="rounded-lg border border-border bg-surface p-3">
-              <div className="mb-1 flex items-center justify-between">
-                <p className="text-xs font-medium text-slate-400">{sys.name}</p>
-                <span className={`h-1 w-1 rounded-full ${
-                  sys.status === 'Healthy'
-                    ? 'bg-green-500'
-                    : sys.status === 'Needs Input'
-                      ? 'bg-blue-500'
-                      : sys.status === 'Warning'
-                        ? 'bg-yellow-500'
-                        : 'bg-red-500'
-                }`} />
+              <div className="mb-1 flex items-center justify-between gap-2">
+                <p className="text-xs font-medium text-slate-300 truncate">{sys.name}</p>
+                <span
+                  title={sys.status}
+                  aria-label={`Status: ${sys.status}`}
+                  className={`h-2 w-2 shrink-0 rounded-full ${
+                    sys.status === 'Healthy'
+                      ? 'bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.5)]'
+                      : sys.status === 'Needs Input'
+                        ? 'bg-blue-500 shadow-[0_0_6px_rgba(59,130,246,0.5)]'
+                        : sys.status === 'Warning'
+                          ? 'bg-amber-500 shadow-[0_0_6px_rgba(245,158,11,0.5)]'
+                          : 'bg-rose-500 shadow-[0_0_6px_rgba(244,63,94,0.5)]'
+                  }`}
+                />
               </div>
               <p className="mt-1 truncate text-xs text-slate-500">{sys.activity}</p>
             </div>

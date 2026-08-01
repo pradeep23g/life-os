@@ -128,6 +128,7 @@ export type CalendarCell = {
     deepWork: boolean
     workout: boolean
     finance: boolean
+    learning: boolean
   }
 }
 

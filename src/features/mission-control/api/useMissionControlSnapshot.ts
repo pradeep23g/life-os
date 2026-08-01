@@ -3,7 +3,7 @@ import { useEventsAnalytics } from '../../../lib/useEventsAnalytics'
 import { useFitnessWeeklySummary } from '../../fitness-os/api/useFitness'
 import { useHabitWorkspace } from '../../mind-os/api/useHabits'
 import { useJournal } from '../../mind-os/api/useJournal'
-import { useChallenges, useMilestones } from '../../progress-hub/api/useProgress'
+import { useRoadmaps } from '../../learning-os/api/useLearningOS'
 import { useTasks } from '../../productivity-hub/api/useTasks'
 import { useSystemStatus } from '../../system/api/useSystemStatus'
 import { useTimeAnalytics } from '../../time-os/api/useTimeAnalytics'
@@ -17,8 +17,7 @@ export function useMissionControlSnapshot(): MissionControlSnapshot {
   const { data: habitData, isLoading: habitsLoading, isError: habitsError } = useHabitWorkspace()
   const { data: tasks = [], isLoading: tasksLoading, isError: tasksError } = useTasks()
   const { data: journals = [] } = useJournal()
-  useMilestones() // Not used in evaluator currently
-  const { data: challenges = [] } = useChallenges()
+  const { data: roadmaps = [] } = useRoadmaps()
   const { data: eventsAnalytics } = useEventsAnalytics()
   const { data: fitnessSummary } = useFitnessWeeklySummary()
   const { data: timeAnalytics } = useTimeAnalytics()
@@ -32,8 +31,8 @@ export function useMissionControlSnapshot(): MissionControlSnapshot {
   const activeHabitsCount = habitData?.habits.length ?? 0
   const completedHabitsCount = habitData?.habits.filter((h) => h.completedToday).length ?? 0
   const pendingTasksCount = tasks.filter((t) => !t.is_completed).length
-  const activeChallengesCount = challenges.filter((c) => c.status === 'Active').length
-  const completedChallengesCount = challenges.filter((c) => c.status === 'Completed').length
+  const activeRoadmapsCount = roadmaps.filter((r) => r.status === 'active').length
+  const completedRoadmapsCount = roadmaps.filter((r) => r.status === 'completed').length
   const workoutCompleted = fitnessSummary?.activeWorkoutDaysThisWeek ? fitnessSummary.activeWorkoutDaysThisWeek > 0 : false // Simplify for evaluation
   const deepWorkMinutes = timeAnalytics?.todayDistribution.find((d) => d.bucket === 'Deep Work')?.minutes ?? 0
   const consistencyPercent = eventsAnalytics?.consistencyPercent ?? 0
@@ -48,13 +47,13 @@ export function useMissionControlSnapshot(): MissionControlSnapshot {
     workoutCompleted,
     financeAvailable,
     financeSpent,
-    activeChallengesCount,
-    completedChallengesCount,
+    activeRoadmapsCount,
+    completedRoadmapsCount,
     consistencyPercent,
   }), [
     pendingTasksCount, activeHabitsCount, completedHabitsCount, deepWorkMinutes, 
-    workoutCompleted, financeAvailable, financeSpent, activeChallengesCount, 
-    completedChallengesCount, consistencyPercent
+    workoutCompleted, financeAvailable, financeSpent, activeRoadmapsCount, 
+    completedRoadmapsCount, consistencyPercent
   ])
 
   const systems = useMemo(() => evaluateSystemStatuses({
@@ -65,13 +64,13 @@ export function useMissionControlSnapshot(): MissionControlSnapshot {
     workoutCompleted,
     financeAvailable,
     financeSpent,
-    activeChallengesCount,
-    completedChallengesCount,
+    activeRoadmapsCount,
+    completedRoadmapsCount,
     consistencyPercent,
   }), [
     pendingTasksCount, activeHabitsCount, completedHabitsCount, deepWorkMinutes, 
-    workoutCompleted, financeAvailable, financeSpent, activeChallengesCount, 
-    completedChallengesCount, consistencyPercent
+    workoutCompleted, financeAvailable, financeSpent, activeRoadmapsCount, 
+    completedRoadmapsCount, consistencyPercent
   ])
 
   const metrics: MetricCard[] = useMemo(() => {

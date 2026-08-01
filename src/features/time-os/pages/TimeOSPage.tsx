@@ -83,7 +83,7 @@ function TimeOSPage() {
   const linkableTasks = useMemo(() => tasks.filter((task) => !task.is_completed), [tasks])
 
   return (
-    <section className="space-y-4">
+    <section className="space-y-4 pb-28 sm:pb-24">
       <article className="rounded-xl border border-border bg-surface p-4">
         <h2 className="text-base font-semibold text-slate-100">Time OS</h2>
         <p className="mt-1 text-sm text-slate-400">Track focused sessions and optionally link them to productivity tasks.</p>

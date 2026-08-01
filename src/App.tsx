@@ -1,135 +1,48 @@
-import { useEffect, useMemo, useState } from 'react'
-import { BrowserRouter, Navigate, NavLink, Outlet, Route, Routes, useLocation } from 'react-router-dom'
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
+import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom'
 
-import AuthPage from './features/auth/AuthPage'
-import MindOsDashboard from './features/mind-os/dashboard/MindOsDashboard'
-import HabitsPage from './features/mind-os/habits/HabitsPage'
-import JournalPage from './features/mind-os/journal/JournalPage'
-import FitnessOsDashboard from './features/fitness-os/pages/Dashboard'
-import FitnessLibraryPage from './features/fitness-os/pages/Library'
-import PersonalRecordsPage from './features/fitness-os/library/PersonalRecordsPage'
-import WorkoutsPage from './features/fitness-os/workouts/WorkoutsPage'
-import FinanceDashboard from './features/finance-os/pages/FinanceDashboard'
-import DataLabPage from './features/data-lab/pages/DataLabPage'
-import MissionControl from './features/mission-control/dashboard/MissionControl'
-import ChallengesPage from './features/progress-hub/challenges/ChallengesPage'
-import ProgressHubDashboard from './features/progress-hub/dashboard/ProgressHubDashboard'
-import MilestonesPage from './features/progress-hub/milestones/MilestonesPage'
-import PersonalSkillsPage from './features/progress-hub/personal-skills/PersonalSkillsPage'
-import ProgrammingProgressPage from './features/progress-hub/programming/ProgrammingProgressPage'
-import ProductivityHubDashboard from './features/productivity-hub/dashboard/ProductivityHubDashboard'
-import PlanningPage from './features/productivity-hub/planning/PlanningPage'
-import TasksPage from './features/productivity-hub/tasks/TasksPage'
-import SystemFeedbackToast from './features/system/components/SystemFeedbackToast'
-import TimeOSPage from './features/time-os/pages/TimeOSPage'
-import GlobalTimerBar from './features/time-os/components/GlobalTimerBar'
 import AppErrorBoundary from './components/AppErrorBoundary'
 import CommandPalette from './components/CommandPalette'
-import { AuthProvider, useAuth } from './lib/AuthContext'
 import Sidebar from './layout/Sidebar'
+import { LocalNavLink, ModuleHeader } from './layout/ModuleHeader'
+import { getShellTitle } from './layout/shellTitle'
+import { AuthProvider, useAuth } from './lib/AuthContext'
+import GlobalTimerBar from './features/time-os/components/GlobalTimerBar'
+import SystemFeedbackToast from './features/system/components/SystemFeedbackToast'
 
-function getShellTitle(pathname: string) {
-  if (pathname === '/' || pathname === '/mission-control') {
-    return 'Mission Control'
-  }
+// Route-level code splitting via React.lazy
+const AuthPage = lazy(() => import('./features/auth/AuthPage'))
+const MissionControl = lazy(() => import('./features/mission-control/dashboard/MissionControl'))
+const MindOsDashboard = lazy(() => import('./features/mind-os/dashboard/MindOsDashboard'))
+const HabitsPage = lazy(() => import('./features/mind-os/habits/HabitsPage'))
+const JournalPage = lazy(() => import('./features/mind-os/journal/JournalPage'))
+const FitnessOsDashboard = lazy(() => import('./features/fitness-os/pages/Dashboard'))
+const FitnessLibraryPage = lazy(() => import('./features/fitness-os/pages/Library'))
+const PersonalRecordsPage = lazy(() => import('./features/fitness-os/library/PersonalRecordsPage'))
+const WorkoutsPage = lazy(() => import('./features/fitness-os/workouts/WorkoutsPage'))
+const FinanceDashboard = lazy(() => import('./features/finance-os/pages/FinanceDashboard'))
+const DataLabPage = lazy(() => import('./features/data-lab/pages/DataLabPage'))
+const ProductivityHubDashboard = lazy(() => import('./features/productivity-hub/dashboard/ProductivityHubDashboard'))
+const PlanningPage = lazy(() => import('./features/productivity-hub/planning/PlanningPage'))
+const TasksPage = lazy(() => import('./features/productivity-hub/tasks/TasksPage'))
+const TimeOSPage = lazy(() => import('./features/time-os/pages/TimeOSPage'))
 
-  if (pathname === '/mind-os') {
-    return 'Mind OS'
-  }
+// Learning OS exports named components from LearningOSLayout
+const LearningOSLayoutModule = () => import('./features/learning-os/pages/LearningOSLayout')
+const LearningOSLayout = lazy(() => LearningOSLayoutModule().then((m) => ({ default: m.LearningOSLayout })))
+const RoadmapDashboard = lazy(() => import('./features/learning-os/pages/RoadmapDashboard').then((m) => ({ default: m.RoadmapDashboard })))
+const RoadmapDetailView = lazy(() => import('./features/learning-os/pages/RoadmapDetailView').then((m) => ({ default: m.RoadmapDetailView })))
+const ExplorePage = lazy(() => import('./features/learning-os/pages/ExplorePage').then((m) => ({ default: m.ExplorePage })))
+const AnalyticsPage = lazy(() => import('./features/learning-os/pages/AnalyticsPage').then((m) => ({ default: m.AnalyticsPage })))
 
-  if (pathname.startsWith('/mind-os/habits')) {
-    return 'Mind OS - Habits'
-  }
-
-  if (pathname.startsWith('/mind-os/journal')) {
-    return 'Mind OS - Journal'
-  }
-
-  if (pathname === '/productivity-hub') {
-    return 'Productivity Hub'
-  }
-
-  if (pathname.startsWith('/productivity-hub/tasks')) {
-    return 'Productivity Hub - Tasks'
-  }
-
-  if (pathname.startsWith('/productivity-hub/planning')) {
-    return 'Productivity Hub - Planning'
-  }
-
-  if (pathname === '/progress-hub') {
-    return 'Progress Hub'
-  }
-
-  if (pathname.startsWith('/progress-hub/programming')) {
-    return 'Progress Hub - Programming'
-  }
-
-  if (pathname.startsWith('/progress-hub/personal-skills')) {
-    return 'Progress Hub - Personal Skills'
-  }
-
-  if (pathname.startsWith('/progress-hub/milestones')) {
-    return 'Progress Hub - Milestones'
-  }
-
-  if (pathname.startsWith('/progress-hub/challenges')) {
-    return 'Progress Hub - Challenges'
-  }
-
-  if (pathname === '/fitness-os') {
-    return 'Fitness OS'
-  }
-
-  if (pathname.startsWith('/fitness-os/workouts')) {
-    return 'Fitness OS - Workouts'
-  }
-
-  if (pathname.startsWith('/fitness-os/library')) {
-    return 'Fitness OS - Library'
-  }
-
-  if (pathname.startsWith('/fitness-os/pr')) {
-    return 'Fitness OS - Personal Records'
-  }
-
-  if (pathname.startsWith('/time-os')) {
-    return 'Time OS'
-  }
-
-  if (pathname.startsWith('/finance-os')) {
-    return 'Finance OS'
-  }
-
-  if (pathname.startsWith('/data-lab')) {
-    return 'Data Lab'
-  }
-
-  return 'Life OS'
-}
-
-function LocalNavLink({ to, label }: { to: string; label: string }) {
+function PageLoadingFallback() {
   return (
-    <NavLink
-      to={to}
-      end={to === '.'}
-      className={({ isActive }) =>
-        `shrink-0 rounded-lg px-3 py-2 text-sm transition-colors ${
-          isActive ? 'bg-[#222222] text-slate-100' : 'text-slate-300 hover:bg-[#111111]'
-        }`
-      }
-    >
-      {label}
-    </NavLink>
-  )
-}
-
-function ModuleHeader({ title, children }: { title: string; children?: React.ReactNode }) {
-  return (
-    <header className="rounded-xl border border-border bg-surface p-4">
-      <h1 className="text-base font-semibold sm:text-2xl">{title}</h1>
-      {children ? <nav className="mt-3 flex gap-2 overflow-x-auto pb-1">{children}</nav> : null}
-    </header>
+    <div className="flex h-64 w-full items-center justify-center rounded-xl border border-border bg-surface p-8 text-slate-400">
+      <div className="flex items-center gap-3">
+        <div className="h-4 w-4 animate-spin rounded-full border-2 border-slate-400 border-t-transparent" />
+        <span className="text-sm font-medium">Loading view...</span>
+      </div>
+    </div>
   )
 }
 
@@ -246,7 +159,9 @@ function AppShell() {
 
         <main className="p-3 sm:p-4 md:p-6">
           <AppErrorBoundary key={location.pathname}>
-            <Outlet />
+            <Suspense fallback={<PageLoadingFallback />}>
+              <Outlet />
+            </Suspense>
           </AppErrorBoundary>
         </main>
       </div>
@@ -304,21 +219,6 @@ function ProductivityHubLayout() {
   )
 }
 
-function ProgressHubLayout() {
-  return (
-    <section className="space-y-4">
-      <ModuleHeader title="Progress Hub">
-        <LocalNavLink to="." label="Dashboard" />
-        <LocalNavLink to="programming" label="Programming" />
-        <LocalNavLink to="personal-skills" label="Personal Skills" />
-        <LocalNavLink to="milestones" label="Milestones" />
-        <LocalNavLink to="challenges" label="Challenges" />
-      </ModuleHeader>
-      <Outlet />
-    </section>
-  )
-}
-
 function FitnessOsLayout() {
   return (
     <section className="space-y-4">
@@ -337,52 +237,54 @@ function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <Routes>
-          <Route path="/auth" element={<AuthPage />} />
+        <Suspense fallback={<PageLoadingFallback />}>
+          <Routes>
+            <Route path="/auth" element={<AuthPage />} />
 
-          <Route element={<ProtectedRoute />}>
-            <Route element={<AppShell />}>
-              <Route index element={<MissionControl />} />
-              <Route path="mission-control" element={<MissionControl />} />
+            <Route element={<ProtectedRoute />}>
+              <Route element={<AppShell />}>
+                <Route index element={<MissionControl />} />
+                <Route path="mission-control" element={<MissionControl />} />
 
-              <Route path="mind-os" element={<MindOsLayout />}>
-                <Route index element={<MindOsDashboard />} />
-                <Route path="habits" element={<HabitsPage />} />
-                <Route path="journal" element={<JournalPage />} />
+                <Route path="mind-os" element={<MindOsLayout />}>
+                  <Route index element={<MindOsDashboard />} />
+                  <Route path="habits" element={<HabitsPage />} />
+                  <Route path="journal" element={<JournalPage />} />
+                </Route>
+
+                <Route path="productivity-hub" element={<ProductivityHubLayout />}>
+                  <Route index element={<ProductivityHubDashboard />} />
+                  <Route path="tasks" element={<TasksPage />} />
+                  <Route path="planning" element={<PlanningPage />} />
+                </Route>
+
+                <Route path="learning-os" element={<LearningOSLayout />}>
+                  <Route index element={<RoadmapDashboard />} />
+                  <Route path="explore" element={<ExplorePage />} />
+                  <Route path="analytics" element={<AnalyticsPage />} />
+                  <Route path="roadmap/:id" element={<RoadmapDetailView />} />
+                </Route>
+
+                <Route path="fitness-os" element={<FitnessOsLayout />}>
+                  <Route index element={<FitnessOsDashboard />} />
+                  <Route path="workouts" element={<WorkoutsPage />} />
+                  <Route path="library" element={<FitnessLibraryPage />} />
+                  <Route path="pr" element={<PersonalRecordsPage />} />
+                </Route>
+
+                <Route path="time-os" element={<TimeOSPage />} />
+                <Route path="finance-os" element={<FinanceDashboard />} />
+                <Route path="data-lab" element={<DataLabPage />} />
+
+                <Route path="*" element={<Navigate to="/" replace />} />
               </Route>
-
-              <Route path="productivity-hub" element={<ProductivityHubLayout />}>
-                <Route index element={<ProductivityHubDashboard />} />
-                <Route path="tasks" element={<TasksPage />} />
-                <Route path="planning" element={<PlanningPage />} />
-              </Route>
-
-              <Route path="progress-hub" element={<ProgressHubLayout />}>
-                <Route index element={<ProgressHubDashboard />} />
-                <Route path="programming" element={<ProgrammingProgressPage />} />
-                <Route path="personal-skills" element={<PersonalSkillsPage />} />
-                <Route path="milestones" element={<MilestonesPage />} />
-                <Route path="challenges" element={<ChallengesPage />} />
-              </Route>
-
-              <Route path="fitness-os" element={<FitnessOsLayout />}>
-                <Route index element={<FitnessOsDashboard />} />
-                <Route path="workouts" element={<WorkoutsPage />} />
-                <Route path="library" element={<FitnessLibraryPage />} />
-                <Route path="pr" element={<PersonalRecordsPage />} />
-              </Route>
-
-              <Route path="time-os" element={<TimeOSPage />} />
-              <Route path="finance-os" element={<FinanceDashboard />} />
-              <Route path="data-lab" element={<DataLabPage />} />
-
-              <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
-          </Route>
-        </Routes>
+          </Routes>
+        </Suspense>
       </BrowserRouter>
     </AuthProvider>
   )
 }
 
 export default App
+

@@ -68,7 +68,7 @@ function MindOsDashboard() {
   const breakOnlyJournalDays = new Set(journals.filter((entry) => breakOnlyDates.has(toIndiaDateKey(entry.created_at))).map((entry) => toIndiaDateKey(entry.created_at))).size
 
   return (
-    <section className="space-y-4">
+    <section className="space-y-4 pb-28 sm:pb-24">
       <article className="rounded-xl border border-border bg-surface p-3">
         <p className="text-xs uppercase tracking-wide text-slate-400">Core Signals</p>
         <div className="mt-3 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-5">

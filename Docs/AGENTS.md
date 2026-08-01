@@ -87,11 +87,13 @@ Pillar 6 is an architectural invariant, not a preference. Reflection and executi
 - Read-only analytics and observability engine.
 - Three tabs: Overview, Behavior, Telemetry.
 - Powered by SQL aggregation views. Never mutates data.
+- **Signal-based architecture:** Each domain exposes a signal view (`data_lab_signal_<name>`) with a fixed contract (`user_id`, `activity_date`, `was_active`, `magnitude`, `metrics`). Scoring weights and display names live in `data_lab_signal_config`. To add a new domain: (1) create a signal view wrapping the daily activity source, (2) insert a row into `data_lab_signal_config`, (3) add one `union all` line to both `module_consistency` and `weekly_system_score` views.
 
 ### System (Internal)
 - Not a user-facing route.
 - Contains: Brain Engine, Evening Sync, SystemFeedbackToast.
 - Lives in `src/features/system/`.
+- **Brain Engine architecture:** Issue detection and momentum explanation use per-domain signal functions in `engine/domainSignals.ts`. Each function returns `DomainSignal[]` with dual text (`issueText` for the issues panel, `momentumText` for the momentum panel). `systemEngine.ts` orchestrates by calling all domain functions and mapping to the appropriate output. Shared utilities (e.g. `isPastWednesdayInIndia`) live in `engine/timeUtils.ts`.
 
 ---
 

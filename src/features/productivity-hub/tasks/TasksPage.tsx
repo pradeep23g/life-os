@@ -164,7 +164,7 @@ function TasksPage() {
   }
 
   return (
-    <section className="space-y-4 bg-black pb-24">
+    <section className="space-y-4 bg-black pb-28 sm:pb-24">
       <article className="rounded-xl border border-border bg-surface p-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div>

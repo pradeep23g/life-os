@@ -74,7 +74,8 @@ const DOMAIN_LABELS: Record<string, string> = {
   'mission-control': 'Mission Control',
   'fitness-os': 'Fitness OS',
   'time-os': 'Time OS',
-  'finance-os': 'Finance OS',
+  'finance-os': 'Finance',
+  'learning-os': 'Learning',
 }
 
 export function formatDomainLabel(domain: string): string {

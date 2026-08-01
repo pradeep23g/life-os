@@ -1,4 +1,5 @@
 import type { CurrentDaySnapshot, DirectiveDomain, DirectiveResult, UrgencyScores } from './types'
+import { isPastWednesdayInIndia } from './timeUtils'
 
 const FALLBACK_DIRECTIVE = {
   action: 'habit' as const,
@@ -13,12 +14,6 @@ function sanitizeCount(value: number): number {
   }
 
   return Math.max(0, Math.floor(value))
-}
-
-function isPastWednesdayInIndia() {
-  const indiaNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }))
-  const day = indiaNow.getDay() // 0 (Sun) ... 6 (Sat)
-  return day === 0 || day > 3
 }
 
 function buildUrgencyScores(snapshot: CurrentDaySnapshot): UrgencyScores {
@@ -37,6 +32,7 @@ function buildUrgencyScores(snapshot: CurrentDaySnapshot): UrgencyScores {
     journal: snapshot.journal_logged_today ? 0 : 5,
     fitness: isCoachModeFitnessOverride ? 100 : workoutDaysThisWeek < 2 ? 3 : 0,
     deep_work: deepWorkMinutesToday === 0 ? 6 : deepWorkMinutesToday < 60 ? 4 : 0,
+    learning: snapshot.active_roadmaps_count > 0 && snapshot.learning_sessions_logged_7d === 0 ? 5 : 0,
   }
 }
 
@@ -46,6 +42,7 @@ function getTopDomain(urgency: UrgencyScores): DirectiveDomain {
     'habit',
     'journal',
     'deep-work',
+    'learning',
     'fitness',
   ]
   const topEntry = orderedDomains
@@ -126,6 +123,15 @@ function buildDirective(snapshot: CurrentDaySnapshot, topDomain: DirectiveDomain
     }
   }
 
+  if (topDomain === 'learning') {
+    return {
+      action: 'learning' as const,
+      label: 'Log a learning session',
+      reason: 'No learning activity in the last 7 days',
+      route: '/learning-os',
+    }
+  }
+
   return FALLBACK_DIRECTIVE
 }
 
@@ -143,6 +149,7 @@ export function generateDirectives(snapshot: CurrentDaySnapshot | null | undefin
         journal: 0,
         fitness: 0,
         deep_work: 0,
+        learning: 0,
       },
     }
   }
@@ -155,6 +162,7 @@ export function generateDirectives(snapshot: CurrentDaySnapshot | null | undefin
     urgency.journal,
     urgency.fitness,
     urgency.deep_work,
+    urgency.learning,
   )
 
   if (maxUrgency <= 0) {

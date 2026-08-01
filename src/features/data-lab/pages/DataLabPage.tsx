@@ -9,10 +9,10 @@ function DataLabPage() {
   const setActiveTab = useDataLabStore((s) => s.setActiveTab)
 
   return (
-    <section className="space-y-6 bg-black pb-24 px-4 sm:px-6 lg:px-8 pt-8">
+    <section className="space-y-6 bg-black pb-28 sm:pb-24 pt-4">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="text-[10px] text-slate-500 font-mono tracking-widest uppercase mb-1">Life OS</p>
+          <p className="mb-1 font-mono text-xs tracking-widest text-slate-500 uppercase">Life OS</p>
           <h1 className="text-2xl font-semibold text-slate-100">Data Lab</h1>
           <p className="mt-1 text-xs text-slate-400">Read-only behavioral analytics. Discovery over reporting.</p>
         </div>

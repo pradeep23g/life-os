@@ -9,8 +9,8 @@ export interface EvaluatorInputs {
   workoutCompleted: boolean
   financeAvailable: number
   financeSpent: number
-  activeChallengesCount: number
-  completedChallengesCount: number
+  activeRoadmapsCount: number
+  completedRoadmapsCount: number
   consistencyPercent: number
 }
 
@@ -101,12 +101,12 @@ export function evaluateSystemStatuses(inputs: EvaluatorInputs): SystemStatus[] 
     activity: `${progressPercent.toFixed(0)}% budget used`,
   })
 
-  // Progress Hub
+  // Learning OS
   statuses.push({
-    id: 'progress-hub',
-    name: 'Progress Hub',
+    id: 'learning-os',
+    name: 'Learning OS',
     status: 'Healthy',
-    activity: `${inputs.activeChallengesCount} active challenges`,
+    activity: `${inputs.activeRoadmapsCount} active roadmaps`,
   })
 
   // Mission Control

@@ -37,7 +37,7 @@ export type Workout = {
   workout_date: string
   title: string
   session_type: string | null
-  duration_minutes: number
+  duration_minutes: number | null
   notes: string | null
   start_time: string | null
   end_time: string | null
@@ -292,7 +292,10 @@ async function fetchFitnessExercises(): Promise<FitnessExercise[]> {
     throw buildError('Failed to fetch fitness exercises', error)
   }
 
-  return data ?? []
+  return (data ?? []).map((row) => ({
+    ...row,
+    equipment: Array.isArray(row.equipment) ? row.equipment : (row.equipment ? [row.equipment] : null),
+  }))
 }
 
 async function fetchWorkouts(): Promise<Workout[]> {
@@ -312,7 +315,10 @@ async function fetchWorkouts(): Promise<Workout[]> {
     throw buildError('Failed to fetch workouts', error)
   }
 
-  return data ?? []
+  return (data ?? []).map((row) => ({
+    ...row,
+    duration_minutes: row.duration_minutes ?? 0,
+  }))
 }
 
 async function fetchActiveWorkout(): Promise<Workout | null> {
@@ -333,7 +339,14 @@ async function fetchActiveWorkout(): Promise<Workout | null> {
     throw buildError('Failed to fetch active workout', error)
   }
 
-  return data ?? null
+  if (!data) {
+    return null
+  }
+
+  return {
+    ...data,
+    duration_minutes: data.duration_minutes ?? 0,
+  }
 }
 
 type ExerciseLogRow = {
@@ -353,6 +366,11 @@ type ExerciseLogRow = {
   updated_at: string
   deleted_at: string | null
   fitness_exercises:
+    | {
+        name: string
+        default_unit: string | null
+        deleted_at: string | null
+      }
     | Array<{
         name: string
         default_unit: string | null
@@ -362,7 +380,7 @@ type ExerciseLogRow = {
 }
 
 async function fetchWorkoutDetail(workoutId: string): Promise<WorkoutDetail | null> {
-  const { data: workout, error: workoutError } = await supabase
+  const { data: rawWorkout, error: workoutError } = await supabase
     .from('workouts')
     .select('id, user_id, workout_date, title, session_type, duration_minutes, notes, start_time, end_time, created_at, updated_at, deleted_at')
     .eq('id', workoutId)
@@ -377,8 +395,13 @@ async function fetchWorkoutDetail(workoutId: string): Promise<WorkoutDetail | nu
     throw buildError('Failed to fetch workout detail', workoutError)
   }
 
-  if (!workout) {
+  if (!rawWorkout) {
     return null
+  }
+
+  const workout: Workout = {
+    ...rawWorkout,
+    duration_minutes: rawWorkout.duration_minutes ?? 0,
   }
 
   const { data: logsData, error: logsError } = await supabase
@@ -402,32 +425,29 @@ async function fetchWorkoutDetail(workoutId: string): Promise<WorkoutDetail | nu
   }
 
   const logs = ((logsData ?? []) as ExerciseLogRow[]).map((row) => {
-    const exerciseRelation = row.fitness_exercises as
-      | Array<{ name: string; default_unit: string | null; deleted_at: string | null }>
-      | { name: string; default_unit: string | null; deleted_at: string | null }
-      | null
+    const exerciseRelation = row.fitness_exercises
     const exercise = Array.isArray(exerciseRelation) ? exerciseRelation[0] : exerciseRelation
 
     return {
-    id: row.id,
-    user_id: row.user_id,
-    workout_id: row.workout_id,
-    exercise_id: row.exercise_id,
-    order_index: row.order_index,
-    sets: row.sets,
-    reps_total: row.reps_total,
-    weight_kg: row.weight_kg,
-    duration_minutes: row.duration_minutes,
-    distance_km: row.distance_km,
-    rpe: row.rpe,
-    notes: row.notes,
-    created_at: row.created_at,
-    updated_at: row.updated_at,
-    deleted_at: row.deleted_at,
-    exercise_name: exercise?.name ?? 'Unknown Exercise',
-    exercise_default_unit: exercise?.default_unit ?? null,
-    exercise_target_muscles: null,
-  }
+      id: row.id,
+      user_id: row.user_id,
+      workout_id: row.workout_id,
+      exercise_id: row.exercise_id,
+      order_index: row.order_index,
+      sets: row.sets,
+      reps_total: row.reps_total,
+      weight_kg: row.weight_kg,
+      duration_minutes: row.duration_minutes,
+      distance_km: row.distance_km,
+      rpe: row.rpe,
+      notes: row.notes,
+      created_at: row.created_at,
+      updated_at: row.updated_at,
+      deleted_at: row.deleted_at,
+      exercise_name: exercise?.name ?? 'Unknown Exercise',
+      exercise_default_unit: exercise?.default_unit ?? null,
+      exercise_target_muscles: null,
+    }
   })
 
   return {
@@ -441,7 +461,7 @@ function buildWeeklySummary(workouts: Workout[]): FitnessWeeklySummary {
   const weekStart = getCurrentIndiaWeekStart(new Date())
   const thisWeekWorkouts = workouts.filter((workout) => workout.workout_date >= weekStart && workout.workout_date <= today)
   const activeWorkoutDays = new Set(thisWeekWorkouts.map((workout) => workout.workout_date)).size
-  const totalMinutes = thisWeekWorkouts.reduce((total, workout) => total + Math.max(0, workout.duration_minutes), 0)
+  const totalMinutes = thisWeekWorkouts.reduce((total, workout) => total + Math.max(0, workout.duration_minutes ?? 0), 0)
 
   return {
     workoutsThisWeek: thisWeekWorkouts.length,
@@ -476,7 +496,7 @@ function buildHeatmapDays(workouts: Workout[]): FitnessDayInsight[] {
       continue
     }
 
-    insight.minutes += Math.max(0, workout.duration_minutes)
+    insight.minutes += Math.max(0, workout.duration_minutes ?? 0)
     insight.workoutCount += 1
   }
 

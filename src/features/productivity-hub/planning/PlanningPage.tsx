@@ -27,20 +27,21 @@ type PlanningTab = 'plan' | 'goals' | 'review'
 const planPriorities: PlanItemPriority[] = ['High', 'Medium', 'Low']
 const planStatuses: PlanItemStatus[] = ['Planned', 'Doing', 'Done', 'Dropped']
 const goalStatuses: GoalStatus[] = ['active', 'paused', 'completed']
-const goalDomains: GoalDomain[] = ['productivity-hub', 'mind-os', 'progress-hub', 'fitness-os', 'finance-os']
+const goalDomains: GoalDomain[] = ['productivity-hub', 'mind-os', 'learning-os', 'fitness-os', 'finance-os']
 
 const domainLabels: Record<GoalDomain, string> = {
   'productivity-hub': 'Productivity',
   'mind-os': 'Mind',
-  'progress-hub': 'Progress',
+  'learning-os': 'Learning',
   'fitness-os': 'Fitness',
   'finance-os': 'Finance',
+  'progress-hub': 'Progress Hub',
 }
 
 const priorityColors: Record<PlanItemPriority, string> = {
-  High: 'text-red-400',
-  Medium: 'text-yellow-400',
-  Low: 'text-slate-400',
+  High: 'rounded bg-rose-950/40 border border-rose-800/40 px-1.5 py-0.5 text-rose-400',
+  Medium: 'rounded bg-amber-950/40 border border-amber-800/40 px-1.5 py-0.5 text-amber-400',
+  Low: 'rounded bg-slate-900 border border-slate-800 px-1.5 py-0.5 text-slate-400',
 }
 
 const statusColors: Record<PlanItemStatus, string> = {
@@ -360,7 +361,7 @@ function PlanningPage() {
   // RENDER
   // ─────────────────────────────────────────────
   return (
-    <section className="space-y-3">
+    <section className="space-y-3 pb-28 sm:pb-24">
       {/* ── Header with week info + tabs ── */}
       <article className="rounded-xl border border-border bg-surface p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">

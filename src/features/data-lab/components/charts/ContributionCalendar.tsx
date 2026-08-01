@@ -44,7 +44,7 @@ function ContributionCalendar({ cells }: ContributionCalendarProps) {
       date: '',
       intensity: -1,
       activeSystemCount: 0,
-      systems: { habits: false, journal: false, tasks: false, deepWork: false, workout: false, finance: false },
+      systems: { habits: false, journal: false, tasks: false, deepWork: false, workout: false, finance: false, learning: false },
     })
   }
 
