@@ -72,6 +72,8 @@ export function computeBehaviorInsights(
     { name: 'Deep Work', isActive: (r: DataLabDailyActivity) => r.deep_work_minutes > 0 },
     { name: 'Workouts', isActive: (r: DataLabDailyActivity) => r.workouts_logged > 0 },
     { name: 'Tasks', isActive: (r: DataLabDailyActivity) => r.tasks_completed > 0 },
+    { name: 'Finance', isActive: (r: DataLabDailyActivity) => r.finance_entries > 0 },
+    { name: 'Learning OS', isActive: (r: DataLabDailyActivity) => r.learning_sessions_logged > 0 },
   ]
 
   const sorted = [...dailyRows].sort((a, b) => a.activity_date.localeCompare(b.activity_date))
@@ -134,6 +136,8 @@ export function computeBehaviorInsights(
       { name: 'Deep Work', getValue: (r: DataLabDailyActivity) => r.deep_work_minutes },
       { name: 'Tasks', getValue: (r: DataLabDailyActivity) => r.tasks_completed },
       { name: 'Habits', getValue: (r: DataLabDailyActivity) => r.habits_completed },
+      { name: 'Finance', getValue: (r: DataLabDailyActivity) => r.finance_entries },
+      { name: 'Learning OS', getValue: (r: DataLabDailyActivity) => r.learning_sessions_logged },
     ]
 
     let bestIncrease = { name: '', delta: 0 }

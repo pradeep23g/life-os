@@ -5,6 +5,7 @@ import { logEventSafe } from '../../../lib/events'
 import {
   PRODUCTIVITY_TASK_STATUS_CHANGED,
   TIME_TIME_LOG_DELETED,
+  TIME_SESSION_LOGGED,
   TIME_TIME_LOG_STARTED,
 } from '../../../lib/eventTaxonomy'
 import { emitSystemFeedback } from '../../system/feedback'
@@ -210,7 +211,7 @@ async function setTaskCompletionFromTimer(userId: string, taskId: string, isComp
     domain: 'productivity-hub',
     entityType: 'task',
     entityId: taskId,
-    eventType: 'task_status_updated',
+    eventType: PRODUCTIVITY_TASK_STATUS_CHANGED,
     payload: {
       is_completed: isCompleted,
       status: isCompleted ? 'Done' : 'Open',
@@ -419,7 +420,7 @@ export function useStopTimer() {
           domain: 'time-os',
           entityType: 'time_log',
           entityId: eventPayload.logId,
-          eventType: 'TIME_LOGGED',
+          eventType: TIME_SESSION_LOGGED,
           payload: {
             bucket: eventPayload.bucket,
             duration_minutes: eventPayload.durationMinutes,
@@ -461,7 +462,7 @@ export function useManualLog() {
         domain: 'time-os',
         entityType: 'time_log',
         entityId: eventPayload.logId,
-        eventType: 'TIME_LOGGED',
+        eventType: TIME_SESSION_LOGGED,
         payload: {
           bucket: eventPayload.bucket,
           duration_minutes: eventPayload.durationMinutes,
@@ -501,6 +502,7 @@ export function useDeleteTimeLog() {
         entityType: 'time_log',
         entityId: deletedTimeLog.id,
         eventType: TIME_TIME_LOG_DELETED,
+  TIME_SESSION_LOGGED,
         payload: {
           time_log_id: deletedTimeLog.id,
         },

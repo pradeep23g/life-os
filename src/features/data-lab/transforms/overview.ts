@@ -31,6 +31,8 @@ export function toBehaviorTimelineRows(
     habits: row.habits_completed > 0,
     tasks: row.tasks_completed > 0 || row.tasks_created > 0,
     deepWork: row.deep_work_minutes > 0,
+    finance: row.finance_entries > 0,
+    learning: row.learning_sessions_logged > 0,
   }))
 }
 

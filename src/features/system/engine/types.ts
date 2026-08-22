@@ -21,6 +21,8 @@ export type CurrentDaySnapshot = {
   learning_sessions_logged_7d: number
   active_roadmaps_count: number
   snapshot_date: string
+  budget_utilization_percentage: number
+  recent_want_expenses_count: number
 }
 
 export type SystemHistoryDay = {
@@ -36,6 +38,7 @@ export type SystemHistoryDay = {
 export type MomentumAnalysis = {
   momentum: number
   trend: MomentumTrend
+  emaSeries: number[]
 }
 
 export type UrgencyScores = {
@@ -45,9 +48,10 @@ export type UrgencyScores = {
   fitness: number
   deep_work: number
   learning: number
+  finance: number
 }
 
-export type DirectiveDomain = 'task' | 'habit' | 'journal' | 'fitness' | 'deep-work' | 'learning' | 'none'
+export type DirectiveDomain = 'task' | 'habit' | 'journal' | 'fitness' | 'deep-work' | 'learning' | 'finance' | 'none'
 
 export type DirectiveResult = {
   action: DirectiveDomain

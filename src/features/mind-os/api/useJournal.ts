@@ -1,7 +1,7 @@
-﻿import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { logEventSafe } from '../../../lib/events'
-import { MIND_JOURNAL_ENTRY_DELETED } from '../../../lib/eventTaxonomy'
+import { MIND_JOURNAL_ENTRY_DELETED, MIND_JOURNAL_ENTRY_CREATED } from '../../../lib/eventTaxonomy'
 import { supabase } from '../../../lib/supabase'
 import { systemStatusQueryKey } from '../../system/api/useSystemStatus'
 import { emitSystemFeedback } from '../../system/feedback'
@@ -174,7 +174,7 @@ async function insertJournalEntry({
     userId: user.id,
     domain: 'mind-os',
     entityType: 'journal_entry',
-    eventType: 'journal_entry_created',
+    eventType: MIND_JOURNAL_ENTRY_CREATED,
     payload: {
       mood,
     },

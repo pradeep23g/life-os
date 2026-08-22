@@ -14,6 +14,7 @@ const STREAK_EXTRACTORS: StreakExtractor[] = [
   { name: 'Workouts', isActive: (r) => r.workouts_logged > 0 },
   { name: 'Tasks', isActive: (r) => r.tasks_completed > 0 || r.tasks_created > 0 },
   { name: 'Finance', isActive: (r) => r.finance_entries > 0 },
+  { name: 'Learning OS', isActive: (r) => r.learning_sessions_logged > 0 },
 ]
 
 export function computeStreakMetrics(

@@ -139,6 +139,8 @@ export type TimelineDayRow = {
   habits: boolean
   tasks: boolean
   deepWork: boolean
+  finance: boolean
+  learning: boolean
 }
 
 export type MatrixCell = {

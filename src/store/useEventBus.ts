@@ -31,26 +31,50 @@ function createEventId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
 }
 
-async function queueEventInBackground(event: EventBusEvent) {
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser()
+const backgroundQueue: EventBusEvent[] = []
+let isProcessingQueue = false
 
-  if (authError || !user) {
+async function processBackgroundQueue() {
+  if (isProcessingQueue || backgroundQueue.length === 0) {
     return
   }
 
-  const { error } = await supabase.from('system_event_queue').insert({
-    user_id: user.id,
-    event_type: event.type,
-    payload: event.payload as unknown as Json,
-    created_at: event.createdAt,
-  })
+  isProcessingQueue = true
 
-  if (error) {
-    console.warn('[event-bus] queue insert failed', error)
+  try {
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
+
+    if (authError || !user) {
+      backgroundQueue.length = 0 // Clear if not auth'd to prevent memory leak
+      return
+    }
+
+    while (backgroundQueue.length > 0) {
+      const batch = backgroundQueue.splice(0, 10)
+      const insertData = batch.map((event) => ({
+        user_id: user.id,
+        event_type: event.type,
+        payload: event.payload as unknown as Json,
+        created_at: event.createdAt,
+      }))
+
+      const { error } = await supabase.from('system_event_queue').insert(insertData)
+
+      if (error) {
+        console.warn('[event-bus] queue insert failed', error)
+      }
+    }
+  } finally {
+    isProcessingQueue = false
   }
+}
+
+function queueEventInBackground(event: EventBusEvent) {
+  backgroundQueue.push(event)
+  void processBackgroundQueue()
 }
 
 export const useEventBus = create<EventBusState>((set) => ({

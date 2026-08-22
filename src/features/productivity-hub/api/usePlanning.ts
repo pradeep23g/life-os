@@ -1,6 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { logEventSafe } from '../../../lib/events'
+import {
+  PRODUCTIVITY_WEEKLY_PLAN_CREATED,
+  PRODUCTIVITY_WEEKLY_PLAN_UPDATED,
+  PRODUCTIVITY_GOAL_CREATED,
+  PRODUCTIVITY_GOAL_STATUS_CHANGED,
+  PRODUCTIVITY_WEEKLY_PLAN_ITEM_CREATED,
+  PRODUCTIVITY_WEEKLY_PLAN_ITEM_UPDATED,
+  PRODUCTIVITY_WEEKLY_REVIEW_UPSERTED,
+} from '../../../lib/eventTaxonomy'
 import { supabase } from '../../../lib/supabase'
 import { emitSystemFeedback } from '../../system/feedback'
 
@@ -221,7 +230,7 @@ async function createWeeklyPlan({ focusText, weekStartDate }: CreateWeeklyPlanIn
     domain: 'productivity-hub',
     entityType: 'weekly_plan',
     entityId: data.id,
-    eventType: 'weekly_plan_created',
+    eventType: PRODUCTIVITY_WEEKLY_PLAN_CREATED,
     payload: {
       weekStartDate,
     },
@@ -250,7 +259,7 @@ async function updateWeeklyPlan({ id, focusText, weekStartDate }: UpdateWeeklyPl
     domain: 'productivity-hub',
     entityType: 'weekly_plan',
     entityId: id,
-    eventType: 'weekly_plan_updated',
+    eventType: PRODUCTIVITY_WEEKLY_PLAN_UPDATED,
     payload: {
       weekStartDate,
     },
@@ -304,7 +313,7 @@ async function createGoal({ title, domain, targetDate, notes }: CreateGoalInput)
     domain: 'productivity-hub',
     entityType: 'goal',
     entityId: data.id,
-    eventType: 'goal_created',
+    eventType: PRODUCTIVITY_GOAL_CREATED,
     payload: {
       domain,
     },
@@ -332,7 +341,7 @@ async function updateGoalStatus({ id, status }: UpdateGoalStatusInput): Promise<
     domain: 'productivity-hub',
     entityType: 'goal',
     entityId: id,
-    eventType: 'goal_status_updated',
+    eventType: PRODUCTIVITY_GOAL_STATUS_CHANGED,
     payload: {
       status,
     },
@@ -405,7 +414,7 @@ async function createWeeklyPlanItem(input: CreateWeeklyPlanItemInput): Promise<v
     domain: 'productivity-hub',
     entityType: 'weekly_plan_item',
     entityId: data.id,
-    eventType: 'weekly_plan_item_created',
+    eventType: PRODUCTIVITY_WEEKLY_PLAN_ITEM_CREATED,
     payload: {
       weekStartDate: input.weekStartDate,
       linkedToGoal: Boolean(input.goalId),
@@ -445,7 +454,7 @@ async function updateWeeklyPlanItem(input: UpdateWeeklyPlanItemInput): Promise<v
     domain: 'productivity-hub',
     entityType: 'weekly_plan_item',
     entityId: input.id,
-    eventType: 'weekly_plan_item_updated',
+    eventType: PRODUCTIVITY_WEEKLY_PLAN_ITEM_UPDATED,
     payload: {
       status: input.status,
       goalId: input.goalId,
@@ -499,7 +508,7 @@ async function upsertWeeklyReview({ weekStartDate, wins, blockers, nextAdjustmen
     domain: 'productivity-hub',
     entityType: 'weekly_review',
     entityId: data.id,
-    eventType: 'weekly_review_upserted',
+    eventType: PRODUCTIVITY_WEEKLY_REVIEW_UPSERTED,
     payload: {
       weekStartDate,
     },

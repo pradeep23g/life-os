@@ -1,5 +1,7 @@
 export function isPastWednesdayInIndia() {
-  const indiaNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }))
-  const day = indiaNow.getDay()
-  return day === 0 || day > 3
+  const weekday = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Kolkata',
+    weekday: 'short',
+  }).format(new Date())
+  return ['Thu', 'Fri', 'Sat', 'Sun'].includes(weekday)
 }

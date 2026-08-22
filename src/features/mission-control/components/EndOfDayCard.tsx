@@ -10,8 +10,7 @@ import {
 } from '../../mind-os/api/useHabits'
 import { useCreateJournalEntry, useJournalEntries } from '../../mind-os/api/useJournal'
 import { systemStatusQueryKey } from '../../system/api/useSystemStatus'
-import { useEveningSync } from '../../system/api/useEveningSync'
-import { useEventBus } from '../../../store/useEventBus'
+import { useEveningSync, usePendingEventsCount } from '../../system/api/useEveningSync'
 
 function toIndiaDateKey(value: string | Date): string {
   const date = typeof value === 'string' ? new Date(value) : value
@@ -66,6 +65,8 @@ const moodOptions = [
   { value: 5, emoji: '\u{1F525}' },
 ] as const
 
+
+
 export default function EndOfDayCard() {
   const queryClient = useQueryClient()
   const { data: habits = [] } = useHabits()
@@ -75,7 +76,8 @@ export default function EndOfDayCard() {
   const { mutateAsync: markHabitDone, isPending: isMarkingHabitDone } = useMarkHabitDone()
   
   const { mutate: executeEveningSync, isPending: isSyncing } = useEveningSync()
-  const pendingEventsCount = useEventBus((s) => s.recentEvents.length)
+  
+  const { data: pendingEventsCount = 0, isLoading: isCountLoading } = usePendingEventsCount()
 
   const [selectedMood, setSelectedMood] = useState<number>(3)
   const [note, setNote] = useState('')
@@ -107,6 +109,7 @@ export default function EndOfDayCard() {
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: mindOsHabitsQueryKey }),
       queryClient.invalidateQueries({ queryKey: systemStatusQueryKey }),
+      queryClient.invalidateQueries({ queryKey: ['system-event-queue-count'] }),
     ])
   }
 
@@ -236,11 +239,17 @@ export default function EndOfDayCard() {
 
       {/* 4. EXECUTE EVENING SYNC */}
       <div className="flex flex-col items-center gap-4 pt-8">
-        <p className="font-mono text-xs tracking-widest text-slate-500">{pendingEventsCount} Pending System Events</p>
+        <p className="font-mono text-xs tracking-widest text-slate-500">
+          {isCountLoading ? 'Loading Events...' : `${pendingEventsCount} Pending System Events`}
+        </p>
         <button
           type="button"
           disabled={isSyncing}
-          onClick={() => executeEveningSync()}
+          onClick={() => executeEveningSync(undefined, {
+            onSuccess: () => {
+              queryClient.invalidateQueries({ queryKey: ['system-event-queue-count'] })
+            }
+          })}
           className="rounded-lg border border-border bg-surface px-10 py-3 font-mono text-xs tracking-widest text-slate-300 uppercase transition-all hover:bg-[#111111] hover:text-slate-100 disabled:opacity-50"
         >
           {isSyncing ? 'Syncing...' : 'Execute Evening Sync'}

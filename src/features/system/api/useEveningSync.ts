@@ -1,8 +1,10 @@
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { supabase } from '../../../lib/supabase'
 import { useEventBus } from '../../../store/useEventBus'
-import { useSystemStatus } from './useSystemStatus'
+import { systemStatusQueryKey, useSystemStatus } from './useSystemStatus'
+import { logEventSafe } from '../../../lib/events'
+import { EVENT_TYPES } from '../../../lib/eventTaxonomy'
 
 type EveningSyncPayload = {
   user_id: string
@@ -26,16 +28,6 @@ function getIndiaDateKey(date = new Date()): string {
     month: '2-digit',
     day: '2-digit',
   }).format(date)
-}
-
-function addDays(dateKey: string, days: number): string {
-  const [year, month, day] = dateKey.split('-').map(Number)
-  const base = new Date(Date.UTC(year, month - 1, day, 12, 0, 0))
-  base.setUTCDate(base.getUTCDate() + days)
-  const nextYear = base.getUTCFullYear()
-  const nextMonth = String(base.getUTCMonth() + 1).padStart(2, '0')
-  const nextDay = String(base.getUTCDate()).padStart(2, '0')
-  return `${nextYear}-${nextMonth}-${nextDay}`
 }
 
 function getErrorCode(error: unknown): string {
@@ -78,6 +70,7 @@ function isMissingMetricsTableError(error: unknown): boolean {
 export function useEveningSync() {
   const { data: systemStatus } = useSystemStatus()
   const clearEvents = useEventBus((state) => state.clearEvents)
+  const queryClient = useQueryClient()
 
   const executeEveningSync = async () => {
     const {
@@ -94,83 +87,132 @@ export function useEveningSync() {
     }
 
     const localDate = getIndiaDateKey()
-    const dayStart = `${localDate}T00:00:00+05:30`
-    const dayEnd = `${addDays(localDate, 1)}T00:00:00+05:30`
+    let totalProcessed = 0
+    let momentumScore = systemStatus?.momentum?.momentum ?? 0
+    const BATCH_SIZE = 50
+    let hasMore = true
+    let loopCount = 0
 
-    const { data: queuedEvents, error: queueFetchError } = await supabase
-      .from('system_event_queue')
-      .select('id, event_type, payload, created_at')
-      .eq('user_id', user.id)
-      .gte('created_at', dayStart)
-      .lt('created_at', dayEnd)
+    let finalPayload: EveningSyncPayload | null = null
 
-    if (queueFetchError) {
-      throw new Error(`Evening sync fetch failed: ${getErrorMessage(queueFetchError)}`)
-    }
+    while (hasMore) {
+      loopCount++
 
-    const aggregateQueue = (queuedEvents ?? []) as QueuedSystemEvent[]
-    const deepWorkEvents = aggregateQueue.filter((event) => event.event_type === 'DEEP_WORK_COMPLETED').length
-    const workoutEvents = aggregateQueue.filter((event) => event.event_type === 'WORKOUT_COMPLETED').length
-    const habitFailEvents = aggregateQueue.filter((event) => event.event_type === 'HABIT_FAILED').length
-    const wantExpenseEvents = aggregateQueue.filter((event) => event.event_type === 'WANT_EXPENSE_ADDED').length
+      const { data: queuedEvents, error: queueFetchError } = await supabase
+        .from('system_event_queue')
+        .select('id, event_type, payload, created_at')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: true })
+        .limit(BATCH_SIZE)
 
-    const momentumDelta = (deepWorkEvents * 3) + (workoutEvents * 2) - (habitFailEvents * 2) - wantExpenseEvents
-    const momentumScore = Math.max(0, Math.min(100, Math.round(systemStatus.momentum.momentum + momentumDelta)))
+      if (queueFetchError) {
+        throw new Error(`Evening sync fetch failed: ${getErrorMessage(queueFetchError)}`)
+      }
 
-    const payload: EveningSyncPayload = {
-      user_id: user.id,
-      sync_date: localDate,
-      momentum_score: momentumScore,
-      events_processed: aggregateQueue.length,
-      created_at: new Date().toISOString(),
-    }
+      const aggregateQueue = (queuedEvents ?? []) as QueuedSystemEvent[]
+      
+      const deepWorkEvents = aggregateQueue.filter((event) => event.event_type === 'DEEP_WORK_COMPLETED').length
+      const workoutEvents = aggregateQueue.filter((event) => event.event_type === 'WORKOUT_COMPLETED').length
+      const habitFailEvents = aggregateQueue.filter((event) => event.event_type === 'HABIT_FAILED').length
+      const wantExpenseEvents = aggregateQueue.filter((event) => event.event_type === 'WANT_EXPENSE_ADDED').length
 
-    const { error } = await supabase
-      .from('system_metrics')
-      .upsert(payload, { onConflict: 'user_id,sync_date' })
+      const momentumDelta = (deepWorkEvents * 3) + (workoutEvents * 2) - (habitFailEvents * 2) - wantExpenseEvents
+      momentumScore = Math.max(0, Math.min(100, Math.round(momentumScore + momentumDelta)))
+      totalProcessed += aggregateQueue.length
 
-    if (error) {
-      if (isMissingMetricsTableError(error)) {
-        return {
-          skipped: true,
-          reason: 'system_metrics table not found',
-          payload,
+      const payload: EveningSyncPayload = {
+        user_id: user.id,
+        sync_date: localDate,
+        momentum_score: momentumScore,
+        events_processed: totalProcessed,
+        created_at: new Date().toISOString(),
+      }
+      
+      finalPayload = payload
+
+      const { error: upsertError } = await supabase
+        .from('system_metrics')
+        .upsert(payload, { onConflict: 'user_id,sync_date' })
+
+      if (upsertError) {
+        if (isMissingMetricsTableError(upsertError)) {
+          return {
+            skipped: true,
+            reason: 'system_metrics table not found',
+            payload,
+          }
+        }
+        throw new Error(`Evening sync failed: ${getErrorMessage(upsertError)}`)
+      }
+
+      const processedEventIds = aggregateQueue.map((event) => event.id)
+
+      if (processedEventIds.length > 0) {
+        const { error: queueDeleteError } = await supabase
+          .from('system_event_queue')
+          .delete()
+          .eq('user_id', user.id)
+          .in('id', processedEventIds)
+
+        if (queueDeleteError) {
+          throw new Error(`Evening sync flush failed: ${getErrorMessage(queueDeleteError)}`)
         }
       }
 
-      throw new Error(`Evening sync failed: ${getErrorMessage(error)}`)
-    }
-
-    const processedEventIds = aggregateQueue.map((event) => event.id)
-
-    if (processedEventIds.length === 0) {
-      clearEvents()
-
-      return {
-        skipped: false,
-        payload,
+      if (aggregateQueue.length < BATCH_SIZE) {
+        hasMore = false
       }
-    }
-
-    const { error: queueDeleteError } = await supabase
-      .from('system_event_queue')
-      .delete()
-      .eq('user_id', user.id)
-      .in('id', processedEventIds)
-
-    if (queueDeleteError) {
-      throw new Error(`Evening sync flush failed: ${getErrorMessage(queueDeleteError)}`)
+      
+      if (loopCount > 100) {
+         break
+      }
     }
 
     clearEvents()
 
+    if (finalPayload) {
+      await logEventSafe({
+        domain: 'mission-control',
+        entityType: 'evening_sync',
+        eventType: EVENT_TYPES.SYSTEM_EVENING_SYNC_COMPLETED,
+        payload: { ...finalPayload },
+        userId: user.id,
+      })
+    }
+
     return {
       skipped: false,
-      payload,
+      payload: finalPayload,
     }
   }
 
   return useMutation({
     mutationFn: executeEveningSync,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: systemStatusQueryKey })
+    },
+  })
+}
+
+export function usePendingEventsCount() {
+  return useQuery({
+    queryKey: ['system-event-queue-count'],
+    queryFn: async () => {
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      if (authError || !user) {
+        throw new Error('User not authenticated')
+      }
+
+      const { count, error } = await supabase
+        .from('system_event_queue')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+
+      if (error) {
+        throw new Error(`Count fetch failed: ${error.message}`)
+      }
+
+      return count ?? 0
+    },
   })
 }

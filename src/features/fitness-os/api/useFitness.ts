@@ -1,7 +1,19 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { addDaysToDateKey, getCurrentIndiaWeekStart, logEventSafe, toIndiaDateKey } from '../../../lib/events'
-import { FITNESS_WORKOUT_DELETED } from '../../../lib/eventTaxonomy'
+import {
+  FITNESS_WORKOUT_DELETED,
+  FITNESS_WORKOUT_CREATED,
+  FITNESS_WORKOUT_STARTED,
+  FITNESS_WORKOUT_COMPLETED,
+  FITNESS_WORKOUT_UPDATED,
+  FITNESS_EXERCISE_CREATED,
+  FITNESS_EXERCISE_UPDATED,
+  FITNESS_EXERCISE_DELETED,
+  FITNESS_EXERCISE_LOG_CREATED,
+  FITNESS_EXERCISE_LOG_UPDATED,
+  FITNESS_EXERCISE_LOG_DELETED,
+} from '../../../lib/eventTaxonomy'
 import { supabase } from '../../../lib/supabase'
 import { emitSystemFeedback } from '../../system/feedback'
 import { systemStatusQueryKey } from '../../system/api/useSystemStatus'
@@ -611,7 +623,7 @@ async function createWorkout({ workoutDate, title, sessionType, durationMinutes,
     domain: 'fitness-os',
     entityType: 'workout',
     entityId: data.id,
-    eventType: 'workout_created',
+    eventType: FITNESS_WORKOUT_CREATED,
     payload: {
       workoutDate,
       durationMinutes: resolvedDuration,
@@ -654,7 +666,7 @@ async function startWorkoutSession({ title, sessionType, notes }: StartWorkoutSe
     domain: 'fitness-os',
     entityType: 'workout',
     entityId: data.id,
-    eventType: 'workout_started',
+    eventType: FITNESS_WORKOUT_STARTED,
     payload: {
       workoutDate,
       sessionType: sessionType?.trim() || 'Calisthenics',
@@ -690,7 +702,7 @@ async function endWorkoutSession({ workoutId, startTime }: EndWorkoutSessionInpu
     domain: 'fitness-os',
     entityType: 'workout',
     entityId: workoutId,
-    eventType: 'workout_completed',
+    eventType: FITNESS_WORKOUT_COMPLETED,
     payload: {
       durationMinutes: diffMinutes,
     },
@@ -724,7 +736,7 @@ async function updateWorkout({ id, workoutDate, title, sessionType, durationMinu
     domain: 'fitness-os',
     entityType: 'workout',
     entityId: id,
-    eventType: 'workout_updated',
+    eventType: FITNESS_WORKOUT_UPDATED,
     payload: {
       workoutDate,
       durationMinutes: resolvedDuration,
@@ -795,7 +807,7 @@ async function createExercise(input: CreateExerciseInput): Promise<void> {
     domain: 'fitness-os',
     entityType: 'fitness_exercise',
     entityId: data.id,
-    eventType: 'fitness_exercise_created',
+    eventType: FITNESS_EXERCISE_CREATED,
   })
 }
 
@@ -825,7 +837,7 @@ async function updateExercise(input: UpdateExerciseInput): Promise<void> {
     domain: 'fitness-os',
     entityType: 'fitness_exercise',
     entityId: input.id,
-    eventType: 'fitness_exercise_updated',
+    eventType: FITNESS_EXERCISE_UPDATED,
   })
 }
 
@@ -852,7 +864,7 @@ async function deleteExercise({ id }: DeleteExerciseInput): Promise<void> {
     domain: 'fitness-os',
     entityType: 'fitness_exercise',
     entityId: id,
-    eventType: 'fitness_exercise_deleted',
+    eventType: FITNESS_EXERCISE_DELETED,
   })
 }
 
@@ -910,7 +922,7 @@ async function addExerciseLog(input: ExerciseLogInput): Promise<void> {
     domain: 'fitness-os',
     entityType: 'exercise_log',
     entityId: data.id,
-    eventType: 'exercise_log_created',
+    eventType: FITNESS_EXERCISE_LOG_CREATED,
     payload: {
       workoutId: input.workoutId,
       exerciseId: input.exerciseId,
@@ -948,7 +960,7 @@ async function updateExerciseLog(input: UpdateExerciseLogInput): Promise<void> {
     domain: 'fitness-os',
     entityType: 'exercise_log',
     entityId: input.id,
-    eventType: 'exercise_log_updated',
+    eventType: FITNESS_EXERCISE_LOG_UPDATED,
     payload: {
       workoutId: input.workoutId,
       exerciseId: input.exerciseId,
@@ -979,7 +991,7 @@ async function deleteExerciseLog({ id, workoutId }: DeleteExerciseLogInput): Pro
     domain: 'fitness-os',
     entityType: 'exercise_log',
     entityId: id,
-    eventType: 'exercise_log_deleted',
+    eventType: FITNESS_EXERCISE_LOG_DELETED,
     payload: {
       workoutId,
     },
@@ -1074,7 +1086,7 @@ export function useEndWorkoutSession() {
       invalidateFitnessQueries(queryClient)
       queryClient.invalidateQueries({ queryKey: fitnessWorkoutDetailQueryKey(variables.workoutId) })
       queryClient.invalidateQueries({ queryKey: systemStatusQueryKey })
-      emitEvent('WORKOUT_COMPLETED', {
+      emitEvent(FITNESS_WORKOUT_COMPLETED, {
         workoutId: variables.workoutId,
       })
     },

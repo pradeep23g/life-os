@@ -1,13 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { logEventSafe } from '../../../lib/events'
-import { FINANCE_TRANSACTION_DELETED } from '../../../lib/eventTaxonomy'
+import { FINANCE_TRANSACTION_DELETED, FINANCE_TRANSACTION_CREATED } from '../../../lib/eventTaxonomy'
 import { supabase } from '../../../lib/supabase'
 import { useEventBus } from '../../../store/useEventBus'
 import { getIndiaMonthKey } from '../../mind-os/utils/date'
 
 export const financeTransactionsQueryKey = ['finance-os', 'transactions', 'monthly'] as const
-const TRANSACTION_TABLE_CANDIDATES = ['transactions', 'finance_transactions'] as const
+const TRANSACTION_TABLE_CANDIDATES = ['transactions'] as const
 
 type TransactionTableName = (typeof TRANSACTION_TABLE_CANDIDATES)[number]
 type TransactionRow = Record<string, unknown>
@@ -236,39 +236,21 @@ async function fetchTransactions(): Promise<FinanceTransactionsResult> {
 }
 
 async function insertTransactionAttempt(attempt: TransactionInsertAttempt): Promise<string | null> {
-  let data: { id: string } | null = null
-  let error: unknown = null
+  const res = await supabase
+    .from('transactions')
+    .insert({
+      amount: Number(attempt.payload.amount ?? 0),
+      category: String(attempt.payload.category ?? ''),
+      type: attempt.payload.type === 'income' ? 'income' : 'expense',
+      user_id: String(attempt.payload.user_id ?? ''),
+      is_need: attempt.payload.is_need as boolean | null,
+      timestamp: attempt.payload.timestamp as string | undefined,
+    })
+    .select('id')
+    .single()
 
-  if (attempt.table === 'finance_transactions') {
-    const res = await supabase
-      .from('finance_transactions')
-      .insert({
-        amount: Number(attempt.payload.amount ?? 0),
-        category: String(attempt.payload.category ?? ''),
-        is_need: Boolean(attempt.payload.is_need ?? true),
-        note: (attempt.payload.note as string) ?? null,
-        user_id: String(attempt.payload.user_id ?? ''),
-      })
-      .select('id')
-      .single()
-    data = res.data
-    error = res.error
-  } else {
-    const res = await supabase
-      .from('transactions')
-      .insert({
-        amount: Number(attempt.payload.amount ?? 0),
-        category: String(attempt.payload.category ?? ''),
-        type: attempt.payload.type === 'income' ? 'income' : 'expense',
-        user_id: String(attempt.payload.user_id ?? ''),
-        is_need: attempt.payload.is_need as boolean | null,
-        timestamp: attempt.payload.timestamp as string | undefined,
-      })
-      .select('id')
-      .single()
-    data = res.data
-    error = res.error
-  }
+  const data = res.data
+  const error = res.error
 
   if (error) {
     const missingColumnNames = ['transaction_type', 'created_at', 'note', 'type', 'timestamp', 'is_need']
@@ -391,7 +373,7 @@ async function addTransaction({ amount, category, transactionType, note }: AddTr
     domain: 'finance-os',
     entityType: 'finance_transaction',
     entityId: insertedId,
-    eventType: 'FINANCE_TRANSACTION_LOGGED',
+    eventType: FINANCE_TRANSACTION_CREATED,
     payload: {
       amount: normalizedAmount,
       category: normalizedCategory,
@@ -466,7 +448,7 @@ export function useDeleteTransaction() {
         domain: 'finance-os',
         entityType: 'finance_transaction',
         entityId: deletedTransaction.id,
-        eventType: FINANCE_TRANSACTION_DELETED,
+        eventType: FINANCE_TRANSACTION_DELETED, FINANCE_TRANSACTION_CREATED,
         payload: {
           transaction_id: deletedTransaction.id,
         },

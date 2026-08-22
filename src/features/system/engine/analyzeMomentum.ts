@@ -62,6 +62,7 @@ export function analyzeMomentum(
     return {
       momentum: 0,
       trend: 'stable',
+      emaSeries: [],
     }
   }
 
@@ -89,6 +90,11 @@ export function analyzeMomentum(
   }
 
   const latestMomentum = emaSeries[emaSeries.length - 1]
+  const previousDayMomentum = emaSeries.length > 1 ? emaSeries[emaSeries.length - 2] : latestMomentum
+  const rawDelta = latestMomentum - previousDayMomentum
+
+  const trend: MomentumAnalysis['trend'] = rawDelta > 2 ? 'rising' : rawDelta < -2 ? 'falling' : 'stable'
+
   const deepWorkBoost = sanitizeMinutes(deepWorkMinutesToday) > DEEP_WORK_BOOST_MINUTES
     ? DEEP_WORK_BOOST_POINTS
     : 0
@@ -101,13 +107,10 @@ export function analyzeMomentum(
     const standardGain = Math.max(1, Math.round((100 - adjustedLatestMomentum) * 0.03))
     adjustedLatestMomentum = clampPercentage(adjustedLatestMomentum + standardGain * 3)
   }
-  const previousDayMomentum = emaSeries.length > 1 ? emaSeries[emaSeries.length - 2] : latestMomentum
-  const delta = adjustedLatestMomentum - previousDayMomentum
-
-  const trend: MomentumAnalysis['trend'] = delta > 2 ? 'rising' : delta < -2 ? 'falling' : 'stable'
 
   return {
     momentum: Math.round(adjustedLatestMomentum),
     trend,
+    emaSeries: emaSeries.map(v => Math.round(v)),
   }
 }

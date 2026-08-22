@@ -8,6 +8,7 @@ const MODULE_DOMAIN_MAP: Record<string, string> = {
   'Time OS': 'time-os',
   'Fitness OS': 'fitness-os',
   'Finance OS': 'finance-os',
+  'Learning OS': 'learning-os',
 }
 
 function getStatus(consistency: number, hasRecentEvents: boolean): SystemHealthEntry['status'] {

@@ -26,6 +26,18 @@ function buildUrgencyScores(snapshot: CurrentDaySnapshot): UrgencyScores {
 
   const isCoachModeFitnessOverride = workoutDaysThisWeek === 0 && isPastWednesdayInIndia()
 
+  const budgetUtilization = snapshot.budget_utilization_percentage || 0
+  const recentWantExpenses = sanitizeCount(snapshot.recent_want_expenses_count)
+
+  let financeUrgency = 0
+  if (budgetUtilization > 90) {
+    financeUrgency = 8
+  } else if (budgetUtilization > 75) {
+    financeUrgency = 5
+  } else if (recentWantExpenses > 3) {
+    financeUrgency = 4
+  }
+
   return {
     task: pendingTasks * 2,
     habit: unfinishedHabits * 2,
@@ -33,6 +45,7 @@ function buildUrgencyScores(snapshot: CurrentDaySnapshot): UrgencyScores {
     fitness: isCoachModeFitnessOverride ? 100 : workoutDaysThisWeek < 2 ? 3 : 0,
     deep_work: deepWorkMinutesToday === 0 ? 6 : deepWorkMinutesToday < 60 ? 4 : 0,
     learning: snapshot.active_roadmaps_count > 0 && snapshot.learning_sessions_logged_7d === 0 ? 5 : 0,
+    finance: financeUrgency,
   }
 }
 
@@ -44,6 +57,7 @@ function getTopDomain(urgency: UrgencyScores): DirectiveDomain {
     'deep-work',
     'learning',
     'fitness',
+    'finance',
   ]
   const topEntry = orderedDomains
     .map((domain) => [domain, urgency[domain === 'deep-work' ? 'deep_work' : domain]] as const)
@@ -132,6 +146,32 @@ function buildDirective(snapshot: CurrentDaySnapshot, topDomain: DirectiveDomain
     }
   }
 
+  if (topDomain === 'finance') {
+    const budgetUtilization = snapshot.budget_utilization_percentage || 0
+    if (budgetUtilization > 90) {
+      return {
+        action: 'finance' as const,
+        label: 'Review budget immediately',
+        reason: 'Budget utilization exceeded 90%',
+        route: '/finance-os',
+      }
+    }
+    if (budgetUtilization > 75) {
+      return {
+        action: 'finance' as const,
+        label: 'Monitor budget',
+        reason: 'Budget utilization exceeded 75%',
+        route: '/finance-os',
+      }
+    }
+    return {
+      action: 'finance' as const,
+      label: 'Review discretionary spending',
+      reason: 'Recent spike in want-spending detected',
+      route: '/finance-os',
+    }
+  }
+
   return FALLBACK_DIRECTIVE
 }
 
@@ -150,6 +190,7 @@ export function generateDirectives(snapshot: CurrentDaySnapshot | null | undefin
         fitness: 0,
         deep_work: 0,
         learning: 0,
+        finance: 0,
       },
     }
   }
@@ -163,6 +204,7 @@ export function generateDirectives(snapshot: CurrentDaySnapshot | null | undefin
     urgency.fitness,
     urgency.deep_work,
     urgency.learning,
+    urgency.finance,
   )
 
   if (maxUrgency <= 0) {

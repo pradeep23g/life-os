@@ -10,11 +10,12 @@ import {
   Activity,
   Award,
 } from 'lucide-react'
-import { useRoadmaps, useRecentSessionLogs, useRoadmapProgress } from '../api/useLearningOS'
+import { useRoadmaps, useRecentSessionLogs, useSessionAnalytics, useRoadmapProgress } from '../api/useLearningOS'
 
 export function AnalyticsPage() {
   const { data: roadmaps = [], isLoading: roadmapsLoading } = useRoadmaps()
   const { data: recentLogs = [], isLoading: logsLoading } = useRecentSessionLogs()
+  const { data: analyticsLogs = [], isLoading: analyticsLoading } = useSessionAnalytics()
   const { data: progressList = [] } = useRoadmapProgress()
 
   const progressMap = useMemo(
@@ -24,15 +25,15 @@ export function AnalyticsPage() {
 
   // Aggregate Metrics
   const totalMinutes = useMemo(
-    () => recentLogs.reduce((acc, log) => acc + (log.duration_minutes || 0), 0),
-    [recentLogs]
+    () => analyticsLogs.reduce((acc, log) => acc + (log.duration_minutes || 0), 0),
+    [analyticsLogs]
   )
 
   const totalHours = (totalMinutes / 60).toFixed(1)
 
   const avgSessionDuration = useMemo(
-    () => (recentLogs.length > 0 ? Math.round(totalMinutes / recentLogs.length) : 0),
-    [recentLogs, totalMinutes]
+    () => (analyticsLogs.length > 0 ? Math.round(totalMinutes / analyticsLogs.length) : 0),
+    [analyticsLogs, totalMinutes]
   )
 
   const activeRoadmapsCount = useMemo(
@@ -65,7 +66,7 @@ export function AnalyticsPage() {
 
     const dayMap = new Map(days.map((d) => [d.dateStr, d]))
 
-    recentLogs.forEach((log) => {
+    analyticsLogs.forEach((log) => {
       if (!log.logged_at) return
       const logDate = log.logged_at.slice(0, 10)
       const entry = dayMap.get(logDate)
@@ -80,9 +81,9 @@ export function AnalyticsPage() {
       ...d,
       heightPct: Math.round((d.minutes / maxMinutes) * 100),
     }))
-  }, [recentLogs])
+  }, [analyticsLogs])
 
-  const isLoading = roadmapsLoading || logsLoading
+  const isLoading = roadmapsLoading || logsLoading || analyticsLoading
 
   return (
     <div className="space-y-6 pb-28 sm:pb-24">
@@ -136,7 +137,7 @@ export function AnalyticsPage() {
             </div>
           </div>
           <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-slate-100">{recentLogs.length}</span>
+            <span className="text-2xl font-bold text-slate-100">{analyticsLogs.length}</span>
             <span className="text-xs text-slate-500">recorded</span>
           </div>
         </div>

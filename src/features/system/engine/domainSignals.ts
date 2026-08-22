@@ -104,3 +104,34 @@ export function getLearningOSSignals(snapshot: CurrentDaySnapshot): DomainSignal
 
   return signals
 }
+
+export function getFinanceOSSignals(snapshot: CurrentDaySnapshot): DomainSignal[] {
+  const signals: DomainSignal[] = []
+
+  if (snapshot.budget_utilization_percentage > 90) {
+    signals.push({
+      issueText: 'Critical budget pressure',
+      momentumText: 'Budget utilization is over 90%',
+      severity: 'critical',
+      domain: 'finance-os',
+    })
+  } else if (snapshot.budget_utilization_percentage > 75) {
+    signals.push({
+      issueText: 'High budget utilization',
+      momentumText: 'Budget utilization is over 75%',
+      severity: 'high',
+      domain: 'finance-os',
+    })
+  }
+
+  if (snapshot.recent_want_expenses_count > 3) {
+    signals.push({
+      issueText: 'High discretionary spending detected',
+      momentumText: 'Recent spike in want-spending',
+      severity: 'medium',
+      domain: 'finance-os',
+    })
+  }
+
+  return signals
+}

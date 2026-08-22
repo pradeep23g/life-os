@@ -42,7 +42,7 @@ function RecentActivityLog() {
                 <div className="text-slate-100">{formatDay(row.activity_date)}</div>
                 <div className="flex flex-wrap gap-x-4 gap-y-1">
                   <span>
-                    systems={row.active_system_count}/6
+                    systems={row.active_system_count}/7
                   </span>
                   <span>
                     deep_work={row.deep_work_minutes}m
@@ -52,6 +52,12 @@ function RecentActivityLog() {
                   </span>
                   <span>
                     tasks={row.tasks_completed}
+                  </span>
+                  <span>
+                    finance={row.finance_entries}
+                  </span>
+                  <span>
+                    learning={row.learning_sessions_logged}
                   </span>
                 </div>
               </div>

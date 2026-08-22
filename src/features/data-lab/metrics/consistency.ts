@@ -13,6 +13,7 @@ const MODULE_EXTRACTORS: ModuleExtractor[] = [
   { name: 'Time OS', isActive: (r) => r.total_focus_minutes > 0 },
   { name: 'Fitness OS', isActive: (r) => r.workouts_logged > 0 },
   { name: 'Finance OS', isActive: (r) => r.finance_entries > 0 },
+  { name: 'Learning OS', isActive: (r) => r.learning_sessions_logged > 0 },
 ]
 
 function computeTrend(dailyRows: DataLabDailyActivity[], extractor: ModuleExtractor): TrendDirection {

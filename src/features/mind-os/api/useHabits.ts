@@ -1,11 +1,15 @@
-﻿import { useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { logEventSafe } from '../../../lib/events'
 import {
+  MIND_HABIT_CREATED,
+  MIND_HABIT_COMPLETED,
   MIND_HABIT_COUNT_ADJUSTED,
+  MIND_HABIT_UNCOMPLETED,
   MIND_HABIT_DELETED,
+  MIND_HABIT_BREAK_HEALED,
 } from '../../../lib/eventTaxonomy'
 import { supabase } from '../../../lib/supabase'
 import { emitSystemFeedback } from '../../system/feedback'
@@ -584,7 +588,7 @@ async function createHabit({ title, habitType, targetValue, unit }: CreateHabitI
     domain: 'mind-os',
     entityType: 'habit',
     entityId: data.id,
-    eventType: 'habit_created',
+    eventType: MIND_HABIT_CREATED,
     payload: {
       habitType: resolvedType,
       targetValue: resolvedTargetValue,
@@ -622,7 +626,7 @@ async function markHabitDone({ habitId, habitType, targetValue, struggleNote }: 
     domain: 'mind-os',
     entityType: 'habit_log',
     entityId: habitId,
-    eventType: 'habit_logged_done',
+    eventType: MIND_HABIT_COMPLETED,
     payload: {
       habitType,
       value,
@@ -650,7 +654,7 @@ async function markHabitNotDone({ habitId }: MarkHabitNotDoneInput): Promise<voi
     domain: 'mind-os',
     entityType: 'habit_log',
     entityId: habitId,
-    eventType: 'habit_marked_not_done',
+    eventType: MIND_HABIT_UNCOMPLETED,
     payload: {
       logDate: getTodayIndiaDateKey(),
     },
@@ -878,7 +882,7 @@ async function healHabitBreak({ breakId, habitId, reason }: HealHabitBreakInput)
     domain: 'mind-os',
     entityType: 'habit_break',
     entityId: breakId,
-    eventType: 'habit_break_healed',
+    eventType: MIND_HABIT_BREAK_HEALED,
     payload: {
       habitId,
     },

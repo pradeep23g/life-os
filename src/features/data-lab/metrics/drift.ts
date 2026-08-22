@@ -14,6 +14,7 @@ const DRIFT_EXTRACTORS: DriftExtractor[] = [
   { name: 'Tasks', getValue: (r) => r.tasks_completed },
   { name: 'Habits', getValue: (r) => r.habits_completed },
   { name: 'Finance', getValue: (r) => r.finance_entries },
+  { name: 'Learning OS', getValue: (r) => r.learning_sessions_logged },
 ]
 
 function mean(values: number[]): number {

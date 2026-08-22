@@ -143,6 +143,33 @@ export function useRecentSessionLogs(roadmapId?: string) {
   })
 }
 
+export const learningSessionAnalyticsQueryKey = ['learning-os', 'session-analytics'] as const
+
+export function useSessionAnalytics(roadmapId?: string) {
+  return useQuery({
+    queryKey: [...learningSessionAnalyticsQueryKey, roadmapId],
+    queryFn: async () => {
+      let query = supabase
+        .from('learning_session_logs')
+        .select('*')
+        .is('deleted_at', null)
+        .order('logged_at', { ascending: false })
+      
+      if (roadmapId) {
+        query = query.eq('roadmap_id', roadmapId)
+      }
+
+      const { data, error } = await query
+
+      if (error) {
+        if (isMissingRelationError(error)) return [] as LearningSessionLog[]
+        throw new Error(getErrorMessage(error))
+      }
+      return (data ?? []) as LearningSessionLog[]
+    },
+  })
+}
+
 export function useRoadmapMilestones(roadmapId: string | undefined) {
   return useQuery({
     queryKey: [...learningMilestonesQueryKey, roadmapId],

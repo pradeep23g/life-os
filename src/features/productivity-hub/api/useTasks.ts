@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { logEventSafe } from '../../../lib/events'
+import { PRODUCTIVITY_TASK_CREATED, PRODUCTIVITY_TASK_STATUS_CHANGED } from '../../../lib/eventTaxonomy'
 import { supabase } from '../../../lib/supabase'
 import { systemStatusQueryKey } from '../../system/api/useSystemStatus'
 import { emitSystemFeedback } from '../../system/feedback'
@@ -128,7 +129,7 @@ async function createTask({ title, deadlineType, deadlineDate }: CreateTaskInput
     domain: 'productivity-hub',
     entityType: 'task',
     entityId: data.id,
-    eventType: 'task_created',
+    eventType: PRODUCTIVITY_TASK_CREATED,
     payload: {
       deadline_type: deadlineType,
       deadline_date: resolvedDeadlineDate,
@@ -161,7 +162,7 @@ async function toggleTaskCompletion({ id, isCompleted }: ToggleTaskCompletionInp
     domain: 'productivity-hub',
     entityType: 'task',
     entityId: id,
-    eventType: 'task_status_updated',
+    eventType: PRODUCTIVITY_TASK_STATUS_CHANGED,
     payload: {
       is_completed: isCompleted,
       status: isCompleted ? 'Done' : 'Open',

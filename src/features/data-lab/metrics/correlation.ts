@@ -14,6 +14,7 @@ const METRIC_EXTRACTORS: MetricExtractor[] = [
   { label: 'Workouts', getValue: (r) => r.workouts_logged },
   { label: 'Tasks', getValue: (r) => r.tasks_completed },
   { label: 'Finance', getValue: (r) => r.finance_entries },
+  { label: 'Learning', getValue: (r) => r.learning_sessions_logged },
 ]
 
 function getMaturityLevel(totalDays: number): DataMaturityLevel {

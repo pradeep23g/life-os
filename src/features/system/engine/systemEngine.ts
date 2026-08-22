@@ -5,6 +5,7 @@ import {
   getMindOSSignals,
   getTimeOSSignals,
   getLearningOSSignals,
+  getFinanceOSSignals,
 } from './domainSignals'
 import { generateDirectives } from './generateDirectives'
 import type { CurrentDaySnapshot, DomainSignal, SystemHistoryDay, SystemIssue, SystemSignalEvent, SystemStatus } from './types'
@@ -16,6 +17,7 @@ function collectDomainSignals(snapshot: CurrentDaySnapshot): DomainSignal[] {
     ...getFitnessOSSignals(snapshot),
     ...getTimeOSSignals(snapshot),
     ...getLearningOSSignals(snapshot),
+    ...getFinanceOSSignals(snapshot),
   ]
 }
 

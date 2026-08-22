@@ -6,569 +6,134 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
-export interface Database {
+export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.4"
+  }
   public: {
     Tables: {
-      habits: {
+      data_lab_signal_config: {
         Row: {
-          id: string
-          user_id: string
-          title: string
-          habit_type: 'binary' | 'target'
-          target_value: number
-          unit: string | null
-          created_at: string
-          updated_at: string
-          deleted_at: string | null
+          display_name: string
+          is_active: boolean
+          signal_key: string
+          weight_cap_days: number
+          weight_percent: number
         }
         Insert: {
-          id?: string
-          user_id: string
-          title: string
-          habit_type?: 'binary' | 'target'
-          target_value?: number
-          unit?: string | null
-          created_at?: string
-          updated_at?: string
-          deleted_at?: string | null
+          display_name: string
+          is_active?: boolean
+          signal_key: string
+          weight_cap_days?: number
+          weight_percent?: number
         }
         Update: {
-          id?: string
-          user_id?: string
-          title?: string
-          habit_type?: 'binary' | 'target'
-          target_value?: number
-          unit?: string | null
-          created_at?: string
-          updated_at?: string
-          deleted_at?: string | null
+          display_name?: string
+          is_active?: boolean
+          signal_key?: string
+          weight_cap_days?: number
+          weight_percent?: number
         }
         Relationships: []
       }
-      habit_logs: {
+      events: {
         Row: {
-          id: string
-          habit_id: string
-          user_id: string
-          value: number
-          logged_at: string
-          log_date: string
-          struggle_note: string | null
           created_at: string
+          domain: string
+          entity_id: string | null
+          entity_type: string
+          event_date_ist: string
+          event_type: string
+          id: string
+          payload: Json
+          user_id: string
         }
         Insert: {
-          id?: string
-          habit_id: string
-          user_id: string
-          value?: number
-          logged_at?: string
-          log_date?: string
-          struggle_note?: string | null
           created_at?: string
+          domain: string
+          entity_id?: string | null
+          entity_type: string
+          event_date_ist: string
+          event_type: string
+          id?: string
+          payload?: Json
+          user_id: string
         }
         Update: {
+          created_at?: string
+          domain?: string
+          entity_id?: string | null
+          entity_type?: string
+          event_date_ist?: string
+          event_type?: string
           id?: string
-          habit_id?: string
+          payload?: Json
           user_id?: string
-          value?: number
-          logged_at?: string
-          log_date?: string
-          struggle_note?: string | null
-          created_at?: string
-        }
-        Relationships: []
-      }
-      habit_streak_breaks: {
-        Row: {
-          id: string
-          habit_id: string
-          user_id: string
-          break_date: string
-          reason: string | null
-          recovery_commitment: string | null
-          created_at: string
-          healed_at: string | null
-        }
-        Insert: {
-          id?: string
-          habit_id: string
-          user_id: string
-          break_date: string
-          reason?: string | null
-          recovery_commitment?: string | null
-          created_at?: string
-          healed_at?: string | null
-        }
-        Update: {
-          id?: string
-          habit_id?: string
-          user_id?: string
-          break_date?: string
-          reason?: string | null
-          recovery_commitment?: string | null
-          created_at?: string
-          healed_at?: string | null
-        }
-        Relationships: []
-      }
-      habit_streak_heals: {
-        Row: {
-          id: string
-          habit_id: string
-          user_id: string
-          break_id: string
-          reason: string | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          habit_id: string
-          user_id: string
-          break_id: string
-          reason?: string | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          habit_id?: string
-          user_id?: string
-          break_id?: string
-          reason?: string | null
-          created_at?: string
-        }
-        Relationships: []
-      }
-      journal_entries: {
-        Row: {
-          id: string
-          user_id: string
-          mood: number
-          what_went_good: string | null
-          what_you_learned: string | null
-          brief_about_day: string | null
-          went_well: string | null
-          went_wrong: string | null
-          lesson_learned: string | null
-          created_at: string
-          updated_at: string
-          deleted_at: string | null
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          mood: number
-          what_went_good?: string | null
-          what_you_learned?: string | null
-          brief_about_day?: string | null
-          went_well?: string | null
-          went_wrong?: string | null
-          lesson_learned?: string | null
-          created_at?: string
-          updated_at?: string
-          deleted_at?: string | null
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          mood?: number
-          what_went_good?: string | null
-          what_you_learned?: string | null
-          brief_about_day?: string | null
-          went_well?: string | null
-          went_wrong?: string | null
-          lesson_learned?: string | null
-          created_at?: string
-          updated_at?: string
-          deleted_at?: string | null
-        }
-        Relationships: []
-      }
-      tasks: {
-        Row: {
-          id: string
-          user_id: string
-          title: string
-          description: string | null
-          deadline_type: 'same_day' | 'no_deadline' | 'specific_date'
-          deadline_date: string | null
-          is_completed: boolean
-          created_at: string
-          updated_at: string
-          deleted_at: string | null
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          title: string
-          description?: string | null
-          deadline_type?: 'same_day' | 'no_deadline' | 'specific_date'
-          deadline_date?: string | null
-          is_completed?: boolean
-          created_at?: string
-          updated_at?: string
-          deleted_at?: string | null
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          title?: string
-          description?: string | null
-          deadline_type?: 'same_day' | 'no_deadline' | 'specific_date'
-          deadline_date?: string | null
-          is_completed?: boolean
-          created_at?: string
-          updated_at?: string
-          deleted_at?: string | null
-        }
-        Relationships: []
-      }
-      goals: {
-        Row: {
-          id: string
-          user_id: string
-          title: string
-          description: string | null
-          domain: 'mind-os' | 'productivity-hub' | 'learning-os' | 'fitness-os' | 'finance-os' | 'progress-hub'
-          status: string
-          target_date: string | null
-          notes: string | null
-          created_at: string
-          updated_at: string
-          deleted_at: string | null
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          title: string
-          description?: string | null
-          domain: 'mind-os' | 'productivity-hub' | 'learning-os' | 'fitness-os' | 'finance-os' | 'progress-hub'
-          status?: string
-          target_date?: string | null
-          notes?: string | null
-          created_at?: string
-          updated_at?: string
-          deleted_at?: string | null
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          title?: string
-          description?: string | null
-          domain?: 'mind-os' | 'productivity-hub' | 'learning-os' | 'fitness-os' | 'finance-os' | 'progress-hub'
-          status?: string
-          target_date?: string | null
-          notes?: string | null
-          created_at?: string
-          updated_at?: string
-          deleted_at?: string | null
-        }
-        Relationships: []
-      }
-      weekly_plans: {
-        Row: {
-          id: string
-          user_id: string
-          week_start_date: string
-          focus_text: string | null
-          outcomes: string[]
-          reflection: string | null
-          created_at: string
-          updated_at: string
-          deleted_at: string | null
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          week_start_date: string
-          focus_text?: string | null
-          outcomes?: string[]
-          reflection?: string | null
-          created_at?: string
-          updated_at?: string
-          deleted_at?: string | null
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          week_start_date?: string
-          focus_text?: string | null
-          outcomes?: string[]
-          reflection?: string | null
-          created_at?: string
-          updated_at?: string
-          deleted_at?: string | null
-        }
-        Relationships: []
-      }
-      weekly_plan_items: {
-        Row: {
-          id: string
-          user_id: string
-          plan_id: string | null
-          week_start_date: string
-          title: string
-          priority: 'Low' | 'Medium' | 'High'
-          order_index: number
-          status: 'Planned' | 'Doing' | 'Done' | 'Dropped'
-          goal_id: string | null
-          linked_task_id: string | null
-          linked_habit_id: string | null
-          notes: string | null
-          is_completed: boolean
-          created_at: string
-          updated_at: string
-          deleted_at: string | null
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          plan_id?: string | null
-          week_start_date?: string
-          title: string
-          priority?: 'Low' | 'Medium' | 'High'
-          order_index?: number
-          status?: 'Planned' | 'Doing' | 'Done' | 'Dropped'
-          goal_id?: string | null
-          linked_task_id?: string | null
-          linked_habit_id?: string | null
-          notes?: string | null
-          is_completed?: boolean
-          created_at?: string
-          updated_at?: string
-          deleted_at?: string | null
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          plan_id?: string | null
-          week_start_date?: string
-          title?: string
-          priority?: 'Low' | 'Medium' | 'High'
-          order_index?: number
-          status?: 'Planned' | 'Doing' | 'Done' | 'Dropped'
-          goal_id?: string | null
-          linked_task_id?: string | null
-          linked_habit_id?: string | null
-          notes?: string | null
-          is_completed?: boolean
-          created_at?: string
-          updated_at?: string
-          deleted_at?: string | null
-        }
-        Relationships: []
-      }
-      weekly_reviews: {
-        Row: {
-          id: string
-          user_id: string
-          week_start_date: string
-          wins: string | null
-          blockers: string | null
-          next_adjustments: string | null
-          challenges: string | null
-          lessons: string | null
-          created_at: string
-          updated_at: string
-          deleted_at: string | null
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          week_start_date: string
-          wins?: string | null
-          blockers?: string | null
-          next_adjustments?: string | null
-          challenges?: string | null
-          lessons?: string | null
-          created_at?: string
-          updated_at?: string
-          deleted_at?: string | null
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          week_start_date?: string
-          wins?: string | null
-          blockers?: string | null
-          next_adjustments?: string | null
-          challenges?: string | null
-          lessons?: string | null
-          created_at?: string
-          updated_at?: string
-          deleted_at?: string | null
-        }
-        Relationships: []
-      }
-      workouts: {
-        Row: {
-          id: string
-          user_id: string
-          workout_date: string
-          title: string
-          session_type: string | null
-          duration_minutes: number | null
-          notes: string | null
-          start_time: string | null
-          end_time: string | null
-          created_at: string
-          updated_at: string
-          deleted_at: string | null
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          workout_date: string
-          title?: string
-          session_type?: string | null
-          duration_minutes?: number | null
-          notes?: string | null
-          start_time?: string | null
-          end_time?: string | null
-          created_at?: string
-          updated_at?: string
-          deleted_at?: string | null
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          workout_date?: string
-          title?: string
-          session_type?: string | null
-          duration_minutes?: number | null
-          notes?: string | null
-          start_time?: string | null
-          end_time?: string | null
-          created_at?: string
-          updated_at?: string
-          deleted_at?: string | null
-        }
-        Relationships: []
-      }
-      workout_sets: {
-        Row: {
-          id: string
-          workout_id: string
-          exercise_name: string
-          reps: number
-          weight_kg: number
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          workout_id: string
-          exercise_name: string
-          reps: number
-          weight_kg: number
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          workout_id?: string
-          exercise_name?: string
-          reps?: number
-          weight_kg?: number
-          created_at?: string
-        }
-        Relationships: []
-      }
-      fitness_exercises: {
-        Row: {
-          id: string
-          user_id: string
-          name: string
-          category: string | null
-          equipment: string | string[] | null
-          primary_muscle: string | null
-          target_muscles: string[] | null
-          default_unit: string | null
-          notes: string | null
-          created_at: string
-          updated_at: string
-          deleted_at: string | null
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          name: string
-          category?: string | null
-          equipment?: string | string[] | null
-          primary_muscle?: string | null
-          target_muscles?: string[] | null
-          default_unit?: string | null
-          notes?: string | null
-          created_at?: string
-          updated_at?: string
-          deleted_at?: string | null
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          name?: string
-          category?: string | null
-          equipment?: string | string[] | null
-          primary_muscle?: string | null
-          target_muscles?: string[] | null
-          default_unit?: string | null
-          notes?: string | null
-          created_at?: string
-          updated_at?: string
-          deleted_at?: string | null
         }
         Relationships: []
       }
       exercise_logs: {
         Row: {
-          id: string
-          user_id: string
-          workout_id: string
-          exercise_id: string
-          order_index: number
-          sets: number | null
-          reps_total: number | null
-          weight_kg: number | null
-          duration_minutes: number | null
-          distance_km: number | null
-          rpe: number | null
-          notes: string | null
           created_at: string
-          updated_at: string
           deleted_at: string | null
+          distance_km: number | null
+          duration_minutes: number | null
+          exercise_id: string
+          id: string
+          notes: string | null
+          order_index: number
+          reps_total: number | null
+          rpe: number | null
+          sets: number | null
+          updated_at: string
+          user_id: string
+          weight_kg: number | null
+          workout_id: string
         }
         Insert: {
-          id?: string
-          user_id: string
-          workout_id: string
-          exercise_id: string
-          order_index?: number
-          sets?: number | null
-          reps_total?: number | null
-          weight_kg?: number | null
-          duration_minutes?: number | null
-          distance_km?: number | null
-          rpe?: number | null
-          notes?: string | null
           created_at?: string
-          updated_at?: string
           deleted_at?: string | null
+          distance_km?: number | null
+          duration_minutes?: number | null
+          exercise_id: string
+          id?: string
+          notes?: string | null
+          order_index?: number
+          reps_total?: number | null
+          rpe?: number | null
+          sets?: number | null
+          updated_at?: string
+          user_id: string
+          weight_kg?: number | null
+          workout_id: string
         }
         Update: {
-          id?: string
-          user_id?: string
-          workout_id?: string
-          exercise_id?: string
-          order_index?: number
-          sets?: number | null
-          reps_total?: number | null
-          weight_kg?: number | null
-          duration_minutes?: number | null
-          distance_km?: number | null
-          rpe?: number | null
-          notes?: string | null
           created_at?: string
-          updated_at?: string
           deleted_at?: string | null
+          distance_km?: number | null
+          duration_minutes?: number | null
+          exercise_id?: string
+          id?: string
+          notes?: string | null
+          order_index?: number
+          reps_total?: number | null
+          rpe?: number | null
+          sets?: number | null
+          updated_at?: string
+          user_id?: string
+          weight_kg?: number | null
+          workout_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "exercise_logs_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "fitness_exercises"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "exercise_logs_workout_id_fkey"
             columns: ["workout_id"]
@@ -576,57 +141,915 @@ export interface Database {
             referencedRelation: "workouts"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "exercise_logs_exercise_id_fkey"
-            columns: ["exercise_id"]
-            isOneToOne: false
-            referencedRelation: "fitness_exercises"
-            referencedColumns: ["id"]
-          }
         ]
+      }
+      fitness_exercises: {
+        Row: {
+          category: string | null
+          created_at: string
+          default_unit: string | null
+          deleted_at: string | null
+          equipment: string[] | null
+          id: string
+          name: string
+          notes: string | null
+          target_muscles: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          default_unit?: string | null
+          deleted_at?: string | null
+          equipment?: string[] | null
+          id?: string
+          name: string
+          notes?: string | null
+          target_muscles?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          default_unit?: string | null
+          deleted_at?: string | null
+          equipment?: string[] | null
+          id?: string
+          name?: string
+          notes?: string | null
+          target_muscles?: string[] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      goals: {
+        Row: {
+          created_at: string
+          domain: string
+          id: string
+          notes: string | null
+          status: string
+          target_date: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          domain: string
+          id?: string
+          notes?: string | null
+          status?: string
+          target_date?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          domain?: string
+          id?: string
+          notes?: string | null
+          status?: string
+          target_date?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      habit_logs: {
+        Row: {
+          created_at: string
+          habit_id: string
+          id: string
+          log_date: string
+          logged_at: string
+          struggle_note: string | null
+          user_id: string
+          value: number
+        }
+        Insert: {
+          created_at?: string
+          habit_id: string
+          id?: string
+          log_date: string
+          logged_at?: string
+          struggle_note?: string | null
+          user_id: string
+          value?: number
+        }
+        Update: {
+          created_at?: string
+          habit_id?: string
+          id?: string
+          log_date?: string
+          logged_at?: string
+          struggle_note?: string | null
+          user_id?: string
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "habit_logs_habit_id_fkey"
+            columns: ["habit_id"]
+            isOneToOne: false
+            referencedRelation: "habits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      habit_streak_breaks: {
+        Row: {
+          break_date: string
+          created_at: string
+          habit_id: string
+          healed_at: string | null
+          id: string
+          reason: string | null
+          user_id: string
+        }
+        Insert: {
+          break_date: string
+          created_at?: string
+          habit_id: string
+          healed_at?: string | null
+          id?: string
+          reason?: string | null
+          user_id: string
+        }
+        Update: {
+          break_date?: string
+          created_at?: string
+          habit_id?: string
+          healed_at?: string | null
+          id?: string
+          reason?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "habit_streak_breaks_habit_id_fkey"
+            columns: ["habit_id"]
+            isOneToOne: false
+            referencedRelation: "habits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      habit_streak_heals: {
+        Row: {
+          break_id: string
+          created_at: string
+          habit_id: string
+          id: string
+          reason: string | null
+          user_id: string
+        }
+        Insert: {
+          break_id: string
+          created_at?: string
+          habit_id: string
+          id?: string
+          reason?: string | null
+          user_id: string
+        }
+        Update: {
+          break_id?: string
+          created_at?: string
+          habit_id?: string
+          id?: string
+          reason?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "habit_streak_heals_break_id_fkey"
+            columns: ["break_id"]
+            isOneToOne: true
+            referencedRelation: "habit_streak_breaks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "habit_streak_heals_habit_id_fkey"
+            columns: ["habit_id"]
+            isOneToOne: false
+            referencedRelation: "habits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      habits: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          habit_type: string
+          id: string
+          target_value: number
+          title: string
+          unit: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          habit_type?: string
+          id?: string
+          target_value?: number
+          title: string
+          unit?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          habit_type?: string
+          id?: string
+          target_value?: number
+          title?: string
+          unit?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      journal_entries: {
+        Row: {
+          brief_about_day: string | null
+          created_at: string
+          deleted_at: string | null
+          id: string
+          lesson_learned: string | null
+          mood: number
+          updated_at: string
+          user_id: string
+          went_well: string | null
+          went_wrong: string | null
+          what_went_good: string | null
+          what_you_learned: string | null
+        }
+        Insert: {
+          brief_about_day?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          lesson_learned?: string | null
+          mood: number
+          updated_at?: string
+          user_id: string
+          went_well?: string | null
+          went_wrong?: string | null
+          what_went_good?: string | null
+          what_you_learned?: string | null
+        }
+        Update: {
+          brief_about_day?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          lesson_learned?: string | null
+          mood?: number
+          updated_at?: string
+          user_id?: string
+          went_well?: string | null
+          went_wrong?: string | null
+          what_went_good?: string | null
+          what_you_learned?: string | null
+        }
+        Relationships: []
+      }
+      learning_milestones: {
+        Row: {
+          achieved: boolean
+          achieved_at: string | null
+          created_at: string
+          deleted_at: string | null
+          id: string
+          roadmap_id: string
+          stage_id: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          achieved?: boolean
+          achieved_at?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          roadmap_id: string
+          stage_id?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          achieved?: boolean
+          achieved_at?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          roadmap_id?: string
+          stage_id?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learning_milestones_roadmap_id_fkey"
+            columns: ["roadmap_id"]
+            isOneToOne: false
+            referencedRelation: "learning_roadmap_progress"
+            referencedColumns: ["roadmap_id"]
+          },
+          {
+            foreignKeyName: "learning_milestones_roadmap_id_fkey"
+            columns: ["roadmap_id"]
+            isOneToOne: false
+            referencedRelation: "learning_roadmaps"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learning_milestones_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "learning_stage_progress"
+            referencedColumns: ["stage_id"]
+          },
+          {
+            foreignKeyName: "learning_milestones_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "learning_stages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      learning_projects: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          deleted_at: string | null
+          description: string | null
+          id: string
+          repo_url: string | null
+          roadmap_id: string
+          stage_id: string | null
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          description?: string | null
+          id?: string
+          repo_url?: string | null
+          roadmap_id: string
+          stage_id?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          description?: string | null
+          id?: string
+          repo_url?: string | null
+          roadmap_id?: string
+          stage_id?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learning_projects_roadmap_id_fkey"
+            columns: ["roadmap_id"]
+            isOneToOne: false
+            referencedRelation: "learning_roadmap_progress"
+            referencedColumns: ["roadmap_id"]
+          },
+          {
+            foreignKeyName: "learning_projects_roadmap_id_fkey"
+            columns: ["roadmap_id"]
+            isOneToOne: false
+            referencedRelation: "learning_roadmaps"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learning_projects_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "learning_stage_progress"
+            referencedColumns: ["stage_id"]
+          },
+          {
+            foreignKeyName: "learning_projects_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "learning_stages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      learning_reflections: {
+        Row: {
+          content: string
+          created_at: string
+          deleted_at: string | null
+          id: string
+          reflection_type: string
+          roadmap_id: string
+          session_id: string | null
+          stage_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          reflection_type?: string
+          roadmap_id: string
+          session_id?: string | null
+          stage_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          reflection_type?: string
+          roadmap_id?: string
+          session_id?: string | null
+          stage_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learning_reflections_roadmap_id_fkey"
+            columns: ["roadmap_id"]
+            isOneToOne: false
+            referencedRelation: "learning_roadmap_progress"
+            referencedColumns: ["roadmap_id"]
+          },
+          {
+            foreignKeyName: "learning_reflections_roadmap_id_fkey"
+            columns: ["roadmap_id"]
+            isOneToOne: false
+            referencedRelation: "learning_roadmaps"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learning_reflections_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "learning_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learning_reflections_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "learning_stage_progress"
+            referencedColumns: ["stage_id"]
+          },
+          {
+            foreignKeyName: "learning_reflections_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "learning_stages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      learning_roadmaps: {
+        Row: {
+          actual_end_date: string | null
+          color: string | null
+          created_at: string
+          deleted_at: string | null
+          description: string | null
+          id: string
+          metadata: Json | null
+          slug: string | null
+          start_date: string | null
+          status: string
+          target_end_date: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          actual_end_date?: string | null
+          color?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          slug?: string | null
+          start_date?: string | null
+          status?: string
+          target_end_date?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          actual_end_date?: string | null
+          color?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          slug?: string | null
+          start_date?: string | null
+          status?: string
+          target_end_date?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      learning_session_logs: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          duration_minutes: number | null
+          id: string
+          logged_at: string
+          metrics: Json | null
+          notes: string | null
+          roadmap_id: string
+          session_id: string | null
+          time_log_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          duration_minutes?: number | null
+          id?: string
+          logged_at?: string
+          metrics?: Json | null
+          notes?: string | null
+          roadmap_id: string
+          session_id?: string | null
+          time_log_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          duration_minutes?: number | null
+          id?: string
+          logged_at?: string
+          metrics?: Json | null
+          notes?: string | null
+          roadmap_id?: string
+          session_id?: string | null
+          time_log_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learning_session_logs_roadmap_id_fkey"
+            columns: ["roadmap_id"]
+            isOneToOne: false
+            referencedRelation: "learning_roadmap_progress"
+            referencedColumns: ["roadmap_id"]
+          },
+          {
+            foreignKeyName: "learning_session_logs_roadmap_id_fkey"
+            columns: ["roadmap_id"]
+            isOneToOne: false
+            referencedRelation: "learning_roadmaps"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learning_session_logs_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "learning_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learning_session_logs_time_log_id_fkey"
+            columns: ["time_log_id"]
+            isOneToOne: false
+            referencedRelation: "time_logs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      learning_sessions: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          description: string | null
+          estimated_minutes: number | null
+          id: string
+          is_skipped: boolean
+          order_index: number
+          slot: string | null
+          stage_id: string
+          tags: string[] | null
+          target_date: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          description?: string | null
+          estimated_minutes?: number | null
+          id?: string
+          is_skipped?: boolean
+          order_index: number
+          slot?: string | null
+          stage_id: string
+          tags?: string[] | null
+          target_date?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          description?: string | null
+          estimated_minutes?: number | null
+          id?: string
+          is_skipped?: boolean
+          order_index?: number
+          slot?: string | null
+          stage_id?: string
+          tags?: string[] | null
+          target_date?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learning_sessions_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "learning_stage_progress"
+            referencedColumns: ["stage_id"]
+          },
+          {
+            foreignKeyName: "learning_sessions_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "learning_stages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      learning_stages: {
+        Row: {
+          color: string | null
+          created_at: string
+          deleted_at: string | null
+          end_date: string | null
+          id: string
+          is_skipped: boolean
+          note: string | null
+          order_index: number
+          roadmap_id: string
+          start_date: string | null
+          subtitle: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          end_date?: string | null
+          id?: string
+          is_skipped?: boolean
+          note?: string | null
+          order_index: number
+          roadmap_id: string
+          start_date?: string | null
+          subtitle?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          end_date?: string | null
+          id?: string
+          is_skipped?: boolean
+          note?: string | null
+          order_index?: number
+          roadmap_id?: string
+          start_date?: string | null
+          subtitle?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learning_stages_roadmap_id_fkey"
+            columns: ["roadmap_id"]
+            isOneToOne: false
+            referencedRelation: "learning_roadmap_progress"
+            referencedColumns: ["roadmap_id"]
+          },
+          {
+            foreignKeyName: "learning_stages_roadmap_id_fkey"
+            columns: ["roadmap_id"]
+            isOneToOne: false
+            referencedRelation: "learning_roadmaps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      progress_hub_archive: {
+        Row: {
+          archived_at: string
+          challenges: Json
+          id: string
+          milestones: Json
+          personal_skills: Json
+          programming_skills: Json
+          user_id: string
+        }
+        Insert: {
+          archived_at?: string
+          challenges?: Json
+          id?: string
+          milestones?: Json
+          personal_skills?: Json
+          programming_skills?: Json
+          user_id: string
+        }
+        Update: {
+          archived_at?: string
+          challenges?: Json
+          id?: string
+          milestones?: Json
+          personal_skills?: Json
+          programming_skills?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
+      system_event_queue: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          payload: Json | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          payload?: Json | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          payload?: Json | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      system_metrics: {
+        Row: {
+          created_at: string
+          events_processed: number
+          id: string
+          momentum_score: number
+          sync_date: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          events_processed?: number
+          id?: string
+          momentum_score?: number
+          sync_date: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          events_processed?: number
+          id?: string
+          momentum_score?: number
+          sync_date?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      tasks: {
+        Row: {
+          created_at: string
+          deadline_date: string | null
+          deadline_type: string
+          deleted_at: string | null
+          id: string
+          is_completed: boolean
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          deadline_date?: string | null
+          deadline_type?: string
+          deleted_at?: string | null
+          id?: string
+          is_completed?: boolean
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          deadline_date?: string | null
+          deadline_type?: string
+          deleted_at?: string | null
+          id?: string
+          is_completed?: boolean
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       time_logs: {
         Row: {
-          id: string
-          user_id: string
-          task_id: string | null
           bucket: string
-          duration_minutes: number | null
-          start_time: string
-          end_time: string | null
-          description: string | null
-          notes: string | null
           created_at: string
+          description: string | null
+          duration_minutes: number | null
+          end_time: string | null
+          id: string
+          start_time: string
+          task_id: string | null
           updated_at: string
-          deleted_at: string | null
+          user_id: string
         }
         Insert: {
-          id?: string
-          user_id: string
-          task_id?: string | null
           bucket: string
-          duration_minutes?: number | null
-          start_time?: string
-          end_time?: string | null
-          description?: string | null
-          notes?: string | null
           created_at?: string
+          description?: string | null
+          duration_minutes?: number | null
+          end_time?: string | null
+          id?: string
+          start_time: string
+          task_id?: string | null
           updated_at?: string
-          deleted_at?: string | null
+          user_id: string
         }
         Update: {
-          id?: string
-          user_id?: string
-          task_id?: string | null
           bucket?: string
-          duration_minutes?: number | null
-          start_time?: string
-          end_time?: string | null
-          description?: string | null
-          notes?: string | null
           created_at?: string
+          description?: string | null
+          duration_minutes?: number | null
+          end_time?: string | null
+          id?: string
+          start_time?: string
+          task_id?: string | null
           updated_at?: string
-          deleted_at?: string | null
+          user_id?: string
         }
         Relationships: [
           {
@@ -635,546 +1058,208 @@ export interface Database {
             isOneToOne: false
             referencedRelation: "tasks"
             referencedColumns: ["id"]
-          }
+          },
         ]
       }
       transactions: {
         Row: {
-          id: string
-          user_id: string
           amount: number
-          type: 'income' | 'expense'
           category: string
-          timestamp: string
+          id: string
           is_need: boolean | null
+          timestamp: string
+          type: string
+          user_id: string
         }
         Insert: {
-          id?: string
-          user_id: string
           amount: number
-          type: 'income' | 'expense'
           category: string
-          timestamp?: string
+          id?: string
           is_need?: boolean | null
+          timestamp?: string
+          type: string
+          user_id: string
         }
         Update: {
-          id?: string
-          user_id?: string
-          amount?: number
-          type?: 'income' | 'expense'
-          category?: string
-          timestamp?: string
-          is_need?: boolean | null
-        }
-        Relationships: []
-      }
-      finance_transactions: {
-        Row: {
-          id: string
-          user_id: string
-          amount: number
-          category: string
-          is_need: boolean
-          note: string | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          amount: number
-          category: string
-          is_need?: boolean
-          note?: string | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
           amount?: number
           category?: string
-          is_need?: boolean
-          note?: string | null
-          created_at?: string
+          id?: string
+          is_need?: boolean | null
+          timestamp?: string
+          type?: string
+          user_id?: string
         }
         Relationships: []
       }
-      system_metrics: {
+      weekly_plan_items: {
         Row: {
-          id: string
-          user_id: string
-          sync_date: string
-          momentum_score: number
-          events_processed: number
-          metric_date: string | null
-          eod_score: number | null
-          task_completion_rate: number | null
-          habit_completion_rate: number | null
           created_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          sync_date?: string
-          momentum_score?: number
-          events_processed?: number
-          metric_date?: string | null
-          eod_score?: number | null
-          task_completion_rate?: number | null
-          habit_completion_rate?: number | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          sync_date?: string
-          momentum_score?: number
-          events_processed?: number
-          metric_date?: string | null
-          eod_score?: number | null
-          task_completion_rate?: number | null
-          habit_completion_rate?: number | null
-          created_at?: string
-        }
-        Relationships: []
-      }
-      system_event_queue: {
-        Row: {
+          goal_id: string | null
           id: string
-          user_id: string
-          event_type: string
-          payload: Json
-          status: 'pending' | 'processed' | 'failed'
-          created_at: string
-          processed_at: string | null
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          event_type: string
-          payload?: Json
-          status?: 'pending' | 'processed' | 'failed'
-          created_at?: string
-          processed_at?: string | null
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          event_type?: string
-          payload?: Json
-          status?: 'pending' | 'processed' | 'failed'
-          created_at?: string
-          processed_at?: string | null
-        }
-        Relationships: []
-      }
-      events: {
-        Row: {
-          id: string
-          user_id: string
-          domain: 'mind-os' | 'productivity-hub' | 'learning-os' | 'mission-control' | 'fitness-os' | 'finance-os' | 'time-os' | 'progress-hub'
-          entity_type: string
-          entity_id: string | null
-          event_type: string
-          payload: Json
-          event_date_ist: string
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          domain: 'mind-os' | 'productivity-hub' | 'learning-os' | 'mission-control' | 'fitness-os' | 'finance-os' | 'time-os' | 'progress-hub'
-          entity_type: string
-          entity_id?: string | null
-          event_type: string
-          payload?: Json
-          event_date_ist?: string
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          domain?: 'mind-os' | 'productivity-hub' | 'learning-os' | 'mission-control' | 'fitness-os' | 'finance-os' | 'time-os' | 'progress-hub'
-          entity_type?: string
-          entity_id?: string | null
-          event_type?: string
-          payload?: Json
-          event_date_ist?: string
-          created_at?: string
-        }
-        Relationships: []
-      }
-      data_lab_signal_config: {
-        Row: {
-          signal_key: string
-          display_name: string
-          weight_percent: number
-          weight_cap_days: number
-          is_active: boolean
-        }
-        Insert: {
-          signal_key: string
-          display_name: string
-          weight_percent?: number
-          weight_cap_days?: number
-          is_active?: boolean
-        }
-        Update: {
-          signal_key?: string
-          display_name?: string
-          weight_percent?: number
-          weight_cap_days?: number
-          is_active?: boolean
-        }
-        Relationships: []
-      }
-      progress_hub_archive: {
-        Row: {
-          id: string
-          user_id: string
-          archived_at: string
-          programming_skills: Json
-          personal_skills: Json
-          milestones: Json
-          challenges: Json
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          archived_at?: string
-          programming_skills?: Json
-          personal_skills?: Json
-          milestones?: Json
-          challenges?: Json
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          archived_at?: string
-          programming_skills?: Json
-          personal_skills?: Json
-          milestones?: Json
-          challenges?: Json
-        }
-        Relationships: []
-      }
-      learning_roadmaps: {
-        Row: {
-          id: string
-          user_id: string
-          title: string
-          slug: string | null
-          description: string | null
-          status: 'active' | 'paused' | 'completed' | 'abandoned'
-          start_date: string | null
-          target_end_date: string | null
-          actual_end_date: string | null
-          color: string | null
-          metadata: Json
-          created_at: string
-          updated_at: string
-          deleted_at: string | null
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          title: string
-          slug?: string | null
-          description?: string | null
-          status?: 'active' | 'paused' | 'completed' | 'abandoned'
-          start_date?: string | null
-          target_end_date?: string | null
-          actual_end_date?: string | null
-          color?: string | null
-          metadata?: Json
-          created_at?: string
-          updated_at?: string
-          deleted_at?: string | null
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          title?: string
-          slug?: string | null
-          description?: string | null
-          status?: 'active' | 'paused' | 'completed' | 'abandoned'
-          start_date?: string | null
-          target_end_date?: string | null
-          actual_end_date?: string | null
-          color?: string | null
-          metadata?: Json
-          created_at?: string
-          updated_at?: string
-          deleted_at?: string | null
-        }
-        Relationships: []
-      }
-      learning_stages: {
-        Row: {
-          id: string
-          user_id: string
-          roadmap_id: string
-          order_index: number
-          title: string
-          subtitle: string | null
-          note: string | null
-          color: string | null
-          start_date: string | null
-          end_date: string | null
-          is_skipped: boolean
-          created_at: string
-          updated_at: string
-          deleted_at: string | null
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          roadmap_id: string
-          order_index: number
-          title: string
-          subtitle?: string | null
-          note?: string | null
-          color?: string | null
-          start_date?: string | null
-          end_date?: string | null
-          is_skipped?: boolean
-          created_at?: string
-          updated_at?: string
-          deleted_at?: string | null
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          roadmap_id?: string
-          order_index?: number
-          title?: string
-          subtitle?: string | null
-          note?: string | null
-          color?: string | null
-          start_date?: string | null
-          end_date?: string | null
-          is_skipped?: boolean
-          created_at?: string
-          updated_at?: string
-          deleted_at?: string | null
-        }
-        Relationships: []
-      }
-      learning_sessions: {
-        Row: {
-          id: string
-          user_id: string
-          stage_id: string
-          order_index: number
-          slot: string | null
-          title: string
-          description: string | null
-          estimated_minutes: number | null
-          tags: string[]
-          target_date: string | null
-          is_skipped: boolean
-          created_at: string
-          updated_at: string
-          deleted_at: string | null
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          stage_id: string
-          order_index: number
-          slot?: string | null
-          title: string
-          description?: string | null
-          estimated_minutes?: number | null
-          tags?: string[]
-          target_date?: string | null
-          is_skipped?: boolean
-          created_at?: string
-          updated_at?: string
-          deleted_at?: string | null
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          stage_id?: string
-          order_index?: number
-          slot?: string | null
-          title?: string
-          description?: string | null
-          estimated_minutes?: number | null
-          tags?: string[]
-          target_date?: string | null
-          is_skipped?: boolean
-          created_at?: string
-          updated_at?: string
-          deleted_at?: string | null
-        }
-        Relationships: []
-      }
-      learning_session_logs: {
-        Row: {
-          id: string
-          user_id: string
-          session_id: string | null
-          roadmap_id: string
-          time_log_id: string | null
-          logged_at: string
-          duration_minutes: number | null
-          metrics: Json
+          linked_habit_id: string | null
+          linked_task_id: string | null
           notes: string | null
-          created_at: string
+          order_index: number
+          priority: string
+          status: string
+          title: string
           updated_at: string
-          deleted_at: string | null
+          user_id: string
+          week_start_date: string
         }
         Insert: {
+          created_at?: string
+          goal_id?: string | null
           id?: string
-          user_id: string
-          session_id?: string | null
-          roadmap_id: string
-          time_log_id?: string | null
-          logged_at?: string
-          duration_minutes?: number | null
-          metrics?: Json
+          linked_habit_id?: string | null
+          linked_task_id?: string | null
           notes?: string | null
-          created_at?: string
+          order_index?: number
+          priority?: string
+          status?: string
+          title: string
           updated_at?: string
-          deleted_at?: string | null
+          user_id: string
+          week_start_date: string
         }
         Update: {
+          created_at?: string
+          goal_id?: string | null
           id?: string
-          user_id?: string
-          session_id?: string | null
-          roadmap_id?: string
-          time_log_id?: string | null
-          logged_at?: string
-          duration_minutes?: number | null
-          metrics?: Json
+          linked_habit_id?: string | null
+          linked_task_id?: string | null
           notes?: string | null
-          created_at?: string
-          updated_at?: string
-          deleted_at?: string | null
-        }
-        Relationships: []
-      }
-      learning_milestones: {
-        Row: {
-          id: string
-          user_id: string
-          roadmap_id: string
-          stage_id: string | null
-          title: string
-          achieved: boolean
-          achieved_at: string | null
-          created_at: string
-          updated_at: string
-          deleted_at: string | null
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          roadmap_id: string
-          stage_id?: string | null
-          title: string
-          achieved?: boolean
-          achieved_at?: string | null
-          created_at?: string
-          updated_at?: string
-          deleted_at?: string | null
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          roadmap_id?: string
-          stage_id?: string | null
+          order_index?: number
+          priority?: string
+          status?: string
           title?: string
-          achieved?: boolean
-          achieved_at?: string | null
-          created_at?: string
           updated_at?: string
-          deleted_at?: string | null
+          user_id?: string
+          week_start_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "weekly_plan_items_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "weekly_plan_items_linked_habit_id_fkey"
+            columns: ["linked_habit_id"]
+            isOneToOne: false
+            referencedRelation: "habits"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "weekly_plan_items_linked_task_id_fkey"
+            columns: ["linked_task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      weekly_plans: {
+        Row: {
+          created_at: string
+          focus_text: string
+          id: string
+          user_id: string
+          week_start_date: string
+        }
+        Insert: {
+          created_at?: string
+          focus_text: string
+          id?: string
+          user_id: string
+          week_start_date: string
+        }
+        Update: {
+          created_at?: string
+          focus_text?: string
+          id?: string
+          user_id?: string
+          week_start_date?: string
         }
         Relationships: []
       }
-      learning_projects: {
+      weekly_reviews: {
         Row: {
-          id: string
-          user_id: string
-          roadmap_id: string
-          stage_id: string | null
-          title: string
-          description: string | null
-          status: 'not_started' | 'in_progress' | 'done'
-          repo_url: string | null
-          completed_at: string | null
+          blockers: string | null
           created_at: string
+          id: string
+          next_adjustments: string | null
           updated_at: string
-          deleted_at: string | null
+          user_id: string
+          week_start_date: string
+          wins: string | null
         }
         Insert: {
-          id?: string
-          user_id: string
-          roadmap_id: string
-          stage_id?: string | null
-          title: string
-          description?: string | null
-          status?: 'not_started' | 'in_progress' | 'done'
-          repo_url?: string | null
-          completed_at?: string | null
+          blockers?: string | null
           created_at?: string
+          id?: string
+          next_adjustments?: string | null
           updated_at?: string
-          deleted_at?: string | null
+          user_id: string
+          week_start_date: string
+          wins?: string | null
         }
         Update: {
+          blockers?: string | null
+          created_at?: string
           id?: string
+          next_adjustments?: string | null
+          updated_at?: string
           user_id?: string
-          roadmap_id?: string
-          stage_id?: string | null
+          week_start_date?: string
+          wins?: string | null
+        }
+        Relationships: []
+      }
+      workouts: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          duration_minutes: number
+          end_time: string | null
+          id: string
+          notes: string | null
+          session_type: string | null
+          start_time: string | null
+          title: string
+          updated_at: string
+          user_id: string
+          workout_date: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          duration_minutes?: number
+          end_time?: string | null
+          id?: string
+          notes?: string | null
+          session_type?: string | null
+          start_time?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+          workout_date: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          duration_minutes?: number
+          end_time?: string | null
+          id?: string
+          notes?: string | null
+          session_type?: string | null
+          start_time?: string | null
           title?: string
-          description?: string | null
-          status?: 'not_started' | 'in_progress' | 'done'
-          repo_url?: string | null
-          completed_at?: string | null
-          created_at?: string
           updated_at?: string
-          deleted_at?: string | null
-        }
-        Relationships: []
-      }
-      learning_reflections: {
-        Row: {
-          id: string
-          user_id: string
-          roadmap_id: string
-          stage_id: string | null
-          session_id: string | null
-          content: string
-          reflection_type: 'general' | 'weekly_milestone' | 'teach_back_test'
-          created_at: string
-          updated_at: string
-          deleted_at: string | null
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          roadmap_id: string
-          stage_id?: string | null
-          session_id?: string | null
-          content: string
-          reflection_type?: 'general' | 'weekly_milestone' | 'teach_back_test'
-          created_at?: string
-          updated_at?: string
-          deleted_at?: string | null
-        }
-        Update: {
-          id?: string
           user_id?: string
-          roadmap_id?: string
-          stage_id?: string | null
-          session_id?: string | null
-          content?: string
-          reflection_type?: 'general' | 'weekly_milestone' | 'teach_back_test'
-          created_at?: string
-          updated_at?: string
-          deleted_at?: string | null
+          workout_date?: string
         }
         Relationships: []
       }
@@ -1182,202 +1267,107 @@ export interface Database {
     Views: {
       current_day_snapshot: {
         Row: {
-          user_id: string
-          snapshot_date: string
-          pending_tasks_count: number
-          total_active_habits: number
-          habits_completed_today: number
-          journal_logged_today: boolean
-          workout_days_this_week: number
-          deep_work_minutes_today: number
-          learning_sessions_logged_7d: number
-          active_roadmaps_count: number
-          oldest_pending_task_title: string | null
+          active_roadmaps_count: number | null
+          budget_utilization_percentage: number | null
+          deep_work_minutes_today: number | null
+          habits_completed_today: number | null
+          journal_logged_today: boolean | null
+          learning_sessions_logged_7d: number | null
           newest_active_habit_title: string | null
+          oldest_pending_task_title: string | null
+          pending_tasks_count: number | null
+          recent_want_expenses_count: number | null
+          snapshot_date: string | null
+          total_active_habits: number | null
+          user_id: string | null
+          workout_days_this_week: number | null
         }
         Relationships: []
       }
       current_day_snapshot_history_14d: {
         Row: {
-          user_id: string
-          snapshot_date: string
-          tasks_completed_count: number
-          habits_completed_count: number
-          total_active_habits: number
-          journal_logged: boolean
-          workout_logged: boolean
+          habits_completed_count: number | null
+          journal_logged: boolean | null
+          snapshot_date: string | null
+          tasks_completed_count: number | null
+          total_active_habits: number | null
+          user_id: string | null
+          workout_logged: boolean | null
         }
         Relationships: []
       }
       data_lab_daily_activity_90d: {
         Row: {
-          user_id: string
-          activity_date: string
-          active_habits: number
-          habits_completed: number
-          habit_completion_percent: number
-          journal_entries: number
-          avg_mood: number
-          tasks_created: number
-          tasks_completed: number
-          total_focus_minutes: number
-          deep_work_minutes: number
-          focus_sessions: number
-          workouts_logged: number
-          workout_minutes: number
-          total_spent: number
-          need_spent: number
-          want_spent: number
-          finance_entries: number
-          learning_sessions_logged: number
-          events_logged: number
-          active_domains: number
-          active_system_count: number
-        }
-        Relationships: []
-      }
-      data_lab_weekly_system_score_12w: {
-        Row: {
-          user_id: string
-          week_start_date: string
-          days_observed: number
-          habit_active_days: number
-          journal_days: number
-          task_completion_days: number
-          deep_work_days: number
-          workout_days: number
-          finance_logged_days: number
-          learning_logged_days: number
-          habits_completed: number
-          avg_habit_completion_percent: number
-          journal_entries: number
-          avg_mood: number
-          tasks_created: number
-          tasks_completed: number
-          total_focus_minutes: number
-          deep_work_minutes: number
-          workouts_logged: number
-          workout_minutes: number
-          total_spent: number
-          need_spent: number
-          want_spent: number
-          avg_active_systems: number
-          events_logged: number
-          weekly_system_score: number
-        }
-        Relationships: []
-      }
-      data_lab_module_consistency_30d: {
-        Row: {
-          user_id: string
-          module_name: string
-          days_observed: number
-          active_days: number
-          consistency_percent: number
-          last_active_date: string | null
+          active_domains: number | null
+          active_habits: number | null
+          active_system_count: number | null
+          activity_date: string | null
+          avg_mood: number | null
+          deep_work_minutes: number | null
+          events_logged: number | null
+          finance_entries: number | null
+          focus_sessions: number | null
+          habit_completion_percent: number | null
+          habits_completed: number | null
+          journal_entries: number | null
+          learning_sessions_logged: number | null
+          need_spent: number | null
+          tasks_completed: number | null
+          tasks_created: number | null
+          total_focus_minutes: number | null
+          total_spent: number | null
+          user_id: string | null
+          want_spent: number | null
+          workout_minutes: number | null
+          workouts_logged: number | null
         }
         Relationships: []
       }
       data_lab_event_coverage_30d: {
         Row: {
-          user_id: string
-          domain: string
-          event_type: string
-          event_count: number
-          active_days: number
+          active_days: number | null
+          domain: string | null
+          event_count: number | null
+          event_type: string | null
           first_seen_date: string | null
           last_seen_date: string | null
-        }
-        Relationships: []
-      }
-      data_lab_signal_mind_habits: {
-        Row: {
-          user_id: string
-          activity_date: string
-          was_active: boolean
-          magnitude: number
-          metrics: Json
-        }
-        Relationships: []
-      }
-      data_lab_signal_mind_journal: {
-        Row: {
-          user_id: string
-          activity_date: string
-          was_active: boolean
-          magnitude: number
-          metrics: Json
-        }
-        Relationships: []
-      }
-      data_lab_signal_execution_tasks: {
-        Row: {
-          user_id: string
-          activity_date: string
-          was_active: boolean
-          magnitude: number
-          metrics: Json
-        }
-        Relationships: []
-      }
-      data_lab_signal_time_os: {
-        Row: {
-          user_id: string
-          activity_date: string
-          was_active: boolean
-          magnitude: number
-          metrics: Json
-        }
-        Relationships: []
-      }
-      data_lab_signal_fitness_os: {
-        Row: {
-          user_id: string
-          activity_date: string
-          was_active: boolean
-          magnitude: number
-          metrics: Json
-        }
-        Relationships: []
-      }
-      data_lab_signal_finance_os: {
-        Row: {
-          user_id: string
-          activity_date: string
-          was_active: boolean
-          magnitude: number
-          metrics: Json
-        }
-        Relationships: []
-      }
-      data_lab_signal_learning_os: {
-        Row: {
-          user_id: string
-          activity_date: string
-          was_active: boolean
-          magnitude: number
-          metrics: Json
-        }
-        Relationships: []
-      }
-      learning_stage_progress: {
-        Row: {
-          stage_id: string
-          roadmap_id: string
-          total_sessions: number
-          completed_sessions: number
-          pct_complete: number
+          user_id: string | null
         }
         Relationships: []
       }
       learning_roadmap_progress: {
         Row: {
-          roadmap_id: string
-          total_sessions: number
-          completed_sessions: number
-          pct_complete: number
+          completed_sessions: number | null
+          pct_complete: number | null
+          roadmap_id: string | null
+          total_sessions: number | null
         }
         Relationships: []
+      }
+      learning_stage_progress: {
+        Row: {
+          completed_sessions: number | null
+          pct_complete: number | null
+          roadmap_id: string | null
+          stage_id: string | null
+          total_sessions: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learning_stages_roadmap_id_fkey"
+            columns: ["roadmap_id"]
+            isOneToOne: false
+            referencedRelation: "learning_roadmap_progress"
+            referencedColumns: ["roadmap_id"]
+          },
+          {
+            foreignKeyName: "learning_stages_roadmap_id_fkey"
+            columns: ["roadmap_id"]
+            isOneToOne: false
+            referencedRelation: "learning_roadmaps"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Functions: {
@@ -1391,3 +1381,126 @@ export interface Database {
     }
   }
 }
+
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  public: {
+    Enums: {},
+  },
+} as const
