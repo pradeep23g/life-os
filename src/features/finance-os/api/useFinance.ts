@@ -267,13 +267,12 @@ async function insertTransactionAttempt(attempt: TransactionInsertAttempt): Prom
   return data?.id ?? null
 }
 
-async function addTransaction({ amount, category, transactionType, note }: AddTransactionInput): Promise<void> {
+async function addTransaction({ amount, category, transactionType }: AddTransactionInput): Promise<void> {
   const userId = await requireUserId()
   const normalizedAmount = Number.isFinite(amount) ? Math.round(Math.max(0, amount) * 100) / 100 : 0
-  const normalizedCategory = category.trim()
-  const normalizedTransactionType = transactionType.toUpperCase() === 'INCOME' ? 'INCOME' : 'EXPENSE'
-  const createdAt = new Date().toISOString()
-  const trimmedNote = note?.trim() || null
+  const normalizedCategory = String(category).trim() || 'Uncategorized'
+  const normalizedTransactionType = transactionType === 'INCOME' ? 'INCOME' : 'EXPENSE'
+  const createdAt = new Date().toISOString() || null
 
   if (normalizedAmount <= 0) {
     throw new Error('Amount must be greater than 0.')
@@ -290,67 +289,12 @@ async function addTransaction({ amount, category, transactionType, note }: AddTr
         user_id: userId,
         amount: normalizedAmount,
         category: normalizedCategory,
-        transaction_type: normalizedTransactionType,
-        note: trimmedNote,
-        created_at: createdAt,
-      },
-    },
-    {
-      table: 'transactions',
-      payload: {
-        user_id: userId,
-        amount: normalizedAmount,
-        category: normalizedCategory,
-        transaction_type: normalizedTransactionType,
-        created_at: createdAt,
-      },
-    },
-    {
-      table: 'transactions',
-      payload: {
-        user_id: userId,
-        amount: normalizedAmount,
-        category: normalizedCategory,
         type: normalizedTransactionType.toLowerCase(),
         timestamp: createdAt,
-      },
-    },
-    {
-      table: 'finance_transactions',
-      payload: {
-        user_id: userId,
-        amount: normalizedAmount,
-        category: normalizedCategory,
-        transaction_type: normalizedTransactionType,
-        note: trimmedNote,
-        created_at: createdAt,
-      },
-    },
-    {
-      table: 'finance_transactions',
-      payload: {
-        user_id: userId,
-        amount: normalizedAmount,
-        category: normalizedCategory,
-        transaction_type: normalizedTransactionType,
-        created_at: createdAt,
-      },
-    },
+        is_need: normalizedTransactionType === 'EXPENSE' ? normalizedCategory === 'Need' : null,
+      }
+    }
   ]
-
-  if (normalizedTransactionType === 'EXPENSE') {
-    attempts.push({
-      table: 'finance_transactions',
-      payload: {
-        user_id: userId,
-        amount: normalizedAmount,
-        category: normalizedCategory,
-        is_need: normalizedCategory === 'Need',
-        note: trimmedNote,
-        created_at: createdAt,
-      },
-    })
-  }
 
   let insertedId: string | null = null
   for (const attempt of attempts) {
@@ -448,7 +392,7 @@ export function useDeleteTransaction() {
         domain: 'finance-os',
         entityType: 'finance_transaction',
         entityId: deletedTransaction.id,
-        eventType: FINANCE_TRANSACTION_DELETED, FINANCE_TRANSACTION_CREATED,
+        eventType: FINANCE_TRANSACTION_DELETED,
         payload: {
           transaction_id: deletedTransaction.id,
         },

@@ -2,13 +2,20 @@ import type { DataLabModuleConsistency, DataLabEventCoverage } from '../api/useD
 import type { SystemHealthEntry } from '../types/types'
 
 const MODULE_DOMAIN_MAP: Record<string, string> = {
+  'Mind / Habits': 'mind-os',
   'Mind/Habits': 'mind-os',
+  'Mind / Journal': 'mind-os',
   'Mind/Journal': 'mind-os',
+  'Execution / Tasks': 'productivity-hub',
   'Tasks': 'productivity-hub',
   'Time OS': 'time-os',
   'Fitness OS': 'fitness-os',
   'Finance OS': 'finance-os',
   'Learning OS': 'learning-os',
+}
+
+function normalizeKey(str: string): string {
+  return str.toLowerCase().replace(/\s*\/\s*/g, '/').replace(/\s+/g, '')
 }
 
 function getStatus(consistency: number, hasRecentEvents: boolean): SystemHealthEntry['status'] {
@@ -28,8 +35,15 @@ export function computeSystemHealth(
     eventCountByDomain.set(event.domain, current + event.event_count)
   }
 
+  const normalizedDomainMap = new Map<string, string>()
+  for (const [key, domain] of Object.entries(MODULE_DOMAIN_MAP)) {
+    normalizedDomainMap.set(normalizeKey(key), domain)
+  }
+
   return moduleConsistency.map((module) => {
-    const domain = MODULE_DOMAIN_MAP[module.module_name]
+    const domain =
+      MODULE_DOMAIN_MAP[module.module_name] ??
+      (module.module_name ? normalizedDomainMap.get(normalizeKey(module.module_name)) : undefined)
     const eventCount = domain ? eventCountByDomain.get(domain) ?? 0 : 0
     const hasRecentEvents = eventCount > 0
 

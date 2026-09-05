@@ -26,15 +26,18 @@ function buildUrgencyScores(snapshot: CurrentDaySnapshot): UrgencyScores {
 
   const isCoachModeFitnessOverride = workoutDaysThisWeek === 0 && isPastWednesdayInIndia()
 
-  const budgetUtilization = snapshot.budget_utilization_percentage || 0
+  const budgetUtilization = snapshot.budget_utilization_percentage
   const recentWantExpenses = sanitizeCount(snapshot.recent_want_expenses_count)
 
   let financeUrgency = 0
-  if (budgetUtilization > 90) {
-    financeUrgency = 8
-  } else if (budgetUtilization > 75) {
-    financeUrgency = 5
-  } else if (recentWantExpenses > 3) {
+  if (budgetUtilization !== null && Number.isFinite(budgetUtilization)) {
+    if (budgetUtilization > 90) {
+      financeUrgency = 8
+    } else if (budgetUtilization > 75) {
+      financeUrgency = 5
+    }
+  }
+  if (recentWantExpenses > 3 && financeUrgency === 0) {
     financeUrgency = 4
   }
 
@@ -147,21 +150,23 @@ function buildDirective(snapshot: CurrentDaySnapshot, topDomain: DirectiveDomain
   }
 
   if (topDomain === 'finance') {
-    const budgetUtilization = snapshot.budget_utilization_percentage || 0
-    if (budgetUtilization > 90) {
-      return {
-        action: 'finance' as const,
-        label: 'Review budget immediately',
-        reason: 'Budget utilization exceeded 90%',
-        route: '/finance-os',
+    const budgetUtilization = snapshot.budget_utilization_percentage
+    if (budgetUtilization !== null && Number.isFinite(budgetUtilization)) {
+      if (budgetUtilization > 90) {
+        return {
+          action: 'finance' as const,
+          label: 'Review budget immediately',
+          reason: 'Budget utilization exceeded 90%',
+          route: '/finance-os',
+        }
       }
-    }
-    if (budgetUtilization > 75) {
-      return {
-        action: 'finance' as const,
-        label: 'Monitor budget',
-        reason: 'Budget utilization exceeded 75%',
-        route: '/finance-os',
+      if (budgetUtilization > 75) {
+        return {
+          action: 'finance' as const,
+          label: 'Monitor budget',
+          reason: 'Budget utilization exceeded 75%',
+          route: '/finance-os',
+        }
       }
     }
     return {

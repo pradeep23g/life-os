@@ -70,7 +70,6 @@ export function formatHourLabel(hour: number): string {
 const DOMAIN_LABELS: Record<string, string> = {
   'mind-os': 'Mind OS',
   'productivity-hub': 'Productivity',
-  'progress-hub': 'Progress',
   'mission-control': 'Mission Control',
   'fitness-os': 'Fitness OS',
   'time-os': 'Time OS',

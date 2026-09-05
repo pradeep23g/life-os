@@ -1,9 +1,13 @@
 export type MomentumTrend = 'rising' | 'falling' | 'stable'
 
-export type PositiveSystemEventType = 'DEEP_WORK_COMPLETED' | 'WORKOUT_COMPLETED'
+export type PositiveSystemEventType =
+  | 'DEEP_WORK_COMPLETED'
+  | 'WORKOUT_COMPLETED'
+  | 'fitness.workout.completed'
+  | 'time.session.logged'
 
 export type SystemSignalEvent = {
-  type: PositiveSystemEventType | 'WANT_EXPENSE_ADDED' | 'HABIT_FAILED'
+  type: PositiveSystemEventType | 'WANT_EXPENSE_ADDED' | 'HABIT_FAILED' | 'finance.transaction.created'
   createdAt: string
   payload?: Record<string, unknown>
 }
@@ -21,7 +25,7 @@ export type CurrentDaySnapshot = {
   learning_sessions_logged_7d: number
   active_roadmaps_count: number
   snapshot_date: string
-  budget_utilization_percentage: number
+  budget_utilization_percentage: number | null
   recent_want_expenses_count: number
 }
 

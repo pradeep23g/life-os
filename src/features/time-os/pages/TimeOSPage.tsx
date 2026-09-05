@@ -258,11 +258,18 @@ function TimeOSPage() {
                 <button
                   type="button"
                   onClick={() =>
-                    startTimer({
-                      bucket,
-                      taskId: taskId || null,
-                      description,
-                    })
+                    startTimer(
+                      {
+                        bucket,
+                        taskId: taskId || null,
+                        description,
+                      },
+                      {
+                        onSuccess: () => {
+                          setIsLogModalOpen(false)
+                        },
+                      },
+                    )
                   }
                   disabled={Boolean(activeTimer) || isStarting}
                   className="mt-3 rounded-md border border-border bg-[#111111] px-3 py-2 text-sm text-slate-100 hover:bg-[#222222] disabled:opacity-60"
@@ -302,13 +309,20 @@ function TimeOSPage() {
                 <button
                   type="button"
                   onClick={() =>
-                    createManualLog({
-                      bucket: manualBucket,
-                      startTime: manualStart,
-                      endTime: manualEnd,
-                      taskId: taskId || null,
-                      description: description || undefined,
-                    })
+                    createManualLog(
+                      {
+                        bucket: manualBucket,
+                        startTime: manualStart,
+                        endTime: manualEnd,
+                        taskId: taskId || null,
+                        description: description || undefined,
+                      },
+                      {
+                        onSuccess: () => {
+                          setIsLogModalOpen(false)
+                        },
+                      },
+                    )
                   }
                   disabled={isSavingManual}
                   className="mt-3 rounded-md border border-border bg-[#111111] px-3 py-2 text-sm text-slate-100 hover:bg-[#222222] disabled:opacity-60"

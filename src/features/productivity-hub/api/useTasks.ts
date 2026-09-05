@@ -77,7 +77,10 @@ async function fetchTasks(): Promise<Task[]> {
     throw new Error(`Failed to fetch tasks: ${extractErrorMessage(error)}`)
   }
 
-  return data ?? []
+  return (data ?? []).map((row) => ({
+    ...row,
+    deadline_type: row.deadline_type as TaskDeadlineType,
+  }))
 }
 
 async function requireUserId() {

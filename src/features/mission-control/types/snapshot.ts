@@ -54,8 +54,10 @@ export interface SystemEvent {
 export interface MissionControlSnapshot {
   isLoading: boolean
   isError: boolean
+  snapshotDate: string | null
   brain: BrainState
   systems: SystemStatus[]
   metrics: MetricCard[]
   recentEvents: SystemEvent[]
+  pendingEventsCount: number
 }

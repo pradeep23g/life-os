@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 
 import { useSystemStatus } from '../api/useSystemStatus'
-import { useEveningSync } from '../api/useEveningSync'
+import { useEveningSync, usePendingEventsCount } from '../api/useEveningSync'
 import DailyBriefing from './DailyBriefing'
 import type { SystemIssue } from '../engine/types'
 import { useEventBus } from '../../../store/useEventBus'
@@ -39,7 +39,9 @@ function SystemStatusCard() {
   const navigate = useNavigate()
   const { data, isLoading, isError, error } = useSystemStatus()
   const { mutate: executeEveningSync, isPending: isSyncing } = useEveningSync()
-  const pendingEventsCount = useEventBus((state) => state.recentEvents.length)
+  const { data: queueCount } = usePendingEventsCount()
+  const recentEventsCount = useEventBus((state) => state.recentEvents.length)
+  const pendingEventsCount = queueCount ?? recentEventsCount
   const [syncToast, setSyncToast] = useState<string | null>(null)
 
   if (isLoading) {

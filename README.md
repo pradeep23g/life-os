@@ -1,159 +1,118 @@
-<div align="center">
+# Life OS
 
-# 🧠⚙️ Life OS
-### Your Personal Intelligence Engine
-
-**Not a productivity app.**  
-*A system that understands your life.*
-
-🚀 Built with React • Supabase • Tailwind • Vite
+**A Personal Intelligence Operating System**  
+Built with React 19, TypeScript, Vite, Tailwind CSS, TanStack Query, and Supabase (PostgreSQL 15+).
 
 ---
 
-</div>
+## 🌌 Overview
 
-## 🌌 What is Life OS?
+Life OS is a **multi-domain behavioral operating system** designed to accumulate years of longitudinal life data, detect behavioral patterns, and surface real-time intelligence:
 
-Most apps track one thing:
-- **Notes** → scattered thoughts
-- **Tasks** → endless lists
-- **Habits** → streak obsession
-- **Finance** → numbers without meaning
-
-**Life OS connects everything.**
-
-It answers one brutal question:
-> *"Is my life actually improving?"*
-
-This is not about productivity. This is about **awareness + control + evolution**.
+- **Cognitive Protection:** Clean separation between reflection (Mind OS) and execution pressure (Productivity Hub).
+- **Single Source of Truth:** Centralized canonical event taxonomy (`src/lib/eventTaxonomy.ts`) and database aggregation views.
+- **Brain Engine:** Real-time momentum scoring (EMA $\alpha=0.6$) and urgency-ranked daily directives.
+- **True-Black Command Center:** Fast, accessible dark theme with Document Picture-in-Picture focus timer companion.
 
 ---
 
-## 🧩 Core Systems
+## 🧩 Active Domain Modules
 
-Life is treated like an operating system with interconnected modules:
-
-| System | Purpose |
-| :--- | :--- |
-| 🧠 **Mind** | Habits, goals, journaling |
-| 💪 **Body** | Fitness & physical discipline |
-| ⚡ **Execution** | Tasks, deadlines, action |
-| 📈 **Growth** | Skill & long-term progress |
-| 💸 **Finance** | Spending awareness |
-
----
-
-## 🖥️ Mission Control (Dashboard)
-
-Your entire life. One screen.
-
-- ⚡ **Instant Clarity:** What matters today, where you're slipping, what needs action.
-- 🧭 **Identity Layer:** Current focus, weekly intent, personal mantra.
-- 📊 **System Status:** Habit streaks, tasks pending, fitness activity, spending summary.
-- ➕ **Quick Actions:** Log habit, add task, journal entry, start session.
-
----
-
-## ⚙️ The Modules
-
-### 🧠 Mind OS
-* **Habits:** Limited to 5–7 active habits. Focus on consistency > perfection. Daily / weekly / monthly tracking.
-* **Goals:** Short-term (1–3 months) • Mid-term (6–12 months) • Long-term (2–5 years).
-* **Journal:** Mood tracking, reflection system, and emotional pattern analysis (future).
-
-### 💪 Fitness OS
-* Workout logging (sets, reps, weights).
-* Weekly split tracking.
-* Exercise library *(no more random Googling mid-workout 💀)*.
-
-### ⚡ Execution Engine
-* Priority-based task system.
-* Clean workflow (**To Do → Doing → Done**).
-* Calendar + deadlines.
-* Bookmark vault *(kill mental clutter)*.
-
-### 📈 Progress Hub
-* **Long-Term:** Skill mastery tracking, project evolution, milestones.
-* **Short-Term:** Sprint-based goals, hackathons / exams / challenges.
-* **Summary:** Visual growth tracking. *No more “I feel like I did nothing” lies.*
-
-### 💸 Finance Hub
-* Expense tracking (Need vs Want).
-* Monthly breakdown.
-* Waste detection.
-* Financial awareness for students.
-
-### 🧪 Data Lab *(Coming Soon)*
-*This is where Life OS becomes dangerous 😏*
-* Habit vs productivity correlation.
-* Workout vs mood patterns.
-* Study heatmaps.
-* Weekly performance score.
-
-**You stop guessing. You start knowing.**
-
----
-
-## 🏗 Tech Stack
-
-* **Frontend:** React • Vite • TailwindCSS • Zustand • React Query
-* **Backend:** Supabase • PostgreSQL
-* **Visualization:** Recharts
-* **Hosting:** Vercel
-
----
-
-## 📁 Project Structure
 ```text
-src/
-├── app/                  # Entry + providers + routing
-├── assets/               # Fonts, icons, styles
-├── components/           # Reusable UI components
-├── config/               # Environment configs
-├── features/             # Core modules
-│   ├── dashboard/
-│   ├── habits/
-│   ├── journal/
-│   ├── tasks/
-│   └── progress/
-├── lib/                  # Supabase + external libs
-├── store/                # Zustand global store
-├── utils/                # Helper functions
-└── types/                # Type definitions
+src/features/
+├── auth/               — Supabase email/password authentication
+├── mission-control/    — Executive aggregator dashboard & Brain Engine hero
+├── mind-os/            — Habit tracker with 5/month streak heals & daily reflection journal
+├── productivity-hub/   — Deadline tasks, weekly planning, goal alignment, & weekly reviews
+├── learning-os/        — Structured skill roadmaps, curriculum stages, sessions, & study logs
+├── fitness-os/         — Strength/cardio workouts, custom exercise catalog, & personal records
+├── time-os/            — Focus time logs, single-timer constraint, & Document PiP overlay
+├── finance-os/         — Behavioral spending ledger with Need vs Want classification
+├── data-lab/           — 90-day activity rollups, module consistency, & telemetry health
+└── system/             — Brain Engine algorithms, Evening Sync, & feedback toasts
+```
 
 ---
 
-## 🧭 Roadmap
+## 🏗 Architecture & Data Flow
 
-- [ ] **Phase 1 – Core System:** Dashboard, Habits, Tasks, Journal, Progress tracking.
-- [ ] **Phase 2 – Expansion:** Fitness OS, Finance OS, Basic analytics.
-- [ ] **Phase 3 – Intelligence:** AI insights, Advanced analytics, Data Lab.
-- [ ] **Phase 4 – Ecosystem:** Social features, Mobile app (PWA → APK).
-
----
-
-## ⚠️ The Rule (Non-Negotiable)
-
-> **If logging feels heavy, the system dies.**
-
-Everything must feel like:  
-**Open → Log → Move on**
-
----
-
-## 🧠 Philosophy & Final Vision
-
-Life OS is built on one belief: **You cannot improve what you don't understand.**
-
-This system turns your life into:  
-📊 **Data** ➔ 🧠 **Insight** ➔ ⚡ **Action**
-
-If used consistently, Life OS becomes:
-1. A mirror of your life.
-2. A record of your growth.
-3. A system for intentional living.
+```text
+Browser Client (React 19 + TypeScript 5.9 + Vite 7 SPA)
+  ├── React Router v7 (Nested routing with route-level code splitting)
+  ├── TanStack React Query v5 (Exclusive server state management)
+  ├── Zustand v5 (Operational event bus for immediate UI reactivity)
+  └── Supabase Client (PostgreSQL 15+ with Row Level Security)
+        ↓
+PostgreSQL Aggregation Layer (security_invoker = true)
+  ├── current_day_snapshot & current_day_snapshot_history_14d (Brain Engine)
+  ├── data_lab_daily_activity_90d & data_lab_weekly_system_score_12w (Data Lab)
+  └── Domain Signal Views (habits, journal, tasks, time, fitness, finance, learning)
+```
 
 ---
 
-### ⭐ If this hits you…
-Give it a star. Or better yet — build your own version.
+## 🚀 Getting Started
+
+### 1. Prerequisites
+- Node.js 20+ and npm 10+
+- A Supabase project with database migrations applied
+
+### 2. Setup
+```bash
+# Clone the repository
+git clone https://github.com/pradeep23g/life-os.git
+cd life-os
+
+# Configure environment
+cp .env.example .env
+# Edit .env with your VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY
+
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+```
+
+---
+
+## 🧪 Quality & Release Verification Gates
+
+Life OS maintains strict verification gates across static analysis, contract invariants, adversarial attacks, live backend smoke, and headless browser automation:
+
+```bash
+# 1. Static Lint Analysis
+npm run lint
+
+# 2. Production TypeCheck & Build
+npm run build
+
+# 3. Canonical Release Gate (combined lint + tsc + build)
+npm run verify:release
+
+# 4. Offline Integrity Contract Invariants (6/6 checks)
+npx tsx scripts/smoke/verify-integrity-contracts.mjs
+
+# 5. Offline Adversarial Attack & Boundary Stress Suite (6/6 checks)
+npx tsx --env-file=.env scripts/smoke/verify-adversarial-attacks.mjs
+
+# 6. Remote Supabase Backend Smoke Validation (29/29 live checks)
+node scripts/smoke/run-smoke-validation.mjs
+
+# 7. Headless Playwright Browser E2E Suite (60/60 live checks)
+node scripts/smoke/run-browser-verification.mjs
+```
+
+---
+
+## 📚 Documentation
+
+Comprehensive architectural and operational specifications are available in the [`docs/`](./docs/) directory:
+
+- [System Architecture](./docs/architecture/SYSTEM_ARCHITECTURE.md)
+- [Database Schema](./docs/architecture/DATABASE_SCHEMA.md)
+- [Event Taxonomy](./docs/architecture/EVENT_TAXONOMY.md)
+- [Module Guide](./docs/architecture/MODULE_GUIDE.md)
+- [Development Workflow](./docs/operations/DEV_WORKFLOW.md)
+- [Architecture Decisions (ADRs)](./docs/decisions/ARCHITECTURE_DECISIONS.md)
+- [Release Gate Checklist](./docs/operations/RELEASE_GATE_CHECKLIST.md)

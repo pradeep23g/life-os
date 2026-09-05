@@ -9,8 +9,13 @@ import { useSystemStatus } from '../../system/api/useSystemStatus'
 import { useTimeAnalytics } from '../../time-os/api/useTimeAnalytics'
 import { useTransactions } from '../../finance-os/api/useFinance'
 import { useEventBus } from '../../../store/useEventBus'
+import { usePendingEventsCount } from '../../system/api/useEveningSync'
 
-import { evaluateSystemThreats, evaluateSystemStatuses } from '../utils/systemHealthEvaluator'
+import {
+  evaluateSystemThreats,
+  evaluateSystemStatuses,
+  computeSystemConfidence,
+} from '../utils/systemHealthEvaluator'
 import type { MissionControlSnapshot, MetricCard, SystemEvent, BrainState } from '../types/snapshot'
 
 export function useMissionControlSnapshot(): MissionControlSnapshot {
@@ -23,6 +28,7 @@ export function useMissionControlSnapshot(): MissionControlSnapshot {
   const { data: timeAnalytics } = useTimeAnalytics()
   const { data: financeData } = useTransactions()
   const { data: systemData, isLoading: systemLoading, isError: systemError } = useSystemStatus()
+  const { data: pendingEventsCount = 0 } = usePendingEventsCount()
   const recentEventsRaw = useEventBus((state) => state.recentEvents)
 
   const isLoading = habitsLoading || tasksLoading || systemLoading
@@ -33,7 +39,7 @@ export function useMissionControlSnapshot(): MissionControlSnapshot {
   const pendingTasksCount = tasks.filter((t) => !t.is_completed).length
   const activeRoadmapsCount = roadmaps.filter((r) => r.status === 'active').length
   const completedRoadmapsCount = roadmaps.filter((r) => r.status === 'completed').length
-  const workoutCompleted = fitnessSummary?.activeWorkoutDaysThisWeek ? fitnessSummary.activeWorkoutDaysThisWeek > 0 : false // Simplify for evaluation
+  const workoutCompleted = (fitnessSummary?.activeWorkoutDaysThisWeek ?? 0) > 0
   const deepWorkMinutes = timeAnalytics?.todayDistribution.find((d) => d.bucket === 'Deep Work')?.minutes ?? 0
   const consistencyPercent = eventsAnalytics?.consistencyPercent ?? 0
   const financeAvailable = financeData?.summary.totalAvailable ?? 0
@@ -50,10 +56,11 @@ export function useMissionControlSnapshot(): MissionControlSnapshot {
     activeRoadmapsCount,
     completedRoadmapsCount,
     consistencyPercent,
+    brainStatus: systemData,
   }), [
     pendingTasksCount, activeHabitsCount, completedHabitsCount, deepWorkMinutes, 
     workoutCompleted, financeAvailable, financeSpent, activeRoadmapsCount, 
-    completedRoadmapsCount, consistencyPercent
+    completedRoadmapsCount, consistencyPercent, systemData
   ])
 
   const systems = useMemo(() => evaluateSystemStatuses({
@@ -67,10 +74,11 @@ export function useMissionControlSnapshot(): MissionControlSnapshot {
     activeRoadmapsCount,
     completedRoadmapsCount,
     consistencyPercent,
+    brainStatus: systemData,
   }), [
     pendingTasksCount, activeHabitsCount, completedHabitsCount, deepWorkMinutes, 
     workoutCompleted, financeAvailable, financeSpent, activeRoadmapsCount, 
-    completedRoadmapsCount, consistencyPercent
+    completedRoadmapsCount, consistencyPercent, systemData
   ])
 
   const metrics: MetricCard[] = useMemo(() => {
@@ -120,7 +128,7 @@ export function useMissionControlSnapshot(): MissionControlSnapshot {
       return {
         momentumScore: 0,
         momentumTrend: 'stable',
-        sparkline: [0, 0, 0, 0, 0],
+        sparkline: [],
         mission: null,
         threats,
         reasoning: [],
@@ -128,36 +136,84 @@ export function useMissionControlSnapshot(): MissionControlSnapshot {
       }
     }
 
+    // Real historical momentum series from A4's analyzeMomentum()
+    const sparkline = systemData.momentum.emaSeries ?? []
+
+    // Deterministic confidence derived from data quality: freshness + completeness + coverage
+    const computedConfidence = computeSystemConfidence({
+      snapshotDate: systemData.snapshotDate,
+      historyDaysCount: sparkline.length,
+      domainPresence: {
+        mindHabits: activeHabitsCount > 0 || completedHabitsCount > 0,
+        mindJournal: journals.length > 0,
+        productivityTasks: tasks.length > 0,
+        fitness: (fitnessSummary?.activeWorkoutDaysThisWeek ?? 0) > 0 || (fitnessSummary?.totalSessionMinutesThisWeek ?? 0) > 0 || workoutCompleted,
+        timeTracking: deepWorkMinutes > 0 || (timeAnalytics?.todayTotalMinutes ?? 0) > 0,
+        learning: activeRoadmapsCount > 0 || completedRoadmapsCount > 0,
+        finance: financeAvailable > 0 || financeSpent > 0 || (financeData?.transactions.length ?? 0) > 0,
+      },
+    })
+
+    const directiveAction = systemData.directive.action
+    const metadataByDomain: Record<string, { time: string; gain: string; source: string }> = {
+      task: { time: '15–30 min', gain: '+5 Momentum', source: 'Brain Engine • Productivity' },
+      habit: { time: '5 min', gain: '+4 Momentum', source: 'Brain Engine • Mind OS' },
+      journal: { time: '5–10 min', gain: '+3 Momentum', source: 'Brain Engine • Mind OS' },
+      fitness: { time: '30–45 min', gain: '+5 Momentum', source: 'Brain Engine • Fitness OS' },
+      'deep-work': { time: '60 min', gain: '+6 Momentum', source: 'Brain Engine • Time OS' },
+      learning: { time: '25 min', gain: '+4 Momentum', source: 'Brain Engine • Learning OS' },
+      finance: { time: '10 min', gain: '+3 Momentum', source: 'Brain Engine • Finance OS' },
+    }
+    const meta = metadataByDomain[directiveAction] ?? {
+      time: '15 min',
+      gain: '+5 Momentum',
+      source: 'Brain Engine Core',
+    }
+
+    const mission = systemData.directive.action !== 'none' && systemData.directive.label ? {
+      mission: systemData.directive.label,
+      estimatedTime: meta.time,
+      expectedMomentumGain: meta.gain,
+      reason: systemData.directive.reason,
+      recommendationSource: meta.source,
+      actionRoute: systemData.directive.route
+    } : null
+
     return {
       momentumScore: systemData.momentum.momentum,
       momentumTrend: systemData.momentum.trend,
-      sparkline: [
-        Math.max(0, systemData.momentum.momentum - 5),
-        Math.max(0, systemData.momentum.momentum - 2),
-        systemData.momentum.momentum,
-        systemData.momentum.momentum + (systemData.momentum.trend === 'rising' ? 2 : -2),
-        systemData.momentum.momentum + (systemData.momentum.trend === 'rising' ? 5 : -5),
-      ], // Mocking sparkline history from current momentum for visualization
-      mission: {
-        mission: systemData.directive.label,
-        estimatedTime: '20 min', // Mock/Placeholder as original data lacks this
-        expectedMomentumGain: '+5 Momentum',
-        reason: systemData.directive.reason,
-        recommendationSource: 'Brain Engine Core',
-        actionRoute: systemData.directive.route
-      },
+      sparkline,
+      mission,
       threats,
       reasoning: systemData.momentumExplanation,
-      confidence: 87 // Mock
+      confidence: computedConfidence
     }
-  }, [systemData, threats])
+  }, [
+    systemData,
+    threats,
+    activeHabitsCount,
+    completedHabitsCount,
+    journals.length,
+    tasks.length,
+    fitnessSummary,
+    workoutCompleted,
+    deepWorkMinutes,
+    timeAnalytics,
+    activeRoadmapsCount,
+    completedRoadmapsCount,
+    financeAvailable,
+    financeSpent,
+    financeData,
+  ])
 
   return {
     isLoading,
     isError,
+    snapshotDate: systemData?.snapshotDate ?? null,
     brain,
     systems,
     metrics,
-    recentEvents
+    recentEvents,
+    pendingEventsCount,
   }
 }

@@ -1,9 +1,10 @@
 import { useMissionControlSnapshot } from '../api/useMissionControlSnapshot'
 import BrainEngineHero from '../../system/components/BrainEngineHero'
 import EndOfDayCard from '../components/EndOfDayCard'
+import { toIndiaDateKey } from '../../../lib/events'
 
 function MissionControl() {
-  const { isLoading, isError, brain, systems, metrics, recentEvents } = useMissionControlSnapshot()
+  const { isLoading, isError, snapshotDate, brain, systems, metrics, recentEvents } = useMissionControlSnapshot()
 
   if (isLoading) {
     return (
@@ -22,6 +23,9 @@ function MissionControl() {
     )
   }
 
+  const todayDateKey = toIndiaDateKey(new Date())
+  const displayDate = snapshotDate ?? todayDateKey
+
   return (
     <section className="space-y-10 bg-black pb-28 sm:pb-24">
       <header className="flex flex-wrap items-start justify-between gap-4">
@@ -30,7 +34,7 @@ function MissionControl() {
           <h1 className="text-2xl font-semibold text-slate-100">Mission Control</h1>
         </div>
         <div className="mt-1 font-mono text-xs tracking-widest text-slate-500 uppercase">
-          {new Date().toISOString().split('T')[0]} • Snapshot 00:00
+          {displayDate} • {snapshotDate ? 'Snapshot Active' : 'Live Session'}
         </div>
       </header>
 
@@ -38,7 +42,7 @@ function MissionControl() {
 
       <div>
         <h3 className="text-xs font-medium text-slate-500 mb-3">Live System Status</h3>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7">
           {systems.map((sys) => (
             <div key={sys.id} className="rounded-lg border border-border bg-surface p-3">
               <div className="mb-1 flex items-center justify-between gap-2">

@@ -38,9 +38,8 @@ supabase/.temp
 # ==============================================================================
 .codex/
 .gemini/
-.agents/scratch/
-.agents/logs/
-.agents/*.local.json
+.agents/
+skills-lock.json
 
 # ==============================================================================
 # Dependencies & Package Managers

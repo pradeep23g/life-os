@@ -116,11 +116,22 @@ export default function BrainEngineHero({ brain }: BrainEngineHeroProps) {
               </span>
             </div>
             
-            <div className="flex items-end gap-[2px] h-6 opacity-40 mb-8">
-              {brain.sparkline.map((val, i) => (
-                <div key={i} className="flex-1 bg-emerald-500 rounded-t-[1px]" style={{ height: `${Math.max(15, (val / 100) * 100)}%` }} />
-              ))}
-            </div>
+            {brain.sparkline.length > 0 ? (
+              <div className="flex items-end gap-[2px] h-6 opacity-40 mb-8" title="14-Day Historical Momentum Trend (EMA)">
+                {brain.sparkline.map((val, i) => (
+                  <div
+                    key={i}
+                    className="flex-1 bg-emerald-500 rounded-t-[1px]"
+                    style={{ height: `${Math.max(6, Math.min(100, val))}%` }}
+                    title={`Day ${i + 1}: ${val} EMA`}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="flex items-center h-6 mb-8 opacity-40" title="Insufficient history for momentum trend">
+                <div className="w-full h-px bg-slate-700" />
+              </div>
+            )}
 
             <div className="pt-6 border-t border-[#111111]">
               <div className="text-[11px] text-slate-500 mb-3">Daily Briefing</div>

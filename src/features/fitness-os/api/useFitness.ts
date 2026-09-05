@@ -1210,11 +1210,6 @@ export function useDeleteExerciseLog() {
   })
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function useSystemEventBus(handler: (event: any) => void) {
-  useEventBus(handler)
-}
-
 export function useAllExerciseLogs() {
   return useQuery({
     queryKey: fitnessAllExerciseLogsQueryKey,

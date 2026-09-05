@@ -35,7 +35,6 @@ const domainLabels: Record<GoalDomain, string> = {
   'learning-os': 'Learning',
   'fitness-os': 'Fitness',
   'finance-os': 'Finance',
-  'progress-hub': 'Progress Hub',
 }
 
 const priorityColors: Record<PlanItemPriority, string> = {

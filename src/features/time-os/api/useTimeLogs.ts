@@ -502,7 +502,6 @@ export function useDeleteTimeLog() {
         entityType: 'time_log',
         entityId: deletedTimeLog.id,
         eventType: TIME_TIME_LOG_DELETED,
-  TIME_SESSION_LOGGED,
         payload: {
           time_log_id: deletedTimeLog.id,
         },

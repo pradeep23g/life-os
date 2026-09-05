@@ -111,10 +111,16 @@ export function useEveningSync() {
 
       const aggregateQueue = (queuedEvents ?? []) as QueuedSystemEvent[]
       
-      const deepWorkEvents = aggregateQueue.filter((event) => event.event_type === 'DEEP_WORK_COMPLETED').length
-      const workoutEvents = aggregateQueue.filter((event) => event.event_type === 'WORKOUT_COMPLETED').length
+      const deepWorkEvents = aggregateQueue.filter(
+        (event) => event.event_type === 'DEEP_WORK_COMPLETED' || event.event_type === EVENT_TYPES.TIME_SESSION_LOGGED,
+      ).length
+      const workoutEvents = aggregateQueue.filter(
+        (event) => event.event_type === EVENT_TYPES.FITNESS_WORKOUT_COMPLETED || event.event_type === 'WORKOUT_COMPLETED',
+      ).length
       const habitFailEvents = aggregateQueue.filter((event) => event.event_type === 'HABIT_FAILED').length
-      const wantExpenseEvents = aggregateQueue.filter((event) => event.event_type === 'WANT_EXPENSE_ADDED').length
+      const wantExpenseEvents = aggregateQueue.filter(
+        (event) => event.event_type === 'WANT_EXPENSE_ADDED' || event.event_type === EVENT_TYPES.FINANCE_TRANSACTION_CREATED,
+      ).length
 
       const momentumDelta = (deepWorkEvents * 3) + (workoutEvents * 2) - (habitFailEvents * 2) - wantExpenseEvents
       momentumScore = Math.max(0, Math.min(100, Math.round(momentumScore + momentumDelta)))
@@ -190,6 +196,7 @@ export function useEveningSync() {
     mutationFn: executeEveningSync,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: systemStatusQueryKey })
+      queryClient.invalidateQueries({ queryKey: ['system-event-queue-count'] })
     },
   })
 }

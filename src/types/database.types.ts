@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.4"
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
@@ -270,6 +270,7 @@ export type Database = {
           healed_at: string | null
           id: string
           reason: string | null
+          recovery_commitment: string | null
           user_id: string
         }
         Insert: {
@@ -279,6 +280,7 @@ export type Database = {
           healed_at?: string | null
           id?: string
           reason?: string | null
+          recovery_commitment?: string | null
           user_id: string
         }
         Update: {
@@ -288,6 +290,7 @@ export type Database = {
           healed_at?: string | null
           id?: string
           reason?: string | null
+          recovery_commitment?: string | null
           user_id?: string
         }
         Relationships: [
@@ -1335,6 +1338,118 @@ export type Database = {
         }
         Relationships: []
       }
+      data_lab_module_consistency_30d: {
+        Row: {
+          active_days: number | null
+          consistency_percent: number | null
+          days_observed: number | null
+          last_active_date: string | null
+          module_name: string | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
+      data_lab_signal_execution_tasks: {
+        Row: {
+          activity_date: string | null
+          magnitude: number | null
+          metrics: Json | null
+          user_id: string | null
+          was_active: boolean | null
+        }
+        Relationships: []
+      }
+      data_lab_signal_finance_os: {
+        Row: {
+          activity_date: string | null
+          magnitude: number | null
+          metrics: Json | null
+          user_id: string | null
+          was_active: boolean | null
+        }
+        Relationships: []
+      }
+      data_lab_signal_fitness_os: {
+        Row: {
+          activity_date: string | null
+          magnitude: number | null
+          metrics: Json | null
+          user_id: string | null
+          was_active: boolean | null
+        }
+        Relationships: []
+      }
+      data_lab_signal_learning_os: {
+        Row: {
+          activity_date: string | null
+          magnitude: number | null
+          metrics: Json | null
+          user_id: string | null
+          was_active: boolean | null
+        }
+        Relationships: []
+      }
+      data_lab_signal_mind_habits: {
+        Row: {
+          activity_date: string | null
+          magnitude: number | null
+          metrics: Json | null
+          user_id: string | null
+          was_active: boolean | null
+        }
+        Relationships: []
+      }
+      data_lab_signal_mind_journal: {
+        Row: {
+          activity_date: string | null
+          magnitude: number | null
+          metrics: Json | null
+          user_id: string | null
+          was_active: boolean | null
+        }
+        Relationships: []
+      }
+      data_lab_signal_time_os: {
+        Row: {
+          activity_date: string | null
+          magnitude: number | null
+          metrics: Json | null
+          user_id: string | null
+          was_active: boolean | null
+        }
+        Relationships: []
+      }
+      data_lab_weekly_system_score_12w: {
+        Row: {
+          avg_active_systems: number | null
+          avg_habit_completion_percent: number | null
+          avg_mood: number | null
+          days_observed: number | null
+          deep_work_days: number | null
+          deep_work_minutes: number | null
+          events_logged: number | null
+          finance_logged_days: number | null
+          habit_active_days: number | null
+          habits_completed: number | null
+          journal_days: number | null
+          journal_entries: number | null
+          learning_logged_days: number | null
+          need_spent: number | null
+          task_completion_days: number | null
+          tasks_completed: number | null
+          tasks_created: number | null
+          total_focus_minutes: number | null
+          total_spent: number | null
+          user_id: string | null
+          want_spent: number | null
+          week_start_date: string | null
+          weekly_system_score: number | null
+          workout_days: number | null
+          workout_minutes: number | null
+          workouts_logged: number | null
+        }
+        Relationships: []
+      }
       learning_roadmap_progress: {
         Row: {
           completed_sessions: number | null
@@ -1390,12 +1505,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1419,11 +1534,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1444,11 +1559,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1469,11 +1584,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1486,11 +1601,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }

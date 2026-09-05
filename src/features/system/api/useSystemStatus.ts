@@ -60,7 +60,7 @@ async function fetchSnapshotWithDeepWorkFallback() {
   const latestSelect = await supabase
     .from('current_day_snapshot')
     .select(
-      'user_id, pending_tasks_count, habits_completed_today, total_active_habits, journal_logged_today, workout_days_this_week, deep_work_minutes_today, oldest_pending_task_title, newest_active_habit_title, learning_sessions_logged_7d, active_roadmaps_count, snapshot_date',
+      'user_id, pending_tasks_count, habits_completed_today, total_active_habits, journal_logged_today, workout_days_this_week, deep_work_minutes_today, oldest_pending_task_title, newest_active_habit_title, learning_sessions_logged_7d, active_roadmaps_count, snapshot_date, budget_utilization_percentage, recent_want_expenses_count',
     )
     .maybeSingle()
 
@@ -75,7 +75,7 @@ async function fetchSnapshotWithDeepWorkFallback() {
   const fallbackSelect = await supabase
     .from('current_day_snapshot')
     .select(
-      'user_id, pending_tasks_count, habits_completed_today, total_active_habits, journal_logged_today, workout_days_this_week, oldest_pending_task_title, newest_active_habit_title, snapshot_date',
+      'user_id, pending_tasks_count, habits_completed_today, total_active_habits, journal_logged_today, workout_days_this_week, oldest_pending_task_title, newest_active_habit_title, snapshot_date, budget_utilization_percentage, recent_want_expenses_count',
     )
     .maybeSingle()
 
@@ -83,10 +83,14 @@ async function fetchSnapshotWithDeepWorkFallback() {
     return fallbackSelect
   }
 
+  const fallbackData = fallbackSelect.data as Record<string, unknown>
+
   return {
     data: {
       ...fallbackSelect.data,
       deep_work_minutes_today: 0,
+      budget_utilization_percentage: (fallbackData.budget_utilization_percentage ?? null) as number | null,
+      recent_want_expenses_count: (fallbackData.recent_want_expenses_count ?? 0) as number,
     },
     error: null,
   }
@@ -157,7 +161,7 @@ export function useSystemStatus(): {
       query.data?.snapshot ?? null,
       query.data?.history ?? [],
       recentEventsRaw.map<SystemSignalEvent>((event) => ({
-        type: event.type,
+        type: event.type as SystemSignalEvent['type'],
         createdAt: event.createdAt,
         payload: event.payload,
       })),

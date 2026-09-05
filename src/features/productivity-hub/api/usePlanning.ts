@@ -28,7 +28,7 @@ export type WeeklyPlan = {
   created_at: string
 }
 
-export type GoalDomain = 'mind-os' | 'productivity-hub' | 'learning-os' | 'fitness-os' | 'finance-os' | 'progress-hub'
+export type GoalDomain = 'mind-os' | 'productivity-hub' | 'learning-os' | 'fitness-os' | 'finance-os'
 export type GoalStatus = 'active' | 'paused' | 'completed'
 export type PlanItemPriority = 'Low' | 'Medium' | 'High'
 export type PlanItemStatus = 'Planned' | 'Doing' | 'Done' | 'Dropped'
@@ -366,7 +366,11 @@ async function fetchWeeklyPlanItems(weekStartDate: string): Promise<WeeklyPlanIt
     throw new Error(`Failed to fetch plan items: ${extractErrorMessage(error)}`)
   }
 
-  return data ?? []
+  return (data ?? []).map((row) => ({
+    ...row,
+    priority: row.priority as PlanItemPriority,
+    status: row.status as PlanItemStatus,
+  }))
 }
 
 async function createWeeklyPlanItem(input: CreateWeeklyPlanItemInput): Promise<void> {

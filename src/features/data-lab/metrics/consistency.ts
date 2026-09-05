@@ -7,14 +7,18 @@ type ModuleExtractor = {
 }
 
 const MODULE_EXTRACTORS: ModuleExtractor[] = [
-  { name: 'Mind/Habits', isActive: (r) => r.habits_completed > 0 },
-  { name: 'Mind/Journal', isActive: (r) => r.journal_entries > 0 },
+  { name: 'Mind / Habits', isActive: (r) => r.habits_completed > 0 },
+  { name: 'Mind / Journal', isActive: (r) => r.journal_entries > 0 },
   { name: 'Tasks', isActive: (r) => r.tasks_created > 0 || r.tasks_completed > 0 },
   { name: 'Time OS', isActive: (r) => r.total_focus_minutes > 0 },
   { name: 'Fitness OS', isActive: (r) => r.workouts_logged > 0 },
   { name: 'Finance OS', isActive: (r) => r.finance_entries > 0 },
   { name: 'Learning OS', isActive: (r) => r.learning_sessions_logged > 0 },
 ]
+
+function normalizeKey(str: string): string {
+  return str.toLowerCase().replace(/\s*\/\s*/g, '/').replace(/\s+/g, '')
+}
 
 function computeTrend(dailyRows: DataLabDailyActivity[], extractor: ModuleExtractor): TrendDirection {
   if (dailyRows.length < 6) return 'stable'
@@ -38,7 +42,11 @@ export function computeConsistencyMetrics(
   moduleConsistencyRows: DataLabModuleConsistency[],
 ): ConsistencyMetricEntry[] {
   return MODULE_EXTRACTORS.map((extractor) => {
-    const viewRow = moduleConsistencyRows.find((r) => r.module_name === extractor.name)
+    const viewRow = moduleConsistencyRows.find(
+      (r) =>
+        r.module_name === extractor.name ||
+        (r.module_name && normalizeKey(r.module_name) === normalizeKey(extractor.name)),
+    )
 
     const activeDays = dailyRows.filter(extractor.isActive).length
     const totalDays = dailyRows.length

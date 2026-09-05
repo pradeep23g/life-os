@@ -101,7 +101,11 @@ export function analyzeMomentum(
   let adjustedLatestMomentum = clampPercentage(latestMomentum + deepWorkBoost)
 
   const hasRecentPositiveEvent = recentEvents.some(
-    (event) => event.type === 'DEEP_WORK_COMPLETED' || event.type === 'WORKOUT_COMPLETED',
+    (event) =>
+      event.type === 'DEEP_WORK_COMPLETED' ||
+      event.type === 'WORKOUT_COMPLETED' ||
+      event.type === 'fitness.workout.completed' ||
+      event.type === 'time.session.logged',
   )
   if (adjustedLatestMomentum < 20 && hasRecentPositiveEvent) {
     const standardGain = Math.max(1, Math.round((100 - adjustedLatestMomentum) * 0.03))

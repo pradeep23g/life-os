@@ -144,6 +144,7 @@ function Sidebar({ compact = false, onNavigate, onToggleDesktopExpanded, desktop
             type="button"
             onClick={onToggleDesktopExpanded}
             title={compact ? (desktopExpanded ? 'Collapse sidebar' : 'Expand sidebar') : undefined}
+            aria-label={desktopExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
             className={`mb-2 flex items-center rounded-lg border border-border bg-[#111111] text-slate-100 transition-colors hover:bg-[#222222] ${
               compact ? 'h-10 w-10 justify-center px-0' : 'w-full gap-2 px-3 py-2 text-sm'
             }`}
@@ -162,6 +163,7 @@ function Sidebar({ compact = false, onNavigate, onToggleDesktopExpanded, desktop
               to={item.to}
               onClick={onNavigate}
               title={compact ? item.label : undefined}
+              aria-label={item.label}
               className={({ isActive }) =>
                 `flex items-center gap-2 rounded-lg px-2 py-2 text-sm transition-colors ${
                   compact ? 'w-10 justify-center px-0' : 'w-full'
@@ -177,6 +179,7 @@ function Sidebar({ compact = false, onNavigate, onToggleDesktopExpanded, desktop
         <button
           type="button"
           title={compact ? user?.email ?? 'Profile' : undefined}
+          aria-label="Profile"
           className={`mt-auto flex items-center rounded-lg border border-border bg-[#111111] text-sm text-slate-100 transition-colors hover:bg-[#222222] ${
             compact ? 'h-10 w-10 justify-center px-0' : 'w-full gap-2 px-3 py-2'
           }`}
@@ -192,6 +195,7 @@ function Sidebar({ compact = false, onNavigate, onToggleDesktopExpanded, desktop
           onClick={handleSignOut}
           disabled={isSigningOut}
           title={compact ? 'Sign Out' : undefined}
+          aria-label="Sign Out"
           className={`mt-2 flex items-center rounded-lg border border-border bg-[#111111] text-sm text-slate-100 transition-colors hover:bg-[#222222] disabled:opacity-60 ${
             compact ? 'h-10 w-10 justify-center px-0' : 'w-full gap-2 px-3 py-2'
           }`}
