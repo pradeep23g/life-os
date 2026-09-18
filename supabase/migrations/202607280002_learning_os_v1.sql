@@ -139,45 +139,74 @@ alter table public.learning_projects enable row level security;
 alter table public.learning_reflections enable row level security;
 
 -- Policies (all use simple auth.uid() = user_id)
+drop policy if exists "Users can select own learning roadmaps" on public.learning_roadmaps;
 create policy "Users can select own learning roadmaps" on public.learning_roadmaps for select to authenticated using (auth.uid() = user_id);
+drop policy if exists "Users can insert own learning roadmaps" on public.learning_roadmaps;
 create policy "Users can insert own learning roadmaps" on public.learning_roadmaps for insert to authenticated with check (auth.uid() = user_id);
+drop policy if exists "Users can update own learning roadmaps" on public.learning_roadmaps;
 create policy "Users can update own learning roadmaps" on public.learning_roadmaps for update to authenticated using (auth.uid() = user_id) with check (auth.uid() = user_id);
+drop policy if exists "Users can delete own learning roadmaps" on public.learning_roadmaps;
 create policy "Users can delete own learning roadmaps" on public.learning_roadmaps for delete to authenticated using (auth.uid() = user_id);
 
+drop policy if exists "Users can select own learning stages" on public.learning_stages;
 create policy "Users can select own learning stages" on public.learning_stages for select to authenticated using (auth.uid() = user_id);
+drop policy if exists "Users can insert own learning stages" on public.learning_stages;
 create policy "Users can insert own learning stages" on public.learning_stages for insert to authenticated with check (auth.uid() = user_id);
+drop policy if exists "Users can update own learning stages" on public.learning_stages;
 create policy "Users can update own learning stages" on public.learning_stages for update to authenticated using (auth.uid() = user_id) with check (auth.uid() = user_id);
+drop policy if exists "Users can delete own learning stages" on public.learning_stages;
 create policy "Users can delete own learning stages" on public.learning_stages for delete to authenticated using (auth.uid() = user_id);
 
+drop policy if exists "Users can select own learning sessions" on public.learning_sessions;
 create policy "Users can select own learning sessions" on public.learning_sessions for select to authenticated using (auth.uid() = user_id);
+drop policy if exists "Users can insert own learning sessions" on public.learning_sessions;
 create policy "Users can insert own learning sessions" on public.learning_sessions for insert to authenticated with check (auth.uid() = user_id);
+drop policy if exists "Users can update own learning sessions" on public.learning_sessions;
 create policy "Users can update own learning sessions" on public.learning_sessions for update to authenticated using (auth.uid() = user_id) with check (auth.uid() = user_id);
+drop policy if exists "Users can delete own learning sessions" on public.learning_sessions;
 create policy "Users can delete own learning sessions" on public.learning_sessions for delete to authenticated using (auth.uid() = user_id);
 
+drop policy if exists "Users can select own learning session logs" on public.learning_session_logs;
 create policy "Users can select own learning session logs" on public.learning_session_logs for select to authenticated using (auth.uid() = user_id);
+drop policy if exists "Users can insert own learning session logs" on public.learning_session_logs;
 create policy "Users can insert own learning session logs" on public.learning_session_logs for insert to authenticated with check (auth.uid() = user_id);
+drop policy if exists "Users can update own learning session logs" on public.learning_session_logs;
 create policy "Users can update own learning session logs" on public.learning_session_logs for update to authenticated using (auth.uid() = user_id) with check (auth.uid() = user_id);
+drop policy if exists "Users can delete own learning session logs" on public.learning_session_logs;
 create policy "Users can delete own learning session logs" on public.learning_session_logs for delete to authenticated using (auth.uid() = user_id);
 
+drop policy if exists "Users can select own learning milestones" on public.learning_milestones;
 create policy "Users can select own learning milestones" on public.learning_milestones for select to authenticated using (auth.uid() = user_id);
+drop policy if exists "Users can insert own learning milestones" on public.learning_milestones;
 create policy "Users can insert own learning milestones" on public.learning_milestones for insert to authenticated with check (auth.uid() = user_id);
+drop policy if exists "Users can update own learning milestones" on public.learning_milestones;
 create policy "Users can update own learning milestones" on public.learning_milestones for update to authenticated using (auth.uid() = user_id) with check (auth.uid() = user_id);
+drop policy if exists "Users can delete own learning milestones" on public.learning_milestones;
 create policy "Users can delete own learning milestones" on public.learning_milestones for delete to authenticated using (auth.uid() = user_id);
 
+drop policy if exists "Users can select own learning projects" on public.learning_projects;
 create policy "Users can select own learning projects" on public.learning_projects for select to authenticated using (auth.uid() = user_id);
+drop policy if exists "Users can insert own learning projects" on public.learning_projects;
 create policy "Users can insert own learning projects" on public.learning_projects for insert to authenticated with check (auth.uid() = user_id);
+drop policy if exists "Users can update own learning projects" on public.learning_projects;
 create policy "Users can update own learning projects" on public.learning_projects for update to authenticated using (auth.uid() = user_id) with check (auth.uid() = user_id);
+drop policy if exists "Users can delete own learning projects" on public.learning_projects;
 create policy "Users can delete own learning projects" on public.learning_projects for delete to authenticated using (auth.uid() = user_id);
 
+drop policy if exists "Users can select own learning reflections" on public.learning_reflections;
 create policy "Users can select own learning reflections" on public.learning_reflections for select to authenticated using (auth.uid() = user_id);
+drop policy if exists "Users can insert own learning reflections" on public.learning_reflections;
 create policy "Users can insert own learning reflections" on public.learning_reflections for insert to authenticated with check (auth.uid() = user_id);
+drop policy if exists "Users can update own learning reflections" on public.learning_reflections;
 create policy "Users can update own learning reflections" on public.learning_reflections for update to authenticated using (auth.uid() = user_id) with check (auth.uid() = user_id);
+drop policy if exists "Users can delete own learning reflections" on public.learning_reflections;
 create policy "Users can delete own learning reflections" on public.learning_reflections for delete to authenticated using (auth.uid() = user_id);
 
 -- ---------------------------------------------------------
 -- 2. SQL VIEWS
 -- ---------------------------------------------------------
 
+drop view if exists public.learning_stage_progress cascade;
 create or replace view public.learning_stage_progress
 with (security_invoker = true) as
 select
@@ -208,6 +237,7 @@ group by st.id, st.roadmap_id;
 
 grant select on public.learning_stage_progress to authenticated;
 
+drop view if exists public.learning_roadmap_progress cascade;
 create or replace view public.learning_roadmap_progress
 with (security_invoker = true) as
 select
@@ -263,12 +293,14 @@ alter table public.events add constraint events_domain_check
   check (domain in (
     'mind-os',
     'productivity-hub',
-    'learning-os',
+    'progress-hub',
     'mission-control',
     'fitness-os',
+    'time-os',
     'finance-os',
-    'time-os'
-  ));
+    'data-lab',
+    'learning-os'
+  )) not valid;
 
 alter table public.goals add constraint goals_domain_check 
   check (domain in (

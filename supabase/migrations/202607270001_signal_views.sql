@@ -19,11 +19,15 @@ create table if not exists public.data_lab_signal_config (
 
 alter table public.data_lab_signal_config enable row level security;
 
+drop policy if exists "Signal config is readable by all authenticated users" on public.data_lab_signal_config;
+
 create policy "Signal config is readable by all authenticated users"
   on public.data_lab_signal_config
   for select
   to authenticated
   using (true);
+
+
 
 insert into public.data_lab_signal_config (signal_key, display_name, weight_percent, weight_cap_days, is_active) values
   ('mind-habits',     'Mind / Habits', 18, 7, true),
@@ -39,6 +43,7 @@ on conflict (signal_key) do nothing;
 -- Each returns: user_id, activity_date, was_active, magnitude, metrics
 -- ---------------------------------------------------------
 
+drop view if exists public.data_lab_signal_mind_habits cascade;
 create or replace view public.data_lab_signal_mind_habits
 with (security_invoker = true) as
 select
@@ -54,6 +59,7 @@ from public.data_lab_daily_activity_90d;
 
 grant select on public.data_lab_signal_mind_habits to authenticated;
 
+drop view if exists public.data_lab_signal_mind_journal cascade;
 create or replace view public.data_lab_signal_mind_journal
 with (security_invoker = true) as
 select
@@ -68,6 +74,7 @@ from public.data_lab_daily_activity_90d;
 
 grant select on public.data_lab_signal_mind_journal to authenticated;
 
+drop view if exists public.data_lab_signal_execution_tasks cascade;
 create or replace view public.data_lab_signal_execution_tasks
 with (security_invoker = true) as
 select
@@ -82,6 +89,7 @@ from public.data_lab_daily_activity_90d;
 
 grant select on public.data_lab_signal_execution_tasks to authenticated;
 
+drop view if exists public.data_lab_signal_time_os cascade;
 create or replace view public.data_lab_signal_time_os
 with (security_invoker = true) as
 select
@@ -97,6 +105,7 @@ from public.data_lab_daily_activity_90d;
 
 grant select on public.data_lab_signal_time_os to authenticated;
 
+drop view if exists public.data_lab_signal_fitness_os cascade;
 create or replace view public.data_lab_signal_fitness_os
 with (security_invoker = true) as
 select
@@ -111,6 +120,7 @@ from public.data_lab_daily_activity_90d;
 
 grant select on public.data_lab_signal_fitness_os to authenticated;
 
+drop view if exists public.data_lab_signal_finance_os cascade;
 create or replace view public.data_lab_signal_finance_os
 with (security_invoker = true) as
 select

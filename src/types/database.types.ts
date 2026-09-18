@@ -1,4 +1,4 @@
-export type Json =
+﻿export type Json =
   | string
   | number
   | boolean
@@ -142,6 +142,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      experiments: {
+        Row: {
+          created_at: string
+          id: string
+          metadata: Json
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          metadata?: Json
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          metadata?: Json
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       fitness_exercises: {
         Row: {
@@ -423,6 +453,36 @@ export type Database = {
           went_wrong?: string | null
           what_went_good?: string | null
           what_you_learned?: string | null
+        }
+        Relationships: []
+      }
+      knowledge_resources: {
+        Row: {
+          created_at: string
+          id: string
+          metadata: Json
+          title: string
+          updated_at: string
+          url: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          metadata?: Json
+          title: string
+          updated_at?: string
+          url?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          metadata?: Json
+          title?: string
+          updated_at?: string
+          url?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -900,6 +960,39 @@ export type Database = {
           },
         ]
       }
+      life_seasons: {
+        Row: {
+          created_at: string
+          end_date: string
+          id: string
+          name: string
+          start_date: string
+          updated_at: string
+          user_id: string
+          vows: Json
+        }
+        Insert: {
+          created_at?: string
+          end_date: string
+          id?: string
+          name: string
+          start_date: string
+          updated_at?: string
+          user_id: string
+          vows?: Json
+        }
+        Update: {
+          created_at?: string
+          end_date?: string
+          id?: string
+          name?: string
+          start_date?: string
+          updated_at?: string
+          user_id?: string
+          vows?: Json
+        }
+        Relationships: []
+      }
       progress_hub_archive: {
         Row: {
           archived_at: string
@@ -927,6 +1020,33 @@ export type Database = {
           personal_skills?: Json
           programming_skills?: Json
           user_id?: string
+        }
+        Relationships: []
+      }
+      pulse_logs: {
+        Row: {
+          created_at: string
+          id: string
+          metadata: Json
+          timestamp: string
+          user_id: string
+          value: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          metadata?: Json
+          timestamp?: string
+          user_id: string
+          value: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          metadata?: Json
+          timestamp?: string
+          user_id?: string
+          value?: string
         }
         Relationships: []
       }
@@ -1090,6 +1210,57 @@ export type Database = {
           is_need?: boolean | null
           timestamp?: string
           type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_achievements: {
+        Row: {
+          badge_id: string
+          created_at: string
+          id: string
+          metadata: Json
+          unlocked_at: string
+          user_id: string
+        }
+        Insert: {
+          badge_id: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          unlocked_at?: string
+          user_id: string
+        }
+        Update: {
+          badge_id?: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          unlocked_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_settings: {
+        Row: {
+          created_at: string
+          finance_preferences: Json
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          finance_preferences?: Json
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          finance_preferences?: Json
+          id?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: []

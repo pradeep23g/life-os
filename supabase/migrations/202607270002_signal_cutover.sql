@@ -11,6 +11,7 @@ begin;
 -- config table for display_name. No dynamic SQL.
 -- ---------------------------------------------------------
 
+drop view if exists public.data_lab_module_consistency_30d cascade;
 create or replace view public.data_lab_module_consistency_30d
 with (security_invoker = true) as
 with date_boundary as (
@@ -63,6 +64,7 @@ grant select on public.data_lab_module_consistency_30d to authenticated;
 -- System breadth term kept as a separate, non-signal metric (10 pts).
 -- ---------------------------------------------------------
 
+drop view if exists public.data_lab_weekly_system_score_12w cascade;
 create or replace view public.data_lab_weekly_system_score_12w
 with (security_invoker = true) as
 with date_boundary as (

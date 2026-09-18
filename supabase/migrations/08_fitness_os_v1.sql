@@ -12,7 +12,7 @@ begin
 
     alter table public.events
       add constraint events_domain_check
-      check (domain in ('mind-os', 'productivity-hub', 'progress-hub', 'mission-control', 'fitness-os'));
+      check (domain in ('mind-os', 'productivity-hub', 'progress-hub', 'mission-control', 'fitness-os')) not valid;
   end if;
 end $$;
 

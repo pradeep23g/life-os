@@ -1,15 +1,25 @@
-﻿create extension if not exists "pgcrypto";
+create extension if not exists "pgcrypto";
 
 create table if not exists public.tasks (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users (id) on delete cascade,
   title text not null,
-  priority text not null check (priority in ('Low', 'Medium', 'High')),
+  priority text not null default 'Medium' check (priority in ('Low', 'Medium', 'High')),
   status text not null default 'To Do' check (status in ('To Do', 'Doing', 'Done')),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   deleted_at timestamptz
 );
+
+do $$ 
+begin
+  if not exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'tasks' and column_name = 'status') then
+    alter table public.tasks add column status text not null default 'To Do' check (status in ('To Do', 'Doing', 'Done'));
+  end if;
+  if not exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'tasks' and column_name = 'priority') then
+    alter table public.tasks add column priority text not null default 'Medium' check (priority in ('Low', 'Medium', 'High'));
+  end if;
+end $$;
 
 create table if not exists public.weekly_plans (
   id uuid primary key default gen_random_uuid(),

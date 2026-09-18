@@ -1,3 +1,5 @@
+drop view if exists public.current_day_snapshot cascade;
+
 create or replace view public.current_day_snapshot
 with (security_invoker = true) as
 with scope as (
@@ -77,6 +79,8 @@ left join lateral (
   limit 1
 ) as newest_habit on true
 where scope.user_id is not null;
+
+drop view if exists public.current_day_snapshot_history_14d cascade;
 
 create or replace view public.current_day_snapshot_history_14d
 with (security_invoker = true) as
