@@ -16,6 +16,14 @@ export const TIME_BUCKETS = ['Academics', 'Deep Work', 'Admin', 'Fitness', 'Lear
 
 export type TimeBucket = (typeof TIME_BUCKETS)[number]
 
+export const TIME_BUCKET_COLORS: Record<TimeBucket, string> = {
+  'Academics': 'rgba(139, 92, 246, 1)', // Purple
+  'Deep Work': 'rgba(59, 130, 246, 1)', // Blue
+  'Admin': 'rgba(245, 158, 11, 1)',     // Amber
+  'Fitness': 'rgba(239, 68, 68, 1)',    // Red
+  'Learning': 'rgba(16, 185, 129, 1)',  // Emerald
+}
+
 export type TimeLog = {
   id: string
   user_id: string
@@ -62,6 +70,7 @@ type DeleteTimeLogInput = {
 const timeLogsBaseQueryKey = ['time-os', 'time-logs'] as const
 export const timeLogsActiveQueryKey = [...timeLogsBaseQueryKey, 'active'] as const
 export const timeLogsCompletedQueryKey = [...timeLogsBaseQueryKey, 'completed'] as const
+export const timeLogsHistoryQueryKey = [...timeLogsBaseQueryKey, 'history'] as const
 const timeAnalyticsQueryKey = ['time-os', 'analytics'] as const
 const productivityTasksQueryKey = ['productivity-hub', 'tasks'] as const
 
@@ -167,6 +176,46 @@ async function fetchCompletedTimeLogs(): Promise<CompletedTimeLog[]> {
     }
 
     throw buildError('Failed to fetch completed time logs', error)
+  }
+
+  return (data ?? []).map((row) => {
+    const taskRelation = row.tasks as { title?: string } | Array<{ title?: string }> | null
+    const taskTitle = Array.isArray(taskRelation) ? taskRelation[0]?.title ?? null : taskRelation?.title ?? null
+
+    return {
+      id: row.id,
+      user_id: row.user_id,
+      task_id: row.task_id,
+      bucket: row.bucket as TimeBucket,
+      description: row.description,
+      start_time: row.start_time,
+      end_time: row.end_time,
+      duration_minutes: row.duration_minutes,
+      created_at: row.created_at,
+      updated_at: row.updated_at,
+      task_title: taskTitle,
+    }
+  })
+}
+
+async function fetchTimeHistoryLogs(): Promise<CompletedTimeLog[]> {
+  const startDate = new Date()
+  startDate.setDate(startDate.getDate() - 90)
+  const isoStart = startDate.toISOString()
+
+  const { data, error } = await supabase
+    .from('time_logs')
+    .select('id, user_id, task_id, bucket, description, start_time, end_time, duration_minutes, created_at, updated_at, tasks(title)')
+    .not('end_time', 'is', null)
+    .gte('start_time', isoStart)
+    .order('start_time', { ascending: false })
+
+  if (error) {
+    if (isMissingRelationError(error, 'time_logs')) {
+      return []
+    }
+
+    throw buildError('Failed to fetch time history logs', error)
   }
 
   return (data ?? []).map((row) => {
@@ -389,6 +438,13 @@ export function useCompletedTimeLogs() {
   return useQuery({
     queryKey: timeLogsCompletedQueryKey,
     queryFn: fetchCompletedTimeLogs,
+  })
+}
+
+export function useTimeHistoryLogs() {
+  return useQuery({
+    queryKey: timeLogsHistoryQueryKey,
+    queryFn: fetchTimeHistoryLogs,
   })
 }
 

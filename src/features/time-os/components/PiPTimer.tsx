@@ -2,64 +2,64 @@ import { useEffect } from 'react'
 import { createPortal } from 'react-dom'
 
 type PiPTimerProps = {
-  pipWindow: Window
-  bucket: string
-  elapsedLabel: string
-  isPaused: boolean
-  isStopping: boolean
-  onTogglePause: () => void
-  onStop: () => void
+ pipWindow: Window
+ bucket: string
+ elapsedLabel: string
+ isPaused: boolean
+ isStopping: boolean
+ onTogglePause: () => void
+ onStop: () => void
 }
 
 function syncStylesToPiPWindow(pipWindow: Window) {
-  const mainHead = document.head
-  const pipHead = pipWindow.document.head
+ const mainHead = document.head
+ const pipHead = pipWindow.document.head
 
-  pipHead.innerHTML = ''
+ pipHead.innerHTML = ''
 
-  mainHead.querySelectorAll('link[rel="stylesheet"], style').forEach((node) => {
-    pipHead.appendChild(node.cloneNode(true))
-  })
+ mainHead.querySelectorAll('link[rel="stylesheet"], style').forEach((node) => {
+ pipHead.appendChild(node.cloneNode(true))
+ })
 }
 
 export default function PiPTimer({
-  pipWindow,
-  bucket,
-  elapsedLabel,
-  isPaused,
-  isStopping,
-  onTogglePause,
-  onStop,
+ pipWindow,
+ bucket,
+ elapsedLabel,
+ isPaused,
+ isStopping,
+ onTogglePause,
+ onStop,
 }: PiPTimerProps) {
-  useEffect(() => {
-    syncStylesToPiPWindow(pipWindow)
-  }, [pipWindow])
+ useEffect(() => {
+ syncStylesToPiPWindow(pipWindow)
+ }, [pipWindow])
 
-  return createPortal(
-    <div className="flex h-screen w-screen items-center justify-center bg-surface p-3 text-slate-100">
-      <article className="w-full rounded-xl border border-border bg-[#111111] p-3">
-        <p className="text-[11px] uppercase tracking-wide text-slate-400">Active Focus Session</p>
-        <p className="mt-1 text-xs text-slate-300">{bucket}</p>
-        <p className="mt-2 text-3xl font-semibold text-slate-100">{elapsedLabel}</p>
-        <div className="mt-3 flex items-center gap-2">
-          <button
-            type="button"
-            onClick={onTogglePause}
-            className="rounded-md border border-border bg-[#222222] px-3 py-2 text-xs text-slate-100 hover:bg-[#333333]"
-          >
-            {isPaused ? 'Play' : 'Pause'}
-          </button>
-          <button
-            type="button"
-            onClick={onStop}
-            disabled={isStopping}
-            className="rounded border border-rose-900 bg-black px-3 py-2 text-xs text-rose-300 hover:bg-rose-950/30 disabled:opacity-60"
-          >
-            {isStopping ? 'Stopping...' : 'Stop'}
-          </button>
-        </div>
-      </article>
-    </div>,
-    pipWindow.document.body,
-  )
+ return createPortal(
+ <div className="flex h-screen w-screen items-center justify-center bg-surface p-3 text-text-primary">
+ <article className="w-full rounded-xl border border-border bg-surface p-3">
+ <p className="text-[11px] uppercase tracking-wide text-text-secondary">Active Focus Session</p>
+ <p className="mt-1 text-xs text-text-secondary">{bucket}</p>
+ <p className="mt-2 text-3xl font-semibold text-text-primary">{elapsedLabel}</p>
+ <div className="mt-3 flex items-center gap-2">
+ <button
+ type="button"
+ onClick={onTogglePause}
+ className="rounded-md border border-border bg-elevated px-3 py-2 text-xs text-text-primary hover:bg-border"
+ >
+ {isPaused ? 'Play' : 'Pause'}
+ </button>
+ <button
+ type="button"
+ onClick={onStop}
+ disabled={isStopping}
+ className="rounded border border-rose-900 bg-background px-3 py-2 text-xs text-rose-300 hover:bg-rose-950/30 disabled:opacity-60"
+ >
+ {isStopping ? 'Stopping...' : 'Stop'}
+ </button>
+ </div>
+ </article>
+ </div>,
+ pipWindow.document.body,
+ )
 }
