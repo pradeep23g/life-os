@@ -1,13 +1,26 @@
 import { useState } from 'react'
-import { NavLink } from 'react-router-dom'
-import { GraduationCap } from 'lucide-react'
+import { NavLink, useNavigate } from 'react-router-dom'
 
 import { useAuth } from '../lib/AuthContext'
 import { supabase } from '../lib/supabase'
-
-type IconProps = {
-  className?: string
-}
+import { Avatar } from '../components/Avatar'
+import { useSystemStatus } from '../features/system/api/useSystemStatus'
+import {
+  LifeOsLogo,
+  HomeIcon,
+  SystemIcon,
+  WinterArcIcon,
+  MindOsIcon,
+  ProductivityIcon,
+  TimeOsIcon,
+  FinanceIcon,
+  FitnessIcon,
+  LearningIcon,
+  DataLabIcon,
+  ReportsIcon,
+  SignOutIcon,
+  RailToggleIcon,
+} from '../components/icons'
 
 type SidebarProps = {
   compact?: boolean
@@ -16,109 +29,27 @@ type SidebarProps = {
   desktopExpanded?: boolean
 }
 
-function MissionControlIcon({ className = 'h-5 w-5' }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true">
-      <path d="M4 5h16v14H4z" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M9 10h2v5H9zm4-3h2v8h-2z" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-function MindOsIcon({ className = 'h-5 w-5' }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true">
-      <path d="M12 3v18M3 12h18" strokeLinecap="round" />
-      <circle cx="12" cy="12" r="8" />
-    </svg>
-  )
-}
-
-function ProductivityIcon({ className = 'h-5 w-5' }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true">
-      <path d="M4 6h16v12H4z" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M8 10h8M8 14h5" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function FitnessIcon({ className = 'h-5 w-5' }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true">
-      <path d="M6 9v6M18 9v6" strokeLinecap="round" />
-      <path d="M9 8v8M15 8v8" strokeLinecap="round" />
-      <path d="M4 11h2M18 11h2M4 13h2M18 13h2" strokeLinecap="round" />
-      <path d="M9 12h6" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function TimeOsIcon({ className = 'h-5 w-5' }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true">
-      <circle cx="12" cy="12" r="8" />
-      <path d="M12 8v5l3 2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-function FinanceIcon({ className = 'h-5 w-5' }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true">
-      <circle cx="12" cy="12" r="8" />
-      <path d="M9 10.5c0-.9.9-1.5 2-1.5h2c1.1 0 2 .6 2 1.5s-.9 1.5-2 1.5h-2c-1.1 0-2 .6-2 1.5S9.9 15 11 15h2c1.1 0 2-.6 2-1.5" strokeLinecap="round" />
-      <path d="M12 7v10" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function DataLabIcon({ className = 'h-5 w-5' }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true">
-      <path d="M9 4h6" strokeLinecap="round" />
-      <path d="M10 4v5l-4 7a3 3 0 002.6 4.5h6.8A3 3 0 0018 16l-4-7V4" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M9 14h6" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function SignOutIcon({ className = 'h-5 w-5' }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true">
-      <path d="M14 7l5 5-5 5" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M19 12H9" strokeLinecap="round" />
-      <path d="M11 4H6a2 2 0 00-2 2v12a2 2 0 002 2h5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-function RailToggleIcon({ className = 'h-5 w-5', expanded }: IconProps & { expanded: boolean }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true">
-      <path d="M7 5h10M7 12h10M7 19h10" strokeLinecap="round" />
-      {expanded ? (
-        <path d="M5 8l-2 4 2 4" strokeLinecap="round" strokeLinejoin="round" />
-      ) : (
-        <path d="M3 8l2 4-2 4" strokeLinecap="round" strokeLinejoin="round" />
-      )}
-    </svg>
-  )
-}
-
 const navItems = [
-  { to: '/mission-control', label: 'Mission Control', Icon: MissionControlIcon },
+  { to: '/', label: 'Home', Icon: HomeIcon },
+  { to: '/system', label: 'System', Icon: SystemIcon },
+  { to: '/arc', label: 'Winter Arc', Icon: WinterArcIcon },
   { to: '/mind-os', label: 'Mind OS', Icon: MindOsIcon },
-  { to: '/productivity-hub', label: 'Productivity Hub', Icon: ProductivityIcon },
+  { to: '/productivity-hub', label: 'Productivity', Icon: ProductivityIcon },
   { to: '/time-os', label: 'Time OS', Icon: TimeOsIcon },
-  { to: '/finance-os', label: 'Finance OS', Icon: FinanceIcon },
+  { to: '/finance-os', label: 'Finance', Icon: FinanceIcon },
   { to: '/data-lab', label: 'Data Lab', Icon: DataLabIcon },
-  { to: '/fitness-os', label: 'Fitness OS', Icon: FitnessIcon },
-  { to: '/learning-os', label: 'Learning OS', Icon: GraduationCap },
+  { to: '/reports', label: 'Reports', Icon: ReportsIcon },
+  { to: '/fitness-os', label: 'Fitness', Icon: FitnessIcon },
+  { to: '/learning-os', label: 'Learning', Icon: LearningIcon },
 ] as const
 
 function Sidebar({ compact = false, onNavigate, onToggleDesktopExpanded, desktopExpanded = false }: SidebarProps) {
   const { user } = useAuth()
+  const navigate = useNavigate()
+  const { data: systemStatus } = useSystemStatus()
+  const momentumScore = systemStatus?.momentum.momentum ?? 0
+  const avatarState: 'recovering' | 'active' | 'idle' =
+    momentumScore < 30 ? 'recovering' : momentumScore > 60 ? 'active' : 'idle'
   const [isSigningOut, setIsSigningOut] = useState(false)
   const showDesktopToggle = Boolean(onToggleDesktopExpanded)
 
@@ -134,29 +65,63 @@ function Sidebar({ compact = false, onNavigate, onToggleDesktopExpanded, desktop
     setIsSigningOut(false)
   }
 
-  const userInitial = user?.email?.charAt(0).toUpperCase() ?? 'U'
+  const handleProfileClick = () => {
+    if (onNavigate) onNavigate()
+    navigate('/profile')
+  }
 
   return (
-    <aside className="h-full rounded-xl border border-border bg-surface p-2">
-      <div className={`flex h-full min-h-[260px] flex-col ${compact ? 'items-center' : ''}`}>
-        {showDesktopToggle ? (
+    <aside className="h-full rounded-xl border border-border bg-surface p-2 flex flex-col justify-between">
+      <div className={`flex flex-col ${compact ? 'items-center' : ''}`}>
+        {/* Brand Anchor Header */}
+        <div className={`w-full flex items-center ${compact ? 'justify-center mb-3' : 'justify-between px-2 mb-4'} pt-1`}>
+          <NavLink
+            to="/"
+            onClick={onNavigate}
+            title={compact ? 'Life OS • Winter Arc' : undefined}
+            className="flex items-center gap-2.5 group transition-opacity hover:opacity-90"
+          >
+            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-elevated border border-border/80 text-text-primary group-hover:border-accent-primary/40 transition-colors shadow-sm shrink-0">
+              <LifeOsLogo className="h-4 w-4" />
+            </div>
+            {!compact ? (
+              <div className="flex flex-col min-w-0">
+                <span className="font-serif font-medium tracking-tight text-text-primary text-sm leading-none">
+                  Life OS
+                </span>
+                <span className="font-mono text-[9px] uppercase tracking-widest text-text-tertiary mt-1">
+                  Winter Arc
+                </span>
+              </div>
+            ) : null}
+          </NavLink>
+
+          {showDesktopToggle && !compact ? (
+            <button
+              type="button"
+              onClick={onToggleDesktopExpanded}
+              title={desktopExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
+              aria-label={desktopExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
+              className="flex items-center justify-center h-7 w-7 rounded-md text-text-tertiary hover:text-text-primary hover:bg-elevated transition-colors"
+            >
+              <RailToggleIcon className="h-4 w-4" expanded={desktopExpanded} />
+            </button>
+          ) : null}
+        </div>
+
+        {showDesktopToggle && compact ? (
           <button
             type="button"
             onClick={onToggleDesktopExpanded}
-            title={compact ? (desktopExpanded ? 'Collapse sidebar' : 'Expand sidebar') : undefined}
-            aria-label={desktopExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
-            className={`mb-2 flex items-center rounded-lg border border-border bg-[#111111] text-slate-100 transition-colors hover:bg-[#222222] ${
-              compact ? 'h-10 w-10 justify-center px-0' : 'w-full gap-2 px-3 py-2 text-sm'
-            }`}
+            title="Expand sidebar"
+            aria-label="Expand sidebar"
+            className="mb-3 flex items-center justify-center h-9 w-9 rounded-lg text-text-tertiary hover:text-text-primary hover:bg-elevated transition-colors"
           >
-            <RailToggleIcon className="h-5 w-5 shrink-0" expanded={desktopExpanded} />
-            {!compact ? <span>{desktopExpanded ? 'Collapse sidebar' : 'Expand sidebar'}</span> : null}
+            <RailToggleIcon className="h-4 w-4" expanded={false} />
           </button>
         ) : null}
 
-        {!compact ? <p className="mb-3 truncate px-2 text-xs text-slate-400">{user?.email ?? 'Not signed in'}</p> : null}
-
-        <nav className={`flex w-full flex-col gap-2 ${compact ? 'items-center' : ''}`}>
+        <nav className={`flex w-full flex-col gap-1.5 ${compact ? 'items-center' : ''}`}>
           {navItems.map((item) => (
             <NavLink
               key={item.to}
@@ -165,29 +130,32 @@ function Sidebar({ compact = false, onNavigate, onToggleDesktopExpanded, desktop
               title={compact ? item.label : undefined}
               aria-label={item.label}
               className={({ isActive }) =>
-                `flex items-center gap-2 rounded-lg px-2 py-2 text-sm transition-colors ${
+                `flex items-center gap-3 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors ${
                   compact ? 'w-10 justify-center px-0' : 'w-full'
-                } ${isActive ? 'bg-[#222222] text-slate-100' : 'text-slate-200 hover:bg-[#111111] hover:text-white'}`
+                } ${isActive ? 'bg-border-subtle text-text-primary' : 'text-text-secondary hover:bg-elevated hover:text-text-primary'}`
               }
             >
-              <item.Icon className="h-5 w-5 shrink-0" />
+              <item.Icon className="h-[18px] w-[18px] shrink-0" />
               {!compact ? <span className="truncate">{item.label}</span> : null}
             </NavLink>
           ))}
         </nav>
-
+      </div>
+      
+      <div className={`flex flex-col gap-2 ${compact ? 'items-center' : ''} pt-4 border-t border-border mt-4`}>
         <button
           type="button"
+          onClick={handleProfileClick}
           title={compact ? user?.email ?? 'Profile' : undefined}
           aria-label="Profile"
-          className={`mt-auto flex items-center rounded-lg border border-border bg-[#111111] text-sm text-slate-100 transition-colors hover:bg-[#222222] ${
-            compact ? 'h-10 w-10 justify-center px-0' : 'w-full gap-2 px-3 py-2'
+          className={`flex items-center rounded-lg text-sm text-text-primary transition-colors hover:bg-elevated ${
+            compact ? 'h-10 w-10 justify-center px-0' : 'w-full gap-3 px-2 py-1.5'
           }`}
         >
-          <span className="flex h-6 w-6 items-center justify-center rounded-full border border-border bg-[#222222] text-xs font-semibold">
-            {userInitial}
-          </span>
-          {!compact ? <span className="truncate">Profile</span> : null}
+          <Avatar size="sm" state={avatarState} momentumScore={momentumScore} />
+          {!compact ? <div className="flex flex-col text-left overflow-hidden">
+            <span className="truncate font-medium text-xs">Profile & Stats</span>
+          </div> : null}
         </button>
 
         <button
@@ -196,12 +164,14 @@ function Sidebar({ compact = false, onNavigate, onToggleDesktopExpanded, desktop
           disabled={isSigningOut}
           title={compact ? 'Sign Out' : undefined}
           aria-label="Sign Out"
-          className={`mt-2 flex items-center rounded-lg border border-border bg-[#111111] text-sm text-slate-100 transition-colors hover:bg-[#222222] disabled:opacity-60 ${
-            compact ? 'h-10 w-10 justify-center px-0' : 'w-full gap-2 px-3 py-2'
+          className={`flex items-center rounded-lg text-sm text-text-secondary transition-colors hover:bg-elevated hover:text-text-primary disabled:opacity-60 ${
+            compact ? 'h-10 w-10 justify-center px-0' : 'w-full gap-3 px-2 py-1.5'
           }`}
         >
-          <SignOutIcon className="h-5 w-5" />
-          {!compact ? <span>{isSigningOut ? 'Signing Out...' : 'Sign Out'}</span> : null}
+          <div className="flex items-center justify-center w-8 h-8 rounded-full shrink-0">
+            <SignOutIcon className="h-4 w-4" />
+          </div>
+          {!compact ? <span className="font-medium text-xs">{isSigningOut ? 'Signing Out...' : 'Sign Out'}</span> : null}
         </button>
       </div>
     </aside>

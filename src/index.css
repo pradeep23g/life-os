@@ -1,44 +1,118 @@
-﻿@tailwind base;
+@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  font-family: Inter, system-ui, -apple-system, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-  color: #f1f5f9;
-  background-color: #000000;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@layer base {
+  :root {
+    /* Day Theme (Default/Afternoon) - Neutral, high contrast */
+    --bg-base: 15% 0.01 250; 
+    --bg-surface: 20% 0.01 250;
+    --bg-elevated: 25% 0.01 250;
+    --border-subtle: 25% 0.01 250;
+    --border-base: 30% 0.01 250;
+    --text-primary: 98% 0.01 250;
+    --text-secondary: 75% 0.01 250;
+    --text-tertiary: 55% 0.01 250;
+    --accent-primary: 70% 0.15 150; /* Emerald */
+    --accent-secondary: 50% 0.1 150;
+    --threat-critical: 65% 0.2 25;
+    --threat-warning: 75% 0.15 65;
+    --threat-healthy: 70% 0.15 150;
+  }
+
+  .theme-dawn {
+    /* Dawn Theme - Cool, higher brightness, blue/indigo undertones */
+    --bg-base: 18% 0.02 260;
+    --bg-surface: 23% 0.02 260;
+    --bg-elevated: 28% 0.02 260;
+    --border-subtle: 28% 0.02 260;
+    --border-base: 35% 0.02 260;
+    --text-primary: 98% 0.01 260;
+    --text-secondary: 80% 0.02 260;
+    --text-tertiary: 60% 0.02 260;
+    --accent-primary: 75% 0.12 50; /* Orange/Sunrise */
+    --accent-secondary: 55% 0.1 50;
+    --threat-critical: 65% 0.2 25;
+    --threat-warning: 75% 0.15 65;
+    --threat-healthy: 70% 0.15 150;
+  }
+
+  .theme-dusk {
+    /* Dusk Theme - Warmer, amber/sage undertones */
+    --bg-base: 14% 0.02 60;
+    --bg-surface: 19% 0.02 60;
+    --bg-elevated: 24% 0.02 60;
+    --border-subtle: 24% 0.02 60;
+    --border-base: 30% 0.02 60;
+    --text-primary: 95% 0.02 60;
+    --text-secondary: 75% 0.02 60;
+    --text-tertiary: 55% 0.02 60;
+    --accent-primary: 65% 0.15 65; /* Amber */
+    --accent-secondary: 45% 0.1 65;
+    --threat-critical: 65% 0.2 25;
+    --threat-warning: 75% 0.15 65;
+    --threat-healthy: 70% 0.15 150;
+  }
+
+  .theme-midnight {
+    /* Midnight Theme - Deep black, ultra-low contrast */
+    --bg-base: 10% 0.01 270;
+    --bg-surface: 13% 0.01 270;
+    --bg-elevated: 16% 0.01 270;
+    --border-subtle: 16% 0.01 270;
+    --border-base: 22% 0.01 270;
+    --text-primary: 90% 0.01 270;
+    --text-secondary: 60% 0.01 270;
+    --text-tertiary: 40% 0.01 270;
+    --accent-primary: 60% 0.1 270; /* Soft blue */
+    --accent-secondary: 40% 0.1 270;
+    --threat-critical: 60% 0.18 25;
+    --threat-warning: 70% 0.14 65;
+    --threat-healthy: 65% 0.12 150;
+  }
+
+  .theme-recovery {
+    /* Recovery Theme - Deep, soft, very low contrast, sepia/sage */
+    --bg-base: 16% 0.02 120;
+    --bg-surface: 20% 0.02 120;
+    --bg-elevated: 25% 0.02 120;
+    --border-subtle: 25% 0.02 120;
+    --border-base: 30% 0.02 120;
+    --text-primary: 85% 0.02 120;
+    --text-secondary: 65% 0.02 120;
+    --text-tertiary: 50% 0.02 120;
+    --accent-primary: 60% 0.05 120; /* Sage green */
+    --accent-secondary: 45% 0.05 120;
+    --threat-critical: 65% 0.15 25;
+    --threat-warning: 72% 0.12 65;
+    --threat-healthy: 68% 0.12 150;
+  }
+
+  body {
+    @apply antialiased transition-colors duration-1000;
+    background-color: oklch(var(--bg-base));
+    color: oklch(var(--text-primary));
+    font-family: 'Geist', system-ui, -apple-system, sans-serif;
+  }
 }
 
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  min-width: 320px;
-  min-height: 100vh;
-  background-color: #000000;
-  color: #f1f5f9;
-}
-
-#root {
-  min-height: 100vh;
-}
-
-input,
-textarea,
-select,
-button {
-  color: #f1f5f9;
-}
-
-::placeholder {
-  color: #a1a1aa;
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .glass-panel {
+    @apply backdrop-blur-md;
+    background-color: oklch(var(--bg-base) / 0.8);
+    border: 1px solid oklch(var(--border-base));
+  }
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(300%);
+    }
+  }
 }
 
 /* Custom Scrollbar */
@@ -50,10 +124,9 @@ button {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #222222;
+  background: oklch(var(--border-base));
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #333333;
+  background: oklch(var(--text-tertiary));
 }
-
