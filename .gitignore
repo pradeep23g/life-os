@@ -39,6 +39,7 @@ supabase/.temp
 .codex/
 .gemini/
 .agents/
+.claude/
 skills-lock.json
 
 # ==============================================================================
