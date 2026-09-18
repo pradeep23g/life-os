@@ -18,8 +18,9 @@ begin
         'mission-control',
         'fitness-os',
         'finance-os',
-        'time-os'
-      ));
+        'time-os',
+        'data-lab'
+      )) not valid;
   end if;
 end $$;
 

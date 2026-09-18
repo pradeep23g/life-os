@@ -60,15 +60,8 @@ begin
       alter column equipment type text[]
       using (
         case
-          when equipment is null then null
-          when btrim(equipment) = '' then '{}'::text[]
-          else array_remove(
-            array(
-              select nullif(btrim(part), '')
-              from unnest(string_to_array(equipment, ',')) as part
-            ),
-            null
-          )
+          when equipment is null or btrim(equipment) = '' then '{}'::text[]
+          else regexp_split_to_array(btrim(equipment), '\s*,\s*')
         end
       );
   end if;
@@ -92,15 +85,8 @@ begin
       alter column target_muscles type text[]
       using (
         case
-          when target_muscles is null then null
-          when btrim(target_muscles) = '' then '{}'::text[]
-          else array_remove(
-            array(
-              select nullif(btrim(part), '')
-              from unnest(string_to_array(target_muscles, ',')) as part
-            ),
-            null
-          )
+          when target_muscles is null or btrim(target_muscles) = '' then '{}'::text[]
+          else regexp_split_to_array(btrim(target_muscles), '\s*,\s*')
         end
       );
   end if;

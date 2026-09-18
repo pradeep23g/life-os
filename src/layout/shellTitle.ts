@@ -1,5 +1,13 @@
 export function getShellTitle(pathname: string): string {
-  if (pathname === '/' || pathname === '/mission-control') {
+  if (pathname === '/') {
+    return 'Home'
+  }
+
+  if (pathname === '/arc' || pathname.startsWith('/arc/')) {
+    return 'Winter Arc'
+  }
+
+  if (pathname === '/system' || pathname === '/mission-control') {
     return 'Mission Control'
   }
 
@@ -29,6 +37,14 @@ export function getShellTitle(pathname: string): string {
 
   if (pathname === '/learning-os') {
     return 'Learning OS'
+  }
+
+  if (pathname.startsWith('/learning-os/explore')) {
+    return 'Learning OS - Explore'
+  }
+
+  if (pathname.startsWith('/learning-os/analytics')) {
+    return 'Learning OS - Analytics'
   }
 
   if (pathname.startsWith('/learning-os/roadmap')) {
@@ -61,6 +77,14 @@ export function getShellTitle(pathname: string): string {
 
   if (pathname.startsWith('/data-lab')) {
     return 'Data Lab'
+  }
+
+  if (pathname.startsWith('/reports')) {
+    return 'Reports'
+  }
+
+  if (pathname.startsWith('/profile')) {
+    return 'Profile & Stats'
   }
 
   return 'Life OS'

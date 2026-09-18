@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
 import { DeleteButton } from '../../../components/DeleteButton'
+import { Activity, Terminal, Zap } from 'lucide-react'
 
 import ActiveWorkoutPanel from './ActiveWorkoutPanel'
 import {
@@ -11,325 +11,250 @@ import {
   useStartWorkoutSession,
   useWorkoutDetail,
   useWorkouts,
+  type Workout,
 } from '../api/useFitness'
 import { formatIndiaDate } from '../utils/date'
 
-const greenReplicaButtonClass =
-  'border border-emerald-900 text-emerald-500 hover:bg-emerald-950/30 transition-colors rounded px-4 py-2'
-
-function WorkoutsPage() {
-  const [searchParams] = useSearchParams()
-  const { data: activeWorkout, isLoading: isLoadingActive, error: activeError } = useActiveWorkout()
-  const { data: exercises = [], isLoading: exercisesLoading } = useFitnessExercises()
-  const { data: workouts = [], isLoading: workoutsLoading, error: workoutsError } = useWorkouts()
-
-  const { mutate: startWorkoutSession, isPending: isStarting, error: startError } = useStartWorkoutSession()
-  const { mutate: endWorkoutSession, isPending: isEnding, error: endError } = useEndWorkoutSession()
-  const { mutate: deleteWorkout, isPending: isDeletingWorkout } = useDeleteWorkout()
-  const [sessionTitle, setSessionTitle] = useState('')
-  const [sessionType, setSessionType] = useState('')
-  const [expandedWorkoutId, setExpandedWorkoutId] = useState<string | null>(null)
-  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
-  const { data: expandedWorkoutDetail } = useWorkoutDetail(expandedWorkoutId)
-
-  const recentCompletedWorkouts = useMemo(() => workouts.slice(0, 8), [workouts])
-  const selectedDate = searchParams.get('date') ?? ''
-  const workoutsForSelectedDate = useMemo(
-    () => (selectedDate ? workouts.filter((workout) => workout.workout_date === selectedDate) : []),
-    [selectedDate, workouts],
-  )
-  const hasActiveSession = Boolean(activeWorkout)
+function HistoricalWorkoutRow({ workout, onDelete }: { workout: Workout, onDelete: (id: string) => void }) {
+  const [isExpanded, setIsExpanded] = useState(false)
+  const { data: detail, isLoading } = useWorkoutDetail(isExpanded ? workout.id : '')
 
   return (
-    <section className="space-y-4 bg-black">
-      <article className="rounded-xl border border-border bg-surface p-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h2 className="text-base font-semibold text-slate-100">Workout Sessions</h2>
-            <p className="mt-1 text-sm text-slate-400">Run a live session and log sets in real time.</p>
+    <>
+      <tr 
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="border-b border-border-subtle/50 hover:bg-surface/50 group transition-colors cursor-pointer"
+      >
+        <td className="py-3 pr-4 whitespace-nowrap text-text-secondary">
+          {formatIndiaDate(workout.workout_date).toUpperCase()}
+        </td>
+        <td className="py-3 px-4 text-text-primary font-medium tracking-wide">
+          <div className="flex items-center gap-2">
+            <span className="text-[9px] text-threat-critical font-mono">{isExpanded ? '▼' : '►'}</span>
+            <span>{workout.title}</span>
+            {workout.session_type && (
+              <span className="text-[9px] font-mono px-1.5 py-0.5 bg-threat-critical/10 border border-threat-critical/30 text-threat-critical uppercase">
+                {workout.session_type}
+              </span>
+            )}
           </div>
-
-          <button
-            type="button"
-            disabled={hasActiveSession || isStarting || isLoadingActive}
-            onClick={() =>
-              startWorkoutSession(
-                {
-                  title: sessionTitle.trim() || 'Live Workout Session',
-                  sessionType: sessionType.trim() || 'Calisthenics',
-                },
-                {
-                  onSuccess: () => {
-                    setSessionTitle('')
-                    setSessionType('')
-                  },
-                },
-              )
-            }
-            className={`${greenReplicaButtonClass} disabled:cursor-not-allowed disabled:opacity-60`}
-          >
-            {isStarting ? 'Starting...' : 'Start Workout'}
-          </button>
-        </div>
-
-        <div className="mt-3 grid gap-2 md:grid-cols-2">
-          <input
-            value={sessionTitle}
-            onChange={(event) => setSessionTitle(event.target.value)}
-            placeholder="Session title (e.g., Push Day)"
-            className="rounded-lg border border-border bg-[#111111] px-3 py-2 text-sm text-slate-100 outline-none focus:border-slate-600"
-          />
-          <input
-            value={sessionType}
-            onChange={(event) => setSessionType(event.target.value)}
-            placeholder="Session type (e.g., Strength / Calisthenics)"
-            className="rounded-lg border border-border bg-[#111111] px-3 py-2 text-sm text-slate-100 outline-none focus:border-slate-600"
-          />
-        </div>
-      </article>
-
-      {activeError ? (
-        <article className="rounded-xl border border-red-800 bg-red-950/20 p-3 text-sm text-red-200">
-          Failed to load active session: {activeError instanceof Error ? activeError.message : 'Unknown error'}
-        </article>
-      ) : null}
-      {startError ? (
-        <article className="rounded-xl border border-red-800 bg-red-950/20 p-3 text-sm text-red-200">
-          Failed to start workout: {startError instanceof Error ? startError.message : 'Unknown error'}
-        </article>
-      ) : null}
-      {endError ? (
-        <article className="rounded-xl border border-red-800 bg-red-950/20 p-3 text-sm text-red-200">
-          Failed to end workout: {endError instanceof Error ? endError.message : 'Unknown error'}
-        </article>
-      ) : null}
-
-      {hasActiveSession && activeWorkout ? (
-        <ActiveWorkoutPanel
-          activeWorkout={activeWorkout}
-          exercises={exercises}
-          isEnding={isEnding}
-          onEndWorkout={() =>
-            endWorkoutSession({
-              workoutId: activeWorkout.id,
-              startTime: activeWorkout.start_time ?? activeWorkout.created_at,
-            })
-          }
-        />
-      ) : (
-        <article className="rounded-xl border border-border bg-surface p-4 text-sm text-slate-400">
-          No active workout session. Start a workout to enter Live Session Mode.
-        </article>
+        </td>
+        <td className="py-3 px-4 text-right tabular-nums text-threat-critical font-bold">
+          {workout.duration_minutes}m
+        </td>
+      </tr>
+      {isExpanded && (
+        <tr className="border-b border-threat-critical/20 bg-threat-critical/5">
+          <td colSpan={3} className="p-4">
+            {isLoading ? (
+              <div className="text-[10px] font-mono text-text-tertiary animate-pulse">Loading protocol logs...</div>
+            ) : detail?.logs && detail.logs.length > 0 ? (
+              <div className="space-y-3">
+                <div className="flex justify-between items-center text-[10px] font-mono uppercase tracking-widest text-text-tertiary border-b border-threat-critical/20 pb-1">
+                  <span>Session Timeline // {detail.logs.length} Sets Logged</span>
+                  <DeleteButton onClick={() => onDelete(workout.id)} />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                  {detail.logs.map((log, idx) => (
+                    <div key={log.id || idx} className="p-2 bg-background border border-threat-critical/20 font-mono text-xs flex justify-between items-center">
+                      <div>
+                        <span className="text-[9px] text-text-tertiary uppercase block">Set {idx + 1}</span>
+                        <span className="text-text-primary font-semibold">{log.exercise_name || 'Exercise'}</span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-threat-critical font-bold">{log.weight_kg ? `${log.weight_kg}kg` : 'BW'} × {log.reps_total}</span>
+                        {log.rpe && <span className="text-[9px] text-text-tertiary block">@ RPE {log.rpe}</span>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="flex justify-between items-center text-[10px] font-mono text-text-tertiary uppercase">
+                <span>No individual set vectors recorded for this session.</span>
+                <DeleteButton onClick={() => onDelete(workout.id)} />
+              </div>
+            )}
+          </td>
+        </tr>
       )}
-
-
-      {selectedDate ? (
-        <article className="rounded-xl border border-border bg-surface p-4">
-          <h3 className="text-base font-semibold text-slate-100">Workouts on {formatIndiaDate(selectedDate)}</h3>
-          {workoutsForSelectedDate.length === 0 ? (
-            <p className="mt-2 text-sm text-slate-400">No workouts logged for this date.</p>
-          ) : (
-            <ul className="mt-3 space-y-2">
-              {workoutsForSelectedDate.map((workout) => {
-                const isExpanded = expandedWorkoutId === workout.id
-                return (
-                  <li key={`day-${workout.id}`} className="rounded-lg border border-border bg-[#111111] p-3">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <p className="text-sm font-semibold text-slate-100">{workout.title}</p>
-                      <div className="flex items-center gap-2">
-                        <p className="text-sm text-slate-200">{workout.duration_minutes} min</p>
-                        <button
-                          type="button"
-                          onClick={() => setExpandedWorkoutId(isExpanded ? null : workout.id)}
-                          className="rounded-md border border-border px-2 py-1 text-xs text-slate-300 hover:bg-[#222222]"
-                        >
-                          {isExpanded ? 'Hide' : 'Details'}
-                        </button>
-                        {confirmDeleteId === workout.id ? (
-                          <div className="flex items-center gap-2 rounded border border-red-500/30 bg-red-500/10 px-2 py-1">
-                            <span className="text-xs text-red-400">Sure?</span>
-                            <button
-                              type="button"
-                              disabled={isDeletingWorkout}
-                              onClick={(e) => {
-                                e.preventDefault()
-                                e.stopPropagation()
-                                deleteWorkout({ id: workout.id })
-                                setConfirmDeleteId(null)
-                                if (expandedWorkoutId === workout.id) setExpandedWorkoutId(null)
-                              }}
-                              className="text-xs font-semibold text-red-400 hover:text-red-300"
-                            >
-                              Yes
-                            </button>
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.preventDefault()
-                                e.stopPropagation()
-                                setConfirmDeleteId(null)
-                              }}
-                              className="text-xs text-slate-400 hover:text-slate-200"
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        ) : (
-                          <DeleteButton
-                            disabled={isDeletingWorkout}
-                            onClick={(e) => {
-                              e.preventDefault()
-                              e.stopPropagation()
-                              setConfirmDeleteId(workout.id)
-                            }}
-                          />
-                        )}
-                      </div>
-                    </div>
-                    <p className="mt-1 text-xs text-slate-400">
-                      {workout.session_type || 'General'}
-                    </p>
-                    {workout.notes ? <p className="mt-1 text-xs text-slate-300">{workout.notes}</p> : null}
-
-                    {isExpanded ? (
-                      <div className="mt-3 rounded-lg border border-border bg-black p-2">
-                        {(expandedWorkoutDetail?.logs ?? []).length === 0 ? (
-                          <p className="text-xs text-slate-400">No exercise logs captured.</p>
-                        ) : (
-                          <ul className="space-y-1">
-                            {(expandedWorkoutDetail?.logs ?? []).map((log) => (
-                              <li key={log.id} className="text-xs text-slate-300 flex flex-wrap items-center gap-1">
-                                <span className="font-medium text-slate-200">{log.exercise_name}:</span>
-                                <span className="font-semibold text-emerald-400/90 drop-shadow-[0_0_3px_rgba(16,185,129,0.2)]">{log.sets ?? 1} set</span>, 
-                                <span className="font-semibold text-emerald-400/90 drop-shadow-[0_0_3px_rgba(16,185,129,0.2)]">{log.reps_total ?? 0} reps</span>
-                                {log.weight_kg ? (
-                                  <span className="font-bold text-cyan-400/90 drop-shadow-[0_0_3px_rgba(34,211,238,0.2)]">
-                                    @ {log.weight_kg}kg
-                                  </span>
-                                ) : null}
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </div>
-                    ) : null}
-                  </li>
-                )
-              })}
-            </ul>
-          )}
-        </article>
-      ) : null}
-      <article className="rounded-xl border border-border bg-surface p-4">
-        <h3 className="text-base font-semibold text-slate-100">Recent Completed Sessions</h3>
-        <p className="mt-1 text-sm text-slate-400">Latest saved sessions with duration and type.</p>
-
-        {workoutsLoading ? <p className="mt-3 text-sm text-slate-400">Loading completed workouts...</p> : null}
-        {workoutsError ? (
-          <p className="mt-3 text-sm text-red-400">{workoutsError instanceof Error ? workoutsError.message : 'Failed to load workouts.'}</p>
-        ) : null}
-        {!workoutsLoading && !workoutsError && recentCompletedWorkouts.length === 0 ? (
-          <p className="mt-3 text-sm text-slate-400">No completed workouts yet.</p>
-        ) : null}
-
-        {!workoutsLoading && !workoutsError && recentCompletedWorkouts.length > 0 ? (
-          <ul className="mt-3 space-y-2">
-            {recentCompletedWorkouts.map((workout) => {
-              const isExpanded = expandedWorkoutId === workout.id
-              return (
-                <li key={workout.id} className="rounded-lg border border-border bg-[#111111] p-3">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <p className="text-sm font-semibold text-slate-100">{workout.title}</p>
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm text-slate-200">{workout.duration_minutes} min</p>
-                      <button
-                        type="button"
-                        onClick={() => setExpandedWorkoutId(isExpanded ? null : workout.id)}
-                        className="rounded-md border border-border px-2 py-1 text-xs text-slate-300 hover:bg-[#222222]"
-                      >
-                        {isExpanded ? 'Hide' : 'Details'}
-                      </button>
-                      {confirmDeleteId === workout.id ? (
-                        <div className="flex items-center gap-2 rounded border border-red-500/30 bg-red-500/10 px-2 py-1">
-                          <span className="text-xs text-red-400">Sure?</span>
-                          <button
-                            type="button"
-                            disabled={isDeletingWorkout}
-                            onClick={(e) => {
-                              e.preventDefault()
-                              e.stopPropagation()
-                              deleteWorkout({ id: workout.id })
-                              setConfirmDeleteId(null)
-                              if (expandedWorkoutId === workout.id) setExpandedWorkoutId(null)
-                            }}
-                            className="text-xs font-semibold text-red-400 hover:text-red-300"
-                          >
-                            Yes
-                          </button>
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.preventDefault()
-                              e.stopPropagation()
-                              setConfirmDeleteId(null)
-                            }}
-                            className="text-xs text-slate-400 hover:text-slate-200"
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      ) : (
-                        <DeleteButton
-                          disabled={isDeletingWorkout}
-                          onClick={(e) => {
-                            e.preventDefault()
-                            e.stopPropagation()
-                            setConfirmDeleteId(workout.id)
-                          }}
-                        />
-                      )}
-                    </div>
-                  </div>
-                  <p className="mt-1 text-xs text-slate-400">
-                    {formatIndiaDate(workout.workout_date)} • {workout.session_type || 'General'}
-                  </p>
-
-                  {isExpanded ? (
-                    <div className="mt-3 rounded-lg border border-border bg-black p-2">
-                      {(expandedWorkoutDetail?.logs ?? []).length === 0 ? (
-                        <p className="text-xs text-slate-400">No exercise logs captured.</p>
-                      ) : (
-                        <ul className="space-y-1">
-                          {(expandedWorkoutDetail?.logs ?? []).map((log) => (
-                            <li key={log.id} className="text-xs text-slate-300 flex flex-wrap items-center gap-1">
-                              <span className="font-medium text-slate-200">{log.exercise_name}:</span>
-                              <span className="font-semibold text-emerald-400/90 drop-shadow-[0_0_3px_rgba(16,185,129,0.2)]">{log.sets ?? 1} set</span>, 
-                              <span className="font-semibold text-emerald-400/90 drop-shadow-[0_0_3px_rgba(16,185,129,0.2)]">{log.reps_total ?? 0} reps</span>
-                              {log.weight_kg ? (
-                                <span className="font-bold text-cyan-400/90 drop-shadow-[0_0_3px_rgba(34,211,238,0.2)]">
-                                  @ {log.weight_kg}kg
-                                </span>
-                              ) : null}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
-                  ) : null}
-                </li>
-              )
-            })}
-          </ul>
-        ) : null}
-      </article>
-
-      {exercisesLoading ? (
-        <p className="text-xs text-slate-500">Loading exercise library for picker...</p>
-      ) : null}
-    </section>
+    </>
   )
 }
 
-export default WorkoutsPage
+export default function WorkoutsPage() {
+  const { data: activeWorkout, isLoading: isLoadingActive } = useActiveWorkout()
+  const { data: exercises = [] } = useFitnessExercises()
+  const { data: workouts = [] } = useWorkouts()
+  const { mutate: startWorkoutSession, isPending: isStarting } = useStartWorkoutSession()
+  const { mutate: endWorkoutSession, isPending: isEnding } = useEndWorkoutSession()
+  const { mutate: deleteWorkout } = useDeleteWorkout()
+  
+  const [commandInput, setCommandInput] = useState('')
 
+  const recentCompletedWorkouts = useMemo(() => workouts.slice(0, 20), [workouts])
+  const hasActiveSession = Boolean(activeWorkout)
 
+  // Primary Metric Calculation: Consistency & Muscle Coverage
+  const weeklyMetrics = useMemo(() => {
+    const now = new Date()
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+    
+    const workoutsThisWeek = workouts.filter(w => new Date(w.workout_date) >= sevenDaysAgo)
+    const activeDays = new Set(workoutsThisWeek.map(w => new Date(w.workout_date).toISOString().split('T')[0]))
+    const consistencyScore = Math.round((activeDays.size / 7) * 100)
+    const totalMinutes = workoutsThisWeek.reduce((acc, w) => acc + (w.duration_minutes || 0), 0)
+
+    return {
+      activeDaysCount: activeDays.size,
+      consistencyScore,
+      totalMinutes,
+      totalSessions: workoutsThisWeek.length
+    }
+  }, [workouts])
+
+  const handleCommandSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!commandInput.trim() || hasActiveSession) return
+
+    const input = commandInput.trim().toUpperCase()
+    if (input.startsWith('> INITIALIZE WORKOUT') || input.startsWith('INITIALIZE')) {
+      const parts = input.split(' ')
+      let type = 'Kinetic Session'
+      if (parts.length > 2) type = parts.slice(2).join(' ')
+      else if (parts.length > 1 && !input.startsWith('>')) type = parts.slice(1).join(' ')
+      
+      startWorkoutSession({
+        title: `Protocol: ${type}`,
+        sessionType: type,
+      }, {
+        onSuccess: () => setCommandInput('')
+      })
+    } else {
+      startWorkoutSession({
+        title: commandInput,
+        sessionType: 'Hybrid',
+      }, {
+        onSuccess: () => setCommandInput('')
+      })
+    }
+  }
+
+  return (
+    <div className="space-y-12 pb-24">
+      {/* Initialization & Active Region */}
+      <section>
+        {isLoadingActive ? (
+          <div className="flex items-center gap-3 text-text-tertiary font-mono text-xs uppercase animate-pulse">
+            <Activity className="h-4 w-4" />
+            <span>Scanning telemetry...</span>
+          </div>
+        ) : hasActiveSession && activeWorkout ? (
+          <ActiveWorkoutPanel
+            activeWorkout={activeWorkout}
+            exercises={exercises}
+            isEnding={isEnding}
+            onEndWorkout={() =>
+              endWorkoutSession({
+                workoutId: activeWorkout.id,
+                startTime: activeWorkout.start_time ?? activeWorkout.created_at,
+              })
+            }
+          />
+        ) : (
+          <div className="w-full flex flex-col items-center justify-center min-h-[35vh] border border-threat-critical/30 bg-background/50 relative overflow-hidden group">
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(220,38,38,0.06)_0%,transparent_70%)] pointer-events-none"></div>
+            
+            <form onSubmit={handleCommandSubmit} className="relative z-10 flex flex-col items-center gap-6 w-full max-w-md px-6">
+              <div className="flex items-center justify-center w-12 h-12 rounded-full border border-threat-critical/30 bg-threat-critical/10 text-threat-critical mb-2 shadow-[0_0_15px_rgba(220,38,38,0.2)]">
+                <Terminal className="h-5 w-5 animate-pulse" />
+              </div>
+              
+              <div className="w-full relative flex items-center">
+                <span className="absolute left-0 text-threat-critical font-mono font-bold text-lg animate-pulse">{'>'}</span>
+                <input
+                  autoFocus
+                  value={commandInput}
+                  onChange={(e) => setCommandInput(e.target.value)}
+                  placeholder="INITIALIZE WORKOUT"
+                  disabled={isStarting}
+                  className="w-full bg-transparent border-b border-border-subtle focus:border-threat-critical py-2 pl-6 pr-4 font-mono text-text-primary text-center outline-none uppercase tracking-widest placeholder:text-text-tertiary transition-colors"
+                />
+                {!commandInput && (
+                  <span className="absolute right-8 inline-block w-2.5 h-4 bg-threat-critical animate-pulse align-middle" />
+                )}
+              </div>
+              <p className="text-[10px] text-text-tertiary font-mono tracking-widest uppercase">
+                {isStarting ? 'Allocating resources...' : 'Awaiting initialization command [Press Enter to Engage]'}
+              </p>
+            </form>
+          </div>
+        )}
+      </section>
+
+      {/* Historical Ledger & Weekly Primary Metrics */}
+      {!hasActiveSession && (
+        <section className="space-y-6">
+          {/* Primary Metric Banner: Consistency & Coverage */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 border border-threat-critical/20 bg-surface/20 p-4 font-mono">
+            <div>
+              <span className="text-[9px] uppercase tracking-[0.2em] text-text-tertiary block mb-1">Consistency Vector [7D]</span>
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-black text-threat-critical">{weeklyMetrics.consistencyScore}%</span>
+                <span className="text-[10px] text-text-secondary">({weeklyMetrics.activeDaysCount}/7 Days)</span>
+              </div>
+            </div>
+            <div>
+              <span className="text-[9px] uppercase tracking-[0.2em] text-text-tertiary block mb-1">Cumulative Exertion</span>
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-black text-text-primary">{weeklyMetrics.totalMinutes}</span>
+                <span className="text-[10px] text-text-tertiary">MINUTES</span>
+              </div>
+            </div>
+            <div>
+              <span className="text-[9px] uppercase tracking-[0.2em] text-text-tertiary block mb-1">Protocols Completed</span>
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-black text-text-primary">{weeklyMetrics.totalSessions}</span>
+                <span className="text-[10px] text-text-tertiary">SESSIONS</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between text-text-secondary border-b border-border-subtle pb-2">
+            <div className="flex items-center gap-2">
+              <Zap className="h-4 w-4 text-threat-critical" />
+              <h2 className="text-xs uppercase tracking-widest font-mono">Historical Ledger // Timeline Details</h2>
+            </div>
+            <span className="text-[10px] font-mono text-text-tertiary uppercase">Click row to expand session timeline</span>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse font-mono text-xs">
+              <thead>
+                <tr className="border-b border-border-subtle text-text-tertiary">
+                  <th className="py-3 pr-4 font-normal">DATE</th>
+                  <th className="py-3 px-4 font-normal">PROTOCOL</th>
+                  <th className="py-3 px-4 font-normal text-right">DUR</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recentCompletedWorkouts.length === 0 && (
+                  <tr>
+                    <td colSpan={3} className="py-8 text-center text-text-tertiary">No historical records found.</td>
+                  </tr>
+                )}
+                {recentCompletedWorkouts.map((workout) => (
+                  <HistoricalWorkoutRow 
+                    key={workout.id} 
+                    workout={workout} 
+                    onDelete={(id) => deleteWorkout({ id })} 
+                  />
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
+    </div>
+  )
+}

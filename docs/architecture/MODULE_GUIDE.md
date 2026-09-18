@@ -89,38 +89,41 @@ Structured skill acquisition. Replaces unstructured learning with hierarchical c
 ## 5. Fitness OS
 
 **Route:** `/fitness-os`, `/fitness-os/workouts`, `/fitness-os/library`, `/fitness-os/pr`  
-**Type:** Physical Discipline Workspace  
+**Type:** Physical Discipline Workspace & Kinetic Ledger  
 **Location:** `src/features/fitness-os/`
 
 ### Responsibility
-Strength training and cardiovascular fitness ledger. Emphasizes active session tracking, progressive overload, and custom movement libraries.
+Strength training and cardiovascular fitness ledger. Features step-by-step active set logging, progressive overload tracking, movement pattern classification, and automatic focus-time synchronization with Time OS.
 
 ### Key Components & Hooks
 - `useFitness.ts`:
   - `workouts`: Training sessions with single active workout invariant (`fetchActiveWorkout()` where `end_time IS NULL`).
-  - `fitness_exercises`: Custom movement catalog with target muscle groups and equipment tags.
-  - `exercise_logs`: Performance entries per exercise (sets, reps, weight_kg, duration_minutes, distance_km, RPE 1–10).
-  - `usePersonalRecords()`: Computes all-time top weight and rep milestones per movement.
-- `FitnessOsDashboard.tsx`: Weekly workout volume, muscle group balance, recent training sessions.
-- `WorkoutsPage.tsx`: Active workout logging panel with live timer and set/rep inputs.
-- `FitnessLibraryPage.tsx`: Searchable movement directory with category filters.
-- `PersonalRecordsPage.tsx`: Historical PR cards with dates and weight milestones.
+  - `fitness_exercises`: Custom movement catalog with target muscle groups and derived movement pattern classification (Squat, Hinge, Push, Pull, Core, Carry).
+  - `exercise_logs`: Performance entries per exercise (sets, reps, weight_kg, duration_minutes, RPE 6–10).
+  - `endWorkoutSession`: Completes workout and automatically writes a corresponding session entry into `public.time_logs` under the `'Fitness'` bucket, keeping Time OS and momentum scoring in sync.
+- `WorkoutsPage.tsx`: Command prompt workout initializer (`> INITIALIZE WORKOUT`) with example placeholders, weekly consistency scoring, and expandable session log rows.
+- `ActiveWorkoutPanel.tsx`: Kinetic focus mode displaying Current Set vs Next Set preview, massive Geist Mono mass/rep numerals, collapsible tactical touch numpad (`1-9, 0, ., CLR`), and optional RPE scale.
+- `FitnessLibraryPage.tsx`: Movement directory supporting dual-mode categorization (`[ PRIMARY MUSCLE ]` vs `[ MOVEMENT PATTERN ]`).
+- `AnatomyWireframe.tsx`: Cybernetic SVG wireframe visually highlighting targeted muscle groups (Chest, Lats, Deltoids, Arms, Quads, Hamstrings, Core).
+- `PersonalRecordsPage.tsx`: Monument trophies with concentric cybernetic sigils, hybrid hold duration support, and screen flash celebration prompt (`"RECORD OVERWRITTEN // PROTOCOL ASCENDANCY ESTABLISHED"`).
 
 ---
 
 ## 6. Time OS
 
 **Route:** `/time-os`  
-**Type:** Time Intelligence & Focus Tracking  
+**Type:** Time Intelligence & Chronos Engine  
 **Location:** `src/features/time-os/`
 
 ### Responsibility
-Deep work tracking and focus duration ledger. Integrates native browser Document Picture-in-Picture for persistent focus companion windows.
+Deep work tracking, temporal density analysis, and habit cultivation. Integrates native browser Document Picture-in-Picture, a 24-hour daily Gantt timeline, and streak-driven bioluminescent root visualizers.
 
 ### Key Components & Hooks
 - `useTimeLogs.ts`: Timer start/stop/delete; enforces single active timer constraint via partial unique index.
-- `useTimeAnalytics.ts`: Today's bucket distribution (`Deep Work`, `Learning`, `Admin`, `Health`), 7-day deep work trend.
-- `TimeOSPage.tsx`: Manual focus session logging, timer history list, bucket distribution charts. Modal automatically closes upon log submission or timer start.
+- `useTimeAnalytics.ts`: Aggregates 24-hour bucket distribution and 7-day historical trends.
+- `TimeOSPage.tsx`: Tri-modal view coordinator (`[MONOLITH]`, `[HISTORY]`, `[ANALYTICS]`), active session duration timer with ambient glow, and 24-hour daily Gantt timeline strip.
+- `TimeInsights.tsx`: Chronos Analytics terminal grid featuring Hero Bucket Distribution cards, Geist Mono percentages, ASCII progress bars (`██████··`), and 7-day trend ledger with peak indicators.
+- `TimeHistory.tsx`: Chronos cultivation workspace featuring an 84-day (12-week) GitHub-style density grid with circadian ambient color shifts (Amber/Cyan/Rose/Purple), 8H+ pulse rings, and streak-driven bioluminescent root trees (deterministic coordinate harmonics preserving React 19 purity).
 - `GlobalTimerBar.tsx`: Sticky floating bar providing continuous timer visibility and stop controls.
 - `PiPTimer.tsx`: Native browser Picture-in-Picture window for distraction-free tracking across desktop applications.
 

@@ -5,7 +5,7 @@ Built with React 19, TypeScript, Vite, Tailwind CSS, TanStack Query, and Supabas
 
 ---
 
-## 🌌 Overview
+##  Overview
 
 Life OS is a **multi-domain behavioral operating system** designed to accumulate years of longitudinal life data, detect behavioral patterns, and surface real-time intelligence:
 
@@ -16,7 +16,7 @@ Life OS is a **multi-domain behavioral operating system** designed to accumulate
 
 ---
 
-## 🧩 Active Domain Modules
+##  Active Domain Modules
 
 ```text
 src/features/
@@ -34,7 +34,7 @@ src/features/
 
 ---
 
-## 🏗 Architecture & Data Flow
+##  Architecture & Data Flow
 
 ```text
 Browser Client (React 19 + TypeScript 5.9 + Vite 7 SPA)
@@ -51,7 +51,7 @@ PostgreSQL Aggregation Layer (security_invoker = true)
 
 ---
 
-## 🚀 Getting Started
+##  Getting Started
 
 ### 1. Prerequisites
 - Node.js 20+ and npm 10+
@@ -76,7 +76,7 @@ npm run dev
 
 ---
 
-## 🧪 Quality & Release Verification Gates
+##  Quality & Release Verification Gates
 
 Life OS maintains strict verification gates across static analysis, contract invariants, adversarial attacks, live backend smoke, and headless browser automation:
 

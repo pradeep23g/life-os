@@ -1,5 +1,6 @@
 export { default as ProductivityHubDashboard } from './dashboard/ProductivityHubDashboard'
 export { default as TasksPage } from './tasks/TasksPage'
 export { default as PlanningPage } from './planning/PlanningPage'
+export * from './dashboard/useExecutionKeyboard'
 export * from './api/useTasks'
 export * from './api/usePlanning'

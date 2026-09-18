@@ -1,3 +1,5 @@
+drop view if exists public.data_lab_daily_activity_90d cascade;
+
 create or replace view public.data_lab_daily_activity_90d
 with (security_invoker = true) as
 with scope as (
@@ -161,6 +163,8 @@ order by day_item.activity_date desc;
 
 grant select on public.data_lab_daily_activity_90d to authenticated;
 
+drop view if exists public.data_lab_weekly_system_score_12w cascade;
+
 create or replace view public.data_lab_weekly_system_score_12w
 with (security_invoker = true) as
 with daily as (
@@ -212,6 +216,8 @@ order by weekly.week_start_date desc;
 
 grant select on public.data_lab_weekly_system_score_12w to authenticated;
 
+drop view if exists public.data_lab_module_consistency_30d cascade;
+
 create or replace view public.data_lab_module_consistency_30d
 with (security_invoker = true) as
 with daily as (
@@ -250,6 +256,8 @@ group by module_rows.user_id, module_rows.module_name
 order by module_rows.module_name asc;
 
 grant select on public.data_lab_module_consistency_30d to authenticated;
+
+drop view if exists public.data_lab_event_coverage_30d cascade;
 
 create or replace view public.data_lab_event_coverage_30d
 with (security_invoker = true) as

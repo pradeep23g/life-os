@@ -20,6 +20,9 @@ import {
   LEARNING_STAGE_SKIPPED,
   LEARNING_SESSION_LOGGED,
   LEARNING_SESSION_SKIPPED,
+  LEARNING_MILESTONE_CREATED,
+  LEARNING_MILESTONE_ACHIEVED,
+  LEARNING_REFLECTION_CREATED,
 } from '../../../lib/eventTaxonomy'
 
 export const learningRoadmapsQueryKey = ['learning-os', 'roadmaps'] as const
@@ -518,3 +521,162 @@ export function useSkipSession() {
     },
   })
 }
+
+export interface CreateReflectionPayload {
+  roadmapId: string
+  stageId?: string
+  sessionId?: string
+  content: string
+  reflectionType?: 'general' | 'weekly_milestone' | 'teach_back_test'
+}
+
+export function useCreateReflection() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({
+      roadmapId,
+      stageId,
+      sessionId,
+      content,
+      reflectionType = 'general',
+    }: CreateReflectionPayload) => {
+      const userId = await requireUserId()
+      const { data, error } = await supabase
+        .from('learning_reflections')
+        .insert({
+          user_id: userId,
+          roadmap_id: roadmapId,
+          stage_id: stageId || null,
+          session_id: sessionId || null,
+          content: content.trim(),
+          reflection_type: reflectionType,
+        })
+        .select('*')
+        .single()
+
+      if (error) throw new Error(getErrorMessage(error))
+
+      await logEventSafe({
+        userId,
+        domain: 'learning-os',
+        entityType: 'reflection',
+        entityId: data.id,
+        eventType: LEARNING_REFLECTION_CREATED,
+        payload: { roadmapId, stageId, sessionId },
+      })
+      return data as LearningReflection
+    },
+    onSuccess: (_, { roadmapId, stageId }) => {
+      queryClient.invalidateQueries({ queryKey: learningReflectionsQueryKey })
+      if (roadmapId) {
+        queryClient.invalidateQueries({ queryKey: [...learningReflectionsQueryKey, roadmapId, stageId] })
+      }
+    },
+  })
+}
+
+export function useToggleMilestone() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({
+      id,
+      roadmapId,
+      achieved,
+    }: {
+      id: string
+      roadmapId: string
+      achieved: boolean
+    }) => {
+      const userId = await requireUserId()
+      const achievedAt = achieved ? new Date().toISOString() : null
+      const { error } = await supabase
+        .from('learning_milestones')
+        .update({
+          achieved,
+          achieved_at: achievedAt,
+        })
+        .eq('id', id)
+        .eq('user_id', userId)
+
+      if (error) throw new Error(getErrorMessage(error))
+
+      if (achieved) {
+        await logEventSafe({
+          userId,
+          domain: 'learning-os',
+          entityType: 'milestone',
+          entityId: id,
+          eventType: LEARNING_MILESTONE_ACHIEVED,
+          payload: { roadmapId },
+        })
+      }
+    },
+    onSuccess: (_, { roadmapId }) => {
+      queryClient.invalidateQueries({ queryKey: [...learningMilestonesQueryKey, roadmapId] })
+    },
+  })
+}
+
+export function useCreateMilestone() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({
+      roadmapId,
+      stageId,
+      title,
+    }: {
+      roadmapId: string
+      stageId?: string
+      title: string
+    }) => {
+      const userId = await requireUserId()
+      const { data, error } = await supabase
+        .from('learning_milestones')
+        .insert({
+          user_id: userId,
+          roadmap_id: roadmapId,
+          stage_id: stageId || null,
+          title: title.trim(),
+        })
+        .select('*')
+        .single()
+
+      if (error) throw new Error(getErrorMessage(error))
+
+      await logEventSafe({
+        userId,
+        domain: 'learning-os',
+        entityType: 'milestone',
+        entityId: data.id,
+        eventType: LEARNING_MILESTONE_CREATED,
+        payload: { roadmapId, stageId },
+      })
+      return data as LearningMilestone
+    },
+    onSuccess: (_, { roadmapId }) => {
+      queryClient.invalidateQueries({ queryKey: [...learningMilestonesQueryKey, roadmapId] })
+    },
+  })
+}
+
+export function useDeleteRoadmap() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id }: { id: string }) => {
+      const userId = await requireUserId()
+      const { error } = await supabase
+        .from('learning_roadmaps')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('id', id)
+        .eq('user_id', userId)
+
+      if (error) throw new Error(getErrorMessage(error))
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: learningRoadmapsQueryKey })
+      queryClient.invalidateQueries({ queryKey: ['learning-os', 'roadmap-progress'] })
+      queryClient.invalidateQueries({ queryKey: ['system-status'] })
+    },
+  })
+}
+

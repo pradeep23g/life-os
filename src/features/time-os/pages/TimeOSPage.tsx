@@ -1,355 +1,384 @@
 import { useEffect, useMemo, useState } from 'react'
-
 import { emitSystemFeedback } from '../../system/feedback'
-import { DeleteButton } from '../../../components/DeleteButton'
+import { TimeOsIcon } from '../../../components/icons'
 import { useDocumentPiP } from '../../../hooks/useDocumentPiP'
-import { useTasks } from '../../productivity-hub/api/useTasks'
 import PiPTimer from '../components/PiPTimer'
 import TimeInsights from '../components/TimeInsights'
+import { TimeHistory } from '../components/TimeHistory'
 import {
   TIME_BUCKETS,
+  TIME_BUCKET_COLORS,
   useActiveTimer,
   useCompletedTimeLogs,
-  useDeleteTimeLog,
   useManualLog,
   useStartTimer,
   useStopTimer,
+  type TimeBucket,
+  type CompletedTimeLog,
+  type TimeLog,
 } from '../api/useTimeLogs'
-import type { TimeBucket } from '../api/useTimeLogs'
 
-function formatElapsed(milliseconds: number): string {
-  const totalSeconds = Math.max(0, Math.floor(milliseconds / 1000))
+function toDateTimeLocalValue(date: Date): string {
+  const pad = (n: number) => n.toString().padStart(2, '0')
+  const yyyy = date.getFullYear()
+  const mm = pad(date.getMonth() + 1)
+  const dd = pad(date.getDate())
+  const hh = pad(date.getHours())
+  const mi = pad(date.getMinutes())
+  return `${yyyy}-${mm}-${dd}T${hh}:${mi}`
+}
+
+function formatElapsed(elapsedMs: number): string {
+  const totalSeconds = Math.max(0, Math.floor(elapsedMs / 1000))
   const hours = Math.floor(totalSeconds / 3600)
   const minutes = Math.floor((totalSeconds % 3600) / 60)
   const seconds = totalSeconds % 60
-
-  return [hours, minutes, seconds].map((value) => value.toString().padStart(2, '0')).join(':')
+  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
 }
 
-function toDateTimeLocalValue(value: Date): string {
-  const year = value.getFullYear()
-  const month = String(value.getMonth() + 1).padStart(2, '0')
-  const day = String(value.getDate()).padStart(2, '0')
-  const hours = String(value.getHours()).padStart(2, '0')
-  const minutes = String(value.getMinutes()).padStart(2, '0')
-  return `${year}-${month}-${day}T${hours}:${minutes}`
+// Dynamic bucket color mapper
+const BUCKET_COLORS = TIME_BUCKET_COLORS
+
+const BUCKET_CLASSES: Record<string, string> = {
+  'Academics': 'bg-purple-500',
+  'Deep Work': 'bg-blue-500',
+  'Admin': 'bg-amber-500',
+  'Fitness': 'bg-red-500',
+  'Learning': 'bg-emerald-500',
+}
+
+type TimelineInterval = {
+  id: string
+  bucket: TimeBucket
+  startTime: number
+  endTime: number
+  isActive?: boolean
+}
+
+function DailyTimeline({ logs, activeTimer, now }: { logs: CompletedTimeLog[], activeTimer: TimeLog | null, now: number }) {
+  const startOfDay = new Date()
+  startOfDay.setHours(0, 0, 0, 0)
+  const startMs = startOfDay.getTime()
+  const endMs = startMs + 24 * 60 * 60 * 1000
+
+  // Combine completed logs for today + the active timer (if started today)
+  const todayLogs: TimelineInterval[] = logs.filter(log => {
+    if (!log.end_time) return false
+    const logStart = new Date(log.start_time).getTime()
+    const logEnd = new Date(log.end_time).getTime()
+    return logEnd > startMs && logStart < endMs
+  }).map(log => ({
+    id: log.id,
+    bucket: log.bucket,
+    startTime: new Date(log.start_time).getTime(),
+    endTime: new Date(log.end_time!).getTime(),
+    isActive: false,
+  }))
+
+  if (activeTimer) {
+    const activeStart = new Date(activeTimer.start_time).getTime()
+    if (activeStart < endMs) {
+      todayLogs.push({
+        id: 'active',
+        bucket: activeTimer.bucket,
+        startTime: activeStart,
+        endTime: Math.min(now, endMs),
+        isActive: true,
+      })
+    }
+  }
+
+  return (
+    <div className="w-full max-w-5xl mx-auto mt-16 space-y-2 animate-fade-in">
+      <div className="flex items-center justify-between text-[10px] uppercase tracking-widest text-text-tertiary font-mono mb-2">
+        <span>00:00</span>
+        <span>06:00</span>
+        <span>12:00</span>
+        <span>18:00</span>
+        <span>24:00</span>
+      </div>
+      <div className="relative h-6 w-full bg-surface/30 border border-border-subtle overflow-hidden">
+        {todayLogs.map(log => {
+          const s = Math.max(startMs, log.startTime)
+          const e = Math.min(endMs, log.endTime)
+          if (e <= s) return null
+
+          const leftPercent = ((s - startMs) / (endMs - startMs)) * 100
+          const widthPercent = ((e - s) / (endMs - startMs)) * 100
+          const colorClass = BUCKET_CLASSES[log.bucket] || 'bg-text-secondary'
+
+          return (
+            <div
+              key={log.id}
+              className={`absolute top-0 bottom-0 ${colorClass} ${log.isActive ? 'animate-pulse opacity-80' : 'opacity-50 hover:opacity-100 transition-opacity'}`}
+              style={{ left: `${leftPercent}%`, width: `${widthPercent}%` }}
+              title={`${log.bucket} (${Math.round((e - s) / 60000)}m)`}
+            />
+          )
+        })}
+        {/* Current time indicator */}
+        {now > startMs && now < endMs && (
+          <div 
+            className="absolute top-0 bottom-0 w-px bg-threat-critical z-10 drop-shadow-[0_0_4px_rgba(220,38,38,1)]"
+            style={{ left: `${((now - startMs) / (endMs - startMs)) * 100}%` }}
+          />
+        )}
+      </div>
+    </div>
+  )
 }
 
 function TimeOSPage() {
   const { data: activeTimer } = useActiveTimer()
-  const { data: completedLogs = [], isLoading: completedLoading } = useCompletedTimeLogs()
-  const { data: tasks = [] } = useTasks()
+  const { data: completedLogs = [] } = useCompletedTimeLogs()
   const { mutate: startTimer, isPending: isStarting, error: startError } = useStartTimer()
-  const { mutate: stopTimer, isPending: isStopping, error: stopError } = useStopTimer()
+  const { mutate: stopTimer, isPending: isStopping } = useStopTimer()
   const { mutate: createManualLog, isPending: isSavingManual, error: manualError } = useManualLog()
-  const { mutate: deleteTimeLog } = useDeleteTimeLog()
 
   const [bucket, setBucket] = useState<TimeBucket>('Deep Work')
-  const [taskId, setTaskId] = useState('')
   const [description, setDescription] = useState('')
   const [manualBucket, setManualBucket] = useState<TimeBucket>('Learning')
+  const [manualDescription, setManualDescription] = useState('')
   const [manualStart, setManualStart] = useState(() => toDateTimeLocalValue(new Date(Date.now() - 30 * 60 * 1000)))
   const [manualEnd, setManualEnd] = useState(() => toDateTimeLocalValue(new Date()))
   const [now, setNow] = useState(() => Date.now())
   const [isLogModalOpen, setIsLogModalOpen] = useState(false)
-  const [logTab, setLogTab] = useState<'live' | 'manual'>('live')
   const [isPipPaused, setIsPipPaused] = useState(false)
+  const [view, setView] = useState<'monolith' | 'history' | 'analytics'>('monolith')
   const { pipWindow, openPiP } = useDocumentPiP()
 
   useEffect(() => {
-    if (!activeTimer) {
-      return
-    }
-
+    if (!activeTimer) return
     const timerId = window.setInterval(() => {
-      if (!isPipPaused) {
-        setNow(Date.now())
-      }
+      if (!isPipPaused) setNow(Date.now())
     }, 1000)
-
-    return () => {
-      window.clearInterval(timerId)
-    }
+    return () => window.clearInterval(timerId)
   }, [activeTimer, isPipPaused])
 
   const elapsedLabel = useMemo(() => {
-    if (!activeTimer) {
-      return '00:00:00'
-    }
-
+    if (!activeTimer) return '00:00:00'
     return formatElapsed(now - new Date(activeTimer.start_time).getTime())
   }, [activeTimer, now])
 
-  const linkableTasks = useMemo(() => tasks.filter((task) => !task.is_completed), [tasks])
+  const activeColor = activeTimer ? BUCKET_COLORS[activeTimer.bucket] || BUCKET_COLORS['Deep Work'] : 'transparent'
 
   return (
-    <section className="space-y-4 pb-28 sm:pb-24">
-      <article className="rounded-xl border border-border bg-surface p-4">
-        <h2 className="text-base font-semibold text-slate-100">Time OS</h2>
-        <p className="mt-1 text-sm text-slate-400">Track focused sessions and optionally link them to productivity tasks.</p>
-      </article>
+    <section className="min-h-[85vh] flex flex-col pb-24 font-sans selection:bg-primary/30 relative">
+      {/* Dynamic Ambient Background Glow */}
+      {activeTimer && (
+        <div 
+          className="absolute inset-0 blur-[150px] opacity-[0.15] -z-10 transition-colors duration-1000 pointer-events-none" 
+          style={{ backgroundColor: activeColor }}
+        />
+      )}
 
-      <TimeInsights />
-
-      <article className="rounded-xl border border-border bg-surface p-4">
-        <h3 className="text-sm font-semibold text-slate-100">Active Session</h3>
-        {activeTimer ? (
-          <div className="mt-3 space-y-2">
-            <p className="text-sm text-slate-200">
-              {activeTimer.bucket} | {elapsedLabel}
-            </p>
-            {activeTimer.description ? <p className="text-xs text-slate-400">{activeTimer.description}</p> : null}
-            <div className="flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                onClick={async () => {
-                  const opened = await openPiP(300, 200)
-                  if (!opened) {
-                    emitSystemFeedback({
-                      title: 'PiP unavailable',
-                      description: 'documentPictureInPicture is not supported in this browser.',
-                    })
-                  }
-                }}
-                className="rounded-md border border-border bg-[#111111] px-3 py-2 text-sm text-slate-100 hover:bg-[#222222]"
-              >
-                Pop Out
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setIsPipPaused(false)
-                  stopTimer()
-                }}
-                disabled={isStopping}
-                className="rounded-md border border-border bg-[#111111] px-3 py-2 text-sm text-slate-100 hover:bg-[#222222] disabled:opacity-60"
-              >
-                {isStopping ? 'Stopping...' : 'Stop Timer'}
-              </button>
-            </div>
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between pt-8 md:pt-12 px-6 gap-4 border-b border-border-subtle pb-6 mb-4">
+        <div className="flex items-center gap-3 text-text-primary">
+          <TimeOsIcon className="h-5 w-5" />
+          <h1 className="text-sm uppercase tracking-[0.2em] font-medium">Temporal Engine</h1>
+        </div>
+        
+        <div className="flex items-center gap-6">
+          <div className="flex bg-surface border border-border-subtle rounded-full p-1">
+            <button
+              onClick={() => setView('monolith')}
+              className={`px-4 py-1.5 rounded-full text-[10px] uppercase tracking-widest transition-all ${view === 'monolith' ? 'bg-text-primary text-background shadow' : 'text-text-tertiary hover:text-text-primary'}`}
+            >
+              Monolith
+            </button>
+            <button
+              onClick={() => setView('history')}
+              className={`px-4 py-1.5 rounded-full text-[10px] uppercase tracking-widest transition-all ${view === 'history' ? 'bg-text-primary text-background shadow' : 'text-text-tertiary hover:text-text-primary'}`}
+            >
+              History
+            </button>
+            <button
+              onClick={() => setView('analytics')}
+              className={`px-4 py-1.5 rounded-full text-[10px] uppercase tracking-widest transition-all ${view === 'analytics' ? 'bg-text-primary text-background shadow' : 'text-text-tertiary hover:text-text-primary'}`}
+            >
+              Analytics
+            </button>
           </div>
-        ) : (
-          <p className="mt-2 text-sm text-slate-400">No active timer running.</p>
-        )}
-        {stopError ? <p className="mt-2 text-xs text-red-400">{stopError.message}</p> : null}
-      </article>
-
-      <article className="rounded-xl border border-border bg-surface p-4">
-        <h3 className="text-sm font-semibold text-slate-100">Recent Sessions</h3>
-        {completedLoading ? <p className="mt-2 text-sm text-slate-400">Loading session history...</p> : null}
-        {!completedLoading && completedLogs.length === 0 ? (
-          <p className="mt-2 text-sm text-slate-400">No completed sessions yet.</p>
-        ) : null}
-
-        {!completedLoading && completedLogs.length > 0 ? (
-          <ul className="mt-3 space-y-2">
-            {completedLogs.slice(0, 12).map((log) => (
-              <li key={log.id} className="group rounded-lg border border-border bg-[#111111] p-3">
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <p className="text-sm font-medium text-slate-100">
-                      {log.bucket} | {log.duration_minutes ?? 0} min
-                    </p>
-                    <p className="mt-1 text-xs text-slate-400">
-                      {new Date(log.start_time).toLocaleString()} -&gt; {log.end_time ? new Date(log.end_time).toLocaleString() : '-'}
-                    </p>
-                    {log.task_title ? <p className="mt-1 text-xs text-slate-300">Task: {log.task_title}</p> : null}
-                    {log.description ? <p className="mt-1 text-xs text-slate-300">{log.description}</p> : null}
-                  </div>
-                  <DeleteButton
-                    className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
-                    onClick={() => {
-                      const confirmed = window.confirm('Delete this time log?')
-                      if (confirmed) {
-                        deleteTimeLog({ id: log.id })
-                      }
-                    }}
-                  />
-                </div>
-              </li>
-            ))}
-          </ul>
-        ) : null}
-      </article>
-
-      <button
-        type="button"
-        onClick={() => setIsLogModalOpen(true)}
-        className="fixed bottom-6 right-6 z-30 inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-border bg-surface text-2xl text-slate-100 shadow-[0_8px_24px_rgba(0,0,0,0.45)] transition hover:bg-[#111111]"
-        aria-label="Open time log actions"
-      >
-        +
-      </button>
-
-      {isLogModalOpen ? (
-        <div className="fixed inset-0 z-40 flex items-center justify-center p-3">
+          
           <button
-            type="button"
-            onClick={() => setIsLogModalOpen(false)}
-            className="absolute inset-0 bg-black/85"
-            aria-label="Close time log modal"
-          />
-          <article className="relative z-10 max-h-[88vh] w-[90%] max-w-4xl overflow-y-auto rounded-xl border border-border bg-surface p-4">
-            <div className="mb-3 flex items-center justify-between gap-3">
-              <h3 className="text-base font-semibold text-slate-100">Log Focus Session</h3>
-              <button
-                type="button"
-                onClick={() => setIsLogModalOpen(false)}
-                className="rounded-md border border-border bg-[#111111] px-3 py-1 text-sm text-slate-200 hover:bg-[#222222]"
+            onClick={() => setIsLogModalOpen(true)}
+            className="text-[10px] uppercase tracking-widest text-text-tertiary hover:text-primary transition-colors"
+          >
+            [ Manual Log ]
+          </button>
+        </div>
+      </header>
+
+      {view === 'history' ? (
+        <div className="flex-1 w-full max-w-7xl mx-auto px-6 py-8 flex flex-col items-center">
+          <TimeHistory />
+        </div>
+      ) : view === 'analytics' ? (
+        <div className="flex-1 w-full max-w-7xl mx-auto px-6 py-8 flex flex-col items-center">
+          <TimeInsights />
+        </div>
+      ) : (
+        <div className="flex-1 flex flex-col items-center justify-center px-4 min-h-[60vh] mt-8">
+          
+          {activeTimer ? (
+            <div className="w-full flex flex-col items-center animate-fade-in relative z-10">
+              <span 
+                className="text-xs uppercase tracking-[0.3em] mb-4 animate-pulse"
+                style={{ color: activeColor }}
               >
-                Close
+                Active Vector: {activeTimer.bucket}
+              </span>
+              <div className="text-[5rem] sm:text-[8rem] md:text-[12rem] tabular-nums font-mono font-light tracking-tighter leading-none text-text-primary drop-shadow-2xl">
+                {elapsedLabel}
+              </div>
+              {activeTimer.description && (
+                <p className="mt-8 text-sm text-text-secondary font-mono bg-surface/50 px-6 py-3 border border-border-subtle">
+                  {activeTimer.description}
+                </p>
+              )}
+              
+              <div className="mt-12 flex flex-col sm:flex-row items-center gap-4">
+                <button
+                  onClick={() => { setIsPipPaused(false); stopTimer(); }}
+                  disabled={isStopping}
+                  className="px-8 py-3 bg-background border border-threat-critical/50 text-threat-critical text-[10px] font-mono uppercase tracking-[0.2em] hover:bg-threat-critical/10 transition-colors disabled:opacity-50"
+                >
+                  {isStopping ? 'HALTING...' : 'HALT SESSION'}
+                </button>
+                <button
+                  onClick={async () => {
+                    const opened = await openPiP(300, 200)
+                    if (!opened) emitSystemFeedback({ title: 'PiP unavailable', description: 'Not supported.' })
+                  }}
+                  className="px-8 py-3 bg-background border border-border-subtle text-text-secondary text-[10px] font-mono uppercase tracking-[0.2em] hover:text-primary hover:border-primary/50 transition-all"
+                >
+                  DETACH PIP
+                </button>
+              </div>
+
+              {/* Bottom Gantt Timeline */}
+              <DailyTimeline logs={completedLogs} activeTimer={activeTimer} now={now} />
+            </div>
+          ) : (
+            <div className="w-full max-w-3xl flex flex-col items-center animate-fade-in">
+              <h2 className="text-[10px] font-mono uppercase tracking-[0.2em] text-text-tertiary mb-12">Initialize Focus Sector</h2>
+              
+              <div className="flex flex-wrap justify-center gap-3 mb-12 w-full">
+                {TIME_BUCKETS.map((option) => (
+                  <button
+                    key={option}
+                    onClick={() => setBucket(option as TimeBucket)}
+                    style={{
+                      borderColor: bucket === option ? BUCKET_COLORS[option] : undefined,
+                      color: bucket === option ? BUCKET_COLORS[option] : undefined,
+                      backgroundColor: bucket === option ? `${BUCKET_COLORS[option].replace('1)', '0.1)')}` : undefined
+                    }}
+                    className={`px-6 py-3 text-[10px] font-mono uppercase tracking-[0.15em] transition-all border
+                      ${bucket === option 
+                        ? 'shadow-[0_0_15px_rgba(255,255,255,0.05)] scale-105' 
+                        : 'border-border-subtle bg-surface/30 text-text-secondary hover:border-text-secondary/50'
+                      }`}
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
+
+              <div className="w-full max-w-md relative group mb-12">
+                <input
+                  type="text"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="SESSION INTENT (OPTIONAL)"
+                  className="w-full bg-transparent border-b border-border-subtle py-3 text-center text-text-primary placeholder:text-text-tertiary focus:outline-none transition-colors text-sm font-mono focus:border-text-primary"
+                />
+              </div>
+
+              <button
+                onClick={() => startTimer({ bucket, taskId: null, description })}
+                disabled={isStarting}
+                className="w-full max-w-md py-4 bg-text-primary text-background text-sm font-mono font-bold uppercase tracking-[0.2em] hover:bg-text-secondary transition-colors disabled:opacity-50 shadow-2xl"
+              >
+                {isStarting ? 'IGNITING...' : 'ENGAGE TIMER'}
+              </button>
+              {startError && <p className="mt-4 text-[10px] font-mono text-threat-critical uppercase">{startError.message}</p>}
+              
+              {/* Bottom Gantt Timeline (when no active timer) */}
+              <DailyTimeline logs={completedLogs} activeTimer={null} now={now} />
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Keep manual log modal but style it minimally */}
+      {isLogModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/95 backdrop-blur-sm animate-fade-in">
+          <article className="w-full max-w-lg border border-border-subtle bg-surface p-8 shadow-2xl relative">
+            <button onClick={() => setIsLogModalOpen(false)} className="absolute top-6 right-6 text-text-tertiary hover:text-text-primary text-xs uppercase tracking-widest font-mono">CLOSE</button>
+            <h3 className="text-[10px] font-mono uppercase tracking-[0.2em] text-text-primary mb-8 border-b border-border-subtle pb-4">Manual Epoch Injection</h3>
+            
+            <div className="space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-[10px] uppercase text-text-tertiary mb-2 block tracking-widest font-mono">Start</label>
+                  <input type="datetime-local" value={manualStart} onChange={(e) => setManualStart(e.target.value)} className="w-full bg-background border border-border-subtle p-2 text-xs font-mono text-text-primary focus:outline-none focus:border-text-primary" />
+                </div>
+                <div>
+                  <label className="text-[10px] uppercase text-text-tertiary mb-2 block tracking-widest font-mono">End</label>
+                  <input type="datetime-local" value={manualEnd} onChange={(e) => setManualEnd(e.target.value)} className="w-full bg-background border border-border-subtle p-2 text-xs font-mono text-text-primary focus:outline-none focus:border-text-primary" />
+                </div>
+              </div>
+              
+              <div>
+                <label className="text-[10px] uppercase text-text-tertiary mb-2 block tracking-widest font-mono">Sector</label>
+                <select value={manualBucket} onChange={(e) => setManualBucket(e.target.value as TimeBucket)} className="w-full bg-background border border-border-subtle p-2 text-xs font-mono text-text-primary focus:outline-none focus:border-text-primary">
+                  {TIME_BUCKETS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                </select>
+              </div>
+
+              <div>
+                <label className="text-[10px] uppercase text-text-tertiary mb-2 block tracking-widest font-mono">Description (Optional)</label>
+                <input
+                  type="text"
+                  value={manualDescription}
+                  onChange={(e) => setManualDescription(e.target.value)}
+                  placeholder="WHAT WAS ACCOMPLISHED?"
+                  className="w-full bg-background border border-border-subtle p-2 text-xs font-mono text-text-primary focus:outline-none focus:border-text-primary placeholder:text-text-tertiary"
+                />
+              </div>
+
+              {manualError && (
+                <p className="text-[10px] font-mono text-threat-critical uppercase">{manualError.message}</p>
+              )}
+
+              <button
+                onClick={() => createManualLog({ bucket: manualBucket, startTime: manualStart, endTime: manualEnd, description: manualDescription.trim() || undefined }, { 
+                  onSuccess: () => {
+                    setIsLogModalOpen(false)
+                    setManualDescription('')
+                  } 
+                })}
+                disabled={isSavingManual}
+                className="w-full py-4 bg-text-primary text-background text-[10px] font-mono uppercase tracking-[0.2em] font-bold mt-4 hover:bg-text-secondary transition-colors"
+              >
+                {isSavingManual ? 'INJECTING...' : 'INJECT RECORD'}
               </button>
             </div>
-
-            <div className="mb-3 flex gap-2">
-              <button
-                type="button"
-                onClick={() => setLogTab('live')}
-                className={`rounded-md border px-3 py-1.5 text-sm ${logTab === 'live' ? 'border-emerald-900 text-emerald-400 bg-emerald-950/20' : 'border-border text-slate-300 hover:bg-[#111111]'}`}
-              >
-                Live Focus
-              </button>
-              <button
-                type="button"
-                onClick={() => setLogTab('manual')}
-                className={`rounded-md border px-3 py-1.5 text-sm ${logTab === 'manual' ? 'border-emerald-900 text-emerald-400 bg-emerald-950/20' : 'border-border text-slate-300 hover:bg-[#111111]'}`}
-              >
-                Manual Log
-              </button>
-            </div>
-
-            {logTab === 'live' ? (
-              <>
-                <div className="grid gap-2 md:grid-cols-[200px_1fr_220px]">
-                  <select
-                    value={bucket}
-                    onChange={(event) => setBucket(event.target.value as TimeBucket)}
-                    className="rounded-lg border border-border bg-[#111111] p-2 text-sm text-slate-100 outline-none focus:border-slate-600 focus:ring-1 focus:ring-slate-600"
-                  >
-                    {TIME_BUCKETS.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
-
-                  <input
-                    type="text"
-                    value={description}
-                    onChange={(event) => setDescription(event.target.value)}
-                    placeholder="Description (optional)"
-                    className="rounded-lg border border-border bg-[#111111] p-2 text-sm text-slate-100 outline-none focus:border-slate-600 focus:ring-1 focus:ring-slate-600"
-                  />
-
-                  <select
-                    value={taskId}
-                    onChange={(event) => setTaskId(event.target.value)}
-                    className="rounded-lg border border-border bg-[#111111] p-2 text-sm text-slate-100 outline-none focus:border-slate-600 focus:ring-1 focus:ring-slate-600"
-                  >
-                    <option value="">Link task (optional)</option>
-                    {linkableTasks.map((task) => (
-                      <option key={task.id} value={task.id}>
-                        {task.title}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    startTimer(
-                      {
-                        bucket,
-                        taskId: taskId || null,
-                        description,
-                      },
-                      {
-                        onSuccess: () => {
-                          setIsLogModalOpen(false)
-                        },
-                      },
-                    )
-                  }
-                  disabled={Boolean(activeTimer) || isStarting}
-                  className="mt-3 rounded-md border border-border bg-[#111111] px-3 py-2 text-sm text-slate-100 hover:bg-[#222222] disabled:opacity-60"
-                >
-                  {isStarting ? 'Starting...' : 'Start Timer'}
-                </button>
-                {startError ? <p className="mt-2 text-xs text-red-400">{startError.message}</p> : null}
-              </>
-            ) : (
-              <>
-                <div className="grid gap-2 md:grid-cols-2">
-                  <input
-                    type="datetime-local"
-                    value={manualStart}
-                    onChange={(event) => setManualStart(event.target.value)}
-                    className="rounded-lg border border-border bg-[#111111] p-2 text-sm text-slate-100 outline-none focus:border-slate-600 focus:ring-1 focus:ring-slate-600"
-                  />
-                  <input
-                    type="datetime-local"
-                    value={manualEnd}
-                    onChange={(event) => setManualEnd(event.target.value)}
-                    className="rounded-lg border border-border bg-[#111111] p-2 text-sm text-slate-100 outline-none focus:border-slate-600 focus:ring-1 focus:ring-slate-600"
-                  />
-                  <select
-                    value={manualBucket}
-                    onChange={(event) => setManualBucket(event.target.value as TimeBucket)}
-                    className="rounded-lg border border-border bg-[#111111] p-2 text-sm text-slate-100 outline-none focus:border-slate-600 focus:ring-1 focus:ring-slate-600"
-                  >
-                    {TIME_BUCKETS.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    createManualLog(
-                      {
-                        bucket: manualBucket,
-                        startTime: manualStart,
-                        endTime: manualEnd,
-                        taskId: taskId || null,
-                        description: description || undefined,
-                      },
-                      {
-                        onSuccess: () => {
-                          setIsLogModalOpen(false)
-                        },
-                      },
-                    )
-                  }
-                  disabled={isSavingManual}
-                  className="mt-3 rounded-md border border-border bg-[#111111] px-3 py-2 text-sm text-slate-100 hover:bg-[#222222] disabled:opacity-60"
-                >
-                  {isSavingManual ? 'Saving...' : 'Save Manual Log'}
-                </button>
-                {manualError ? <p className="mt-2 text-xs text-red-400">{manualError.message}</p> : null}
-              </>
-            )}
           </article>
         </div>
-      ) : null}
+      )}
 
-      {activeTimer && pipWindow ? (
+      {activeTimer && pipWindow && (
         <PiPTimer
           pipWindow={pipWindow}
           bucket={activeTimer.bucket}
           elapsedLabel={elapsedLabel}
           isPaused={isPipPaused}
           isStopping={isStopping}
-          onTogglePause={() => setIsPipPaused((previous) => !previous)}
-          onStop={() => {
-            setIsPipPaused(false)
-            stopTimer()
-          }}
+          onTogglePause={() => setIsPipPaused(!isPipPaused)}
+          onStop={() => { setIsPipPaused(false); stopTimer(); }}
         />
-      ) : null}
+      )}
     </section>
   )
 }

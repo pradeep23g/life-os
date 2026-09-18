@@ -16,7 +16,7 @@ import {
   evaluateSystemStatuses,
   computeSystemConfidence,
 } from '../utils/systemHealthEvaluator'
-import type { MissionControlSnapshot, MetricCard, SystemEvent, BrainState } from '../types/snapshot'
+import type { MissionControlSnapshot, MetricCard, SystemEvent, BrainState, LifeState } from '../types/snapshot'
 
 export function useMissionControlSnapshot(): MissionControlSnapshot {
   const { data: habitData, isLoading: habitsLoading, isError: habitsError } = useHabitWorkspace()
@@ -132,7 +132,8 @@ export function useMissionControlSnapshot(): MissionControlSnapshot {
         mission: null,
         threats,
         reasoning: [],
-        confidence: 0
+        confidence: 0,
+        lifeState: 'Stable'
       }
     }
 
@@ -179,6 +180,15 @@ export function useMissionControlSnapshot(): MissionControlSnapshot {
       actionRoute: systemData.directive.route
     } : null
 
+    const determineLifeState = (momentum: number, trend: string): LifeState => {
+      if (momentum < 30) return 'Recovering'
+      if (momentum < 50 && trend === 'falling') return 'Drifting'
+      if (momentum >= 80 && trend === 'rising') return 'Accelerating'
+      if (momentum >= 95) return 'Overloaded' // Could be high momentum but maybe at risk?
+      if (trend === 'rising') return 'Building'
+      return 'Stable'
+    }
+
     return {
       momentumScore: systemData.momentum.momentum,
       momentumTrend: systemData.momentum.trend,
@@ -186,7 +196,8 @@ export function useMissionControlSnapshot(): MissionControlSnapshot {
       mission,
       threats,
       reasoning: systemData.momentumExplanation,
-      confidence: computedConfidence
+      confidence: computedConfidence,
+      lifeState: determineLifeState(systemData.momentum.momentum, systemData.momentum.trend)
     }
   }, [
     systemData,

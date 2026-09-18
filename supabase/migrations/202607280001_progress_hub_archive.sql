@@ -18,6 +18,7 @@ create table if not exists public.progress_hub_archive (
 
 alter table public.progress_hub_archive enable row level security;
 
+drop policy if exists "Users can select own archive" on public.progress_hub_archive;
 create policy "Users can select own archive"
   on public.progress_hub_archive
   for select

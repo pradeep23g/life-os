@@ -38,16 +38,16 @@ const domainLabels: Record<GoalDomain, string> = {
 }
 
 const priorityColors: Record<PlanItemPriority, string> = {
-  High: 'rounded bg-rose-950/40 border border-rose-800/40 px-1.5 py-0.5 text-rose-400',
-  Medium: 'rounded bg-amber-950/40 border border-amber-800/40 px-1.5 py-0.5 text-amber-400',
-  Low: 'rounded bg-slate-900 border border-slate-800 px-1.5 py-0.5 text-slate-400',
+  High: 'rounded bg-threat-critical/10 border border-threat-critical/40 px-1.5 py-0.5 text-threat-critical font-mono text-[11px]',
+  Medium: 'rounded bg-threat-warning/10 border border-threat-warning/40 px-1.5 py-0.5 text-threat-warning font-mono text-[11px]',
+  Low: 'rounded bg-surface border border-border/40 px-1.5 py-0.5 text-text-tertiary font-mono text-[11px]',
 }
 
 const statusColors: Record<PlanItemStatus, string> = {
-  Planned: 'text-slate-400',
-  Doing: 'text-blue-400',
-  Done: 'text-emerald-400',
-  Dropped: 'text-neutral-500',
+  Planned: 'text-text-tertiary',
+  Doing: 'text-accent-primary font-medium',
+  Done: 'text-threat-healthy',
+  Dropped: 'text-text-tertiary/40 line-through',
 }
 
 function formatWeekDate(dateValue: string) {
@@ -117,15 +117,15 @@ function TabButton({
     <button
       type="button"
       onClick={onClick}
-      className={`relative shrink-0 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+      className={`relative shrink-0 rounded px-3 py-1.5 font-mono text-xs font-medium transition-colors cursor-pointer ${
         isActive
-          ? 'bg-[#111111] text-slate-100 ring-1 ring-border'
-          : 'text-slate-400 hover:bg-[#111111] hover:text-slate-200'
+          ? 'border border-accent-primary bg-accent-primary/10 text-accent-primary'
+          : 'border border-border/30 bg-surface text-text-secondary hover:bg-elevated hover:text-text-primary'
       }`}
     >
       {label}
       {badge ? (
-        <span className="ml-2 inline-flex items-center rounded-full border border-border bg-black px-1.5 py-0.5 text-[10px] font-medium text-slate-300">
+        <span className="ml-1.5 inline-flex items-center rounded-full bg-background px-1.5 py-0.2 text-[10px] font-mono tabular-nums text-text-tertiary">
           {badge}
         </span>
       ) : null}
@@ -134,16 +134,16 @@ function TabButton({
 }
 
 // ─────────────────────────────────────────────
-// Error Banner (prominent, at top)
+// Error Banner
 // ─────────────────────────────────────────────
 function ErrorBanner({ error }: { error: unknown }) {
   if (!error) return null
 
   return (
-    <article className="rounded-lg border border-red-800/60 bg-red-950/30 px-4 py-2.5 text-sm text-red-200">
-      <span className="mr-2 font-medium text-red-400">Error:</span>
+    <div className="rounded border border-threat-critical/50 bg-threat-critical/10 px-4 py-2 text-xs font-mono text-threat-critical">
+      <span className="mr-2 font-bold">ERROR:</span>
       {getReadableErrorMessage(error)}
-    </article>
+    </div>
   )
 }
 
@@ -151,21 +151,21 @@ function ErrorBanner({ error }: { error: unknown }) {
 // Alignment Health Badge
 // ─────────────────────────────────────────────
 function AlignmentBadge({ percent, linked, total }: { percent: number; linked: number; total: number }) {
-  let color = 'bg-red-900/40 text-red-300 border-red-800/40'
-  if (percent >= 80) color = 'bg-emerald-900/40 text-emerald-300 border-emerald-800/40'
-  else if (percent >= 50) color = 'bg-yellow-900/40 text-yellow-300 border-yellow-800/40'
-  else if (percent > 0) color = 'bg-orange-900/40 text-orange-300 border-orange-800/40'
+  let color = 'border-threat-critical/40 text-threat-critical bg-threat-critical/10'
+  if (percent >= 80) color = 'border-threat-healthy/40 text-threat-healthy bg-threat-healthy/10'
+  else if (percent >= 50) color = 'border-threat-warning/40 text-threat-warning bg-threat-warning/10'
+  else if (percent > 0) color = 'border-accent-primary/40 text-accent-primary bg-accent-primary/10'
 
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium ${color}`}>
-      {total === 0 ? 'No items' : `${percent}% aligned`}
-      <span className="text-[10px] opacity-70">({linked}/{total})</span>
+    <span className={`inline-flex items-center gap-1.5 rounded border px-2.5 py-1 font-mono text-xs ${color}`}>
+      <span className="tabular-nums">{total === 0 ? 'No items' : `${percent}% aligned`}</span>
+      <span className="text-[10px] tabular-nums opacity-70">({linked}/{total})</span>
     </span>
   )
 }
 
 // ─────────────────────────────────────────────
-// Main Component
+// Main Planning Engine Component
 // ─────────────────────────────────────────────
 function PlanningPage() {
   const currentWeekStart = getWeekStartDateISO()
@@ -356,25 +356,26 @@ function PlanningPage() {
     )
   }
 
-  // ─────────────────────────────────────────────
-  // RENDER
-  // ─────────────────────────────────────────────
   return (
-    <section className="space-y-3 pb-28 sm:pb-24">
-      {/* ── Header with week info + tabs ── */}
-      <article className="rounded-xl border border-border bg-surface p-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+    <section className="space-y-6 pb-28 sm:pb-24 font-sans text-text-primary max-w-5xl mx-auto px-2 sm:px-4">
+      {/* ── Header with week info & tab bar ── */}
+      <div className="border-b border-border/40 pb-4 space-y-3">
+        <div className="flex flex-wrap items-baseline justify-between gap-3">
           <div>
-            <h2 className="text-base font-semibold text-slate-100">Planning Engine</h2>
-            <p className="mt-0.5 text-sm text-slate-400">
-              Week of {formatWeekDate(currentWeekStart)}
-            </p>
+            <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-text-tertiary">
+              <span>Planning Engine</span>
+              <span>•</span>
+              <span className="tabular-nums">Week of {formatWeekDate(currentWeekStart)}</span>
+            </div>
+            <h2 className="text-xl font-semibold tracking-tight text-text-primary sm:text-2xl">
+              Sprint & Alignment Architect
+            </h2>
           </div>
           <AlignmentBadge percent={alignmentPercent} linked={linkedItemsCount} total={weeklyItems.length} />
         </div>
 
-        {/* Tab navigation */}
-        <nav className="mt-3 flex gap-1 border-t border-border pt-3">
+        {/* Tab Navigation */}
+        <nav className="flex gap-2 pt-2 border-t border-border/20">
           <TabButton
             label="Weekly Plan"
             isActive={activeTab === 'plan'}
@@ -393,22 +394,24 @@ function PlanningPage() {
             onClick={() => setActiveTab('review')}
           />
         </nav>
-      </article>
+      </div>
 
-      {/* ── Error banner (prominent position) ── */}
+      {/* ── Error Banner ── */}
       <ErrorBanner error={activeError} />
 
       {/* ── Tab: Weekly Plan ── */}
       {activeTab === 'plan' && (
-        <section className="space-y-3">
-          {/* Weekly Focus */}
-          <article className="rounded-xl border border-border bg-surface p-4">
-            <h3 className="text-base font-semibold text-slate-100">Weekly Focus</h3>
-            <p className="mt-0.5 text-xs text-slate-500">
-              {isCreatingPlan || isUpdatingPlan ? 'Saving...' : 'Auto-saves as you add items'}
-            </p>
+        <section className="space-y-6">
+          {/* Weekly Focus Section */}
+          <div className="border-b border-border/30 pb-6 space-y-3">
+            <div className="flex items-baseline justify-between gap-2">
+              <h3 className="font-sans text-base font-semibold text-text-primary">Weekly Focus</h3>
+              <span className="font-mono text-xs text-text-tertiary">
+                {isCreatingPlan || isUpdatingPlan ? 'Saving...' : 'Auto-saves on commit'}
+              </span>
+            </div>
 
-            <div className="mt-3">
+            <div>
               <input
                 value={focusInput}
                 onChange={(event) => setFocusInput(event.target.value)}
@@ -423,17 +426,17 @@ function PlanningPage() {
                   }))
                   setFocusInput('')
                 }}
-                placeholder="Add focus item and press Enter"
-                className="w-full rounded-lg border border-border bg-[#111111] px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:border-slate-600 focus:outline-none"
+                placeholder="Declare weekly focus anchor and press Enter..."
+                className="w-full rounded border border-border/40 bg-surface px-3 py-2 text-sm text-text-primary placeholder:text-text-tertiary focus:border-accent-primary focus:outline-none transition-colors"
               />
             </div>
 
             {focusItems.length > 0 && (
-              <ul className="mt-3 space-y-1">
+              <ul className="space-y-1 pt-1">
                 {focusItems.map((item, index) => (
-                  <li key={`${item}-${index}`} className="group flex items-center justify-between gap-2 rounded-md px-2 py-1.5 hover:bg-[#111111]">
-                    <span className="text-sm text-slate-200">
-                      <span className="mr-2 text-slate-500">•</span>
+                  <li key={`${item}-${index}`} className="group flex items-center justify-between gap-2 rounded px-2 py-1 hover:bg-surface transition-colors">
+                    <span className="font-sans text-sm text-text-secondary">
+                      <span className="mr-2 font-mono text-accent-primary">•</span>
                       {item}
                     </span>
                     <button
@@ -444,10 +447,10 @@ function PlanningPage() {
                           [currentWeekStart]: joinBulletItems(removeBulletItem(focusItems, index)),
                         }))
                       }
-                      className="shrink-0 cursor-pointer rounded p-1 text-neutral-600 opacity-0 transition-all hover:bg-red-950/40 hover:text-red-400 group-hover:opacity-100"
+                      className="cursor-pointer text-text-tertiary opacity-0 transition-opacity hover:text-threat-critical group-hover:opacity-100 p-1"
                       aria-label={`Remove focus item ${index + 1}`}
                     >
-                      <svg viewBox="0 0 16 16" fill="currentColor" className="h-3.5 w-3.5">
+                      <svg viewBox="0 0 16 16" fill="currentColor" className="h-3 w-3">
                         <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" />
                       </svg>
                     </button>
@@ -455,28 +458,28 @@ function PlanningPage() {
                 ))}
               </ul>
             )}
-          </article>
+          </div>
 
-          {/* Add Plan Item */}
-          <article className="rounded-xl border border-border bg-surface p-4">
-            <h3 className="text-base font-semibold text-slate-100">Plan Items</h3>
+          {/* Add Plan Item Form */}
+          <div className="border-b border-border/30 pb-6 space-y-4">
+            <h3 className="font-sans text-base font-semibold text-text-primary">Sprint Plan Items</h3>
 
-            <form onSubmit={handleCreatePlanItem} className="mt-3 space-y-3">
+            <form onSubmit={handleCreatePlanItem} className="space-y-3">
               <div className="flex gap-2">
                 <input
                   value={itemTitle}
                   onChange={(event) => setItemTitle(event.target.value)}
-                  placeholder="What needs to get done?"
-                  className="min-w-0 flex-1 rounded-lg border border-border bg-[#111111] px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:border-slate-600 focus:outline-none"
+                  placeholder="What objective needs to land this week?"
+                  className="min-w-0 flex-1 rounded border border-border/40 bg-surface px-3 py-2 text-sm text-text-primary placeholder:text-text-tertiary focus:border-accent-primary focus:outline-none transition-colors"
                 />
                 <select
                   value={itemPriority}
                   onChange={(event) => setItemPriority(event.target.value as PlanItemPriority)}
-                  className="shrink-0 rounded-lg border border-border bg-[#111111] px-3 py-2.5 text-sm text-slate-100 focus:border-slate-600 focus:outline-none"
+                  className="shrink-0 rounded border border-border/40 bg-surface px-3 py-2 font-mono text-xs text-text-primary focus:border-accent-primary focus:outline-none"
                 >
                   {planPriorities.map((priority) => (
                     <option key={priority} value={priority}>
-                      {priority}
+                      {priority} Priority
                     </option>
                   ))}
                 </select>
@@ -486,22 +489,22 @@ function PlanningPage() {
               <button
                 type="button"
                 onClick={() => setShowMoreOptions(!showMoreOptions)}
-                className="text-xs text-slate-500 hover:text-slate-300 transition-colors"
+                className="font-mono text-xs text-text-tertiary hover:text-text-secondary transition-colors cursor-pointer"
               >
-                {showMoreOptions ? '− Less options' : '+ More options (status, links, notes)'}
+                {showMoreOptions ? '− Less options' : '+ Link to Goal, Task, Habit, or Notes'}
               </button>
 
               {showMoreOptions && (
-                <div className="space-y-2 rounded-lg border border-border bg-[#0d0d0d] p-3">
+                <div className="space-y-2.5 rounded border border-border/30 bg-surface/50 p-3">
                   <div className="grid grid-cols-2 gap-2">
                     <select
                       value={itemStatus}
                       onChange={(event) => setItemStatus(event.target.value as PlanItemStatus)}
-                      className="rounded-md border border-border bg-[#111111] p-2 text-sm text-slate-100 focus:outline-none"
+                      className="rounded border border-border/40 bg-surface p-2 font-sans text-xs text-text-primary focus:outline-none"
                     >
                       {planStatuses.map((status) => (
                         <option key={status} value={status}>
-                          {status}
+                          Status: {status}
                         </option>
                       ))}
                     </select>
@@ -509,9 +512,9 @@ function PlanningPage() {
                     <select
                       value={itemGoalId}
                       onChange={(event) => setItemGoalId(event.target.value)}
-                      className="rounded-md border border-border bg-[#111111] p-2 text-sm text-slate-100 focus:outline-none"
+                      className="rounded border border-border/40 bg-surface p-2 font-sans text-xs text-text-primary focus:outline-none"
                     >
-                      <option value="">Link goal</option>
+                      <option value="">Link Long-term Goal</option>
                       {goals.map((goal) => (
                         <option key={goal.id} value={goal.id}>
                           {goal.title}
@@ -524,9 +527,9 @@ function PlanningPage() {
                     <select
                       value={itemTaskId}
                       onChange={(event) => setItemTaskId(event.target.value)}
-                      className="rounded-md border border-border bg-[#111111] p-2 text-sm text-slate-100 focus:outline-none"
+                      className="rounded border border-border/40 bg-surface p-2 font-sans text-xs text-text-primary focus:outline-none"
                     >
-                      <option value="">Link task</option>
+                      <option value="">Link Execution Task</option>
                       {tasks.map((task) => (
                         <option key={task.id} value={task.id}>
                           {task.title}
@@ -537,9 +540,9 @@ function PlanningPage() {
                     <select
                       value={itemHabitId}
                       onChange={(event) => setItemHabitId(event.target.value)}
-                      className="rounded-md border border-border bg-[#111111] p-2 text-sm text-slate-100 focus:outline-none"
+                      className="rounded border border-border/40 bg-surface p-2 font-sans text-xs text-text-primary focus:outline-none"
                     >
-                      <option value="">Link habit</option>
+                      <option value="">Link Habit Anchor</option>
                       {habits.map((habit) => (
                         <option key={habit.id} value={habit.id}>
                           {habit.title}
@@ -552,8 +555,8 @@ function PlanningPage() {
                     value={itemNotes}
                     onChange={(event) => setItemNotes(event.target.value)}
                     rows={2}
-                    placeholder="Optional note"
-                    className="w-full rounded-md border border-border bg-[#111111] p-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none"
+                    placeholder="Optional implementation notes..."
+                    className="w-full rounded border border-border/40 bg-surface p-2 font-sans text-xs text-text-primary placeholder:text-text-tertiary focus:outline-none"
                   />
                 </div>
               )}
@@ -561,43 +564,45 @@ function PlanningPage() {
               <button
                 type="submit"
                 disabled={isCreatingItem || !itemTitle.trim()}
-                className="rounded-lg border border-border bg-[#111111] px-4 py-2 text-sm text-slate-100 hover:bg-[#1a1a1a] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="rounded border border-border/40 bg-surface px-4 py-2 font-mono text-xs text-text-primary hover:bg-elevated disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
               >
-                {isCreatingItem ? 'Adding...' : 'Add Plan Item'}
+                {isCreatingItem ? 'Adding...' : 'Add Plan Item ↵'}
               </button>
             </form>
 
             {/* Current week items list */}
-            <div className="mt-4">
-              {isItemsLoading ? <p className="text-sm text-slate-500">Loading plan items...</p> : null}
+            <div className="pt-2">
+              {isItemsLoading ? (
+                <p className="font-mono text-xs text-text-tertiary animate-pulse">Loading plan items...</p>
+              ) : null}
               {!isItemsLoading && weeklyItems.length === 0 ? (
-                <p className="text-sm text-slate-500">No plan items yet. Add one above.</p>
+                <p className="font-mono text-xs text-text-tertiary">No plan items defined for this week.</p>
               ) : null}
 
               {weeklyItems.length > 0 && (
-                <div className="space-y-2">
+                <div className="divide-y divide-border/20 border-b border-border/30">
                   {weeklyItems.map((item) => (
-                    <article
+                    <div
                       key={item.id}
-                      className={`flex items-start justify-between gap-3 rounded-lg border border-border p-3 transition-colors ${
-                        item.status === 'Done' ? 'bg-surface opacity-60' : 'bg-surface'
+                      className={`flex items-start justify-between gap-3 py-3 px-1 transition-colors ${
+                        item.status === 'Done' ? 'opacity-60' : ''
                       }`}
                     >
                       <div className="min-w-0 flex-1">
-                        <p className={`text-sm font-medium ${item.status === 'Done' ? 'line-through text-slate-500' : 'text-slate-100'}`}>
+                        <p className={`font-sans text-sm ${item.status === 'Done' ? 'line-through text-text-tertiary' : 'font-medium text-text-primary'}`}>
                           {item.title}
                         </p>
                         <div className="mt-1 flex flex-wrap items-center gap-2">
-                          <span className={`text-xs font-medium ${priorityColors[item.priority]}`}>
+                          <span className={priorityColors[item.priority]}>
                             {item.priority}
                           </span>
                           {item.goal_id && (
-                            <span className="rounded-full bg-emerald-900/30 px-1.5 py-0.5 text-[10px] text-emerald-400">
-                              Goal linked
+                            <span className="rounded border border-threat-healthy/40 bg-threat-healthy/10 px-1.5 py-0.2 font-mono text-[10px] text-threat-healthy">
+                              Goal Linked
                             </span>
                           )}
                           {item.notes && (
-                            <span className="truncate text-xs text-slate-500" title={item.notes}>
+                            <span className="truncate text-xs text-text-tertiary max-w-sm" title={item.notes}>
                               {item.notes}
                             </span>
                           )}
@@ -613,7 +618,7 @@ function PlanningPage() {
                           })
                         }
                         disabled={isUpdatingItem}
-                        className={`shrink-0 rounded-md border border-border bg-[#111111] px-2 py-1 text-xs font-medium focus:outline-none ${statusColors[item.status]}`}
+                        className={`shrink-0 rounded border border-border/40 bg-surface px-2 py-1 font-mono text-xs focus:outline-none cursor-pointer ${statusColors[item.status]}`}
                       >
                         {planStatuses.map((status) => (
                           <option key={`${item.id}-${status}`} value={status}>
@@ -621,61 +626,63 @@ function PlanningPage() {
                           </option>
                         ))}
                       </select>
-                    </article>
+                    </div>
                   ))}
                 </div>
               )}
             </div>
-          </article>
+          </div>
 
-          {/* Recent entries - collapsible */}
-          <article className="rounded-xl border border-border bg-surface">
+          {/* Collapsible Recent Entries */}
+          <div className="border-b border-border/30 pb-4">
             <button
               type="button"
               onClick={() => setShowRecentEntries(!showRecentEntries)}
-              className="flex w-full items-center justify-between p-4 text-left transition-colors hover:bg-[#111111] rounded-xl"
+              className="flex w-full items-center justify-between py-2 text-left transition-colors hover:text-text-primary cursor-pointer"
             >
-              <h3 className="text-sm font-medium text-slate-400">Recent Weekly Focus Entries</h3>
-              <span className="text-xs text-slate-500">{showRecentEntries ? '▲' : '▼'}</span>
+              <h3 className="font-mono text-xs uppercase tracking-wider text-text-tertiary">
+                Historical Weekly Focus Entries
+              </h3>
+              <span className="font-mono text-xs text-text-tertiary">{showRecentEntries ? '▲' : '▼'}</span>
             </button>
             {showRecentEntries && (
-              <div className="border-t border-border px-4 pb-4 pt-2">
-                {isPlansLoading ? <p className="text-sm text-slate-500">Loading...</p> : null}
-                {!isPlansLoading && plans.length === 0 ? <p className="text-sm text-slate-500">No plans yet.</p> : null}
-                <ul className="space-y-2">
+              <div className="pt-2 space-y-2">
+                {isPlansLoading ? <p className="font-mono text-xs text-text-tertiary">Loading history...</p> : null}
+                {!isPlansLoading && plans.length === 0 ? <p className="font-mono text-xs text-text-tertiary">No plans on record.</p> : null}
+                <ul className="divide-y divide-border/20 border-b border-border/20">
                   {plans.slice(0, 6).map((plan) => (
-                    <li key={plan.id} className="rounded-lg border border-border bg-[#111111] p-3">
-                      <p className="text-xs text-slate-500">{formatWeekDate(plan.week_start_date)}</p>
-                      <p className="mt-1 text-sm text-slate-200">{plan.focus_text}</p>
+                    <li key={plan.id} className="py-2.5">
+                      <p className="font-mono text-xs tabular-nums text-text-tertiary">{formatWeekDate(plan.week_start_date)}</p>
+                      <p className="mt-0.5 font-sans text-sm text-text-secondary">{plan.focus_text}</p>
                     </li>
                   ))}
                 </ul>
               </div>
             )}
-          </article>
+          </div>
         </section>
       )}
 
       {/* ── Tab: Goals ── */}
       {activeTab === 'goals' && (
-        <section className="space-y-3">
-          <article className="rounded-xl border border-border bg-surface p-4">
-            <h3 className="text-base font-semibold text-slate-100">Create Goal</h3>
-            <p className="mt-0.5 text-xs text-slate-500">Goals anchor your weekly plan items to long-term outcomes.</p>
+        <section className="space-y-6">
+          <div className="border-b border-border/30 pb-6 space-y-4">
+            <h3 className="font-sans text-base font-semibold text-text-primary">Declare Strategic Goal</h3>
+            <p className="text-xs text-text-tertiary">Long-term anchors that connect to weekly sprint items.</p>
 
-            <form onSubmit={handleCreateGoal} className="mt-3 space-y-3">
+            <form onSubmit={handleCreateGoal} className="space-y-3">
               <input
                 value={goalTitle}
                 onChange={(event) => setGoalTitle(event.target.value)}
-                placeholder="Goal title"
-                className="w-full rounded-lg border border-border bg-[#111111] px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:border-slate-600 focus:outline-none"
+                placeholder="Strategic goal title..."
+                className="w-full rounded border border-border/40 bg-surface px-3 py-2 text-sm text-text-primary placeholder:text-text-tertiary focus:border-accent-primary focus:outline-none transition-colors"
               />
 
               <div className="grid grid-cols-2 gap-2">
                 <select
                   value={goalDomain}
                   onChange={(event) => setGoalDomain(event.target.value as GoalDomain)}
-                  className="rounded-lg border border-border bg-[#111111] px-3 py-2.5 text-sm text-slate-100 focus:outline-none"
+                  className="rounded border border-border/40 bg-surface px-3 py-2 font-mono text-xs text-text-primary focus:outline-none cursor-pointer"
                 >
                   {goalDomains.map((domain) => (
                     <option key={domain} value={domain}>
@@ -687,7 +694,7 @@ function PlanningPage() {
                   type="date"
                   value={goalTargetDate}
                   onChange={(event) => setGoalTargetDate(event.target.value)}
-                  className="rounded-lg border border-border bg-[#111111] px-3 py-2.5 text-sm text-slate-100 focus:outline-none"
+                  className="rounded border border-border/40 bg-surface px-3 py-2 font-mono text-xs text-text-primary focus:outline-none"
                 />
               </div>
 
@@ -695,66 +702,68 @@ function PlanningPage() {
                 value={goalNotes}
                 onChange={(event) => setGoalNotes(event.target.value)}
                 rows={2}
-                placeholder="Optional notes"
-                className="w-full rounded-lg border border-border bg-[#111111] px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none"
+                placeholder="Strategic notes and success criteria..."
+                className="w-full rounded border border-border/40 bg-surface px-3 py-2 font-sans text-xs text-text-primary placeholder:text-text-tertiary focus:outline-none"
               />
 
               <button
                 type="submit"
                 disabled={isCreatingGoal || !goalTitle.trim()}
-                className="rounded-lg border border-border bg-[#111111] px-4 py-2 text-sm text-slate-100 hover:bg-[#1a1a1a] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="rounded border border-border/40 bg-surface px-4 py-2 font-mono text-xs text-text-primary hover:bg-elevated disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
               >
-                {isCreatingGoal ? 'Adding...' : 'Add Goal'}
+                {isCreatingGoal ? 'Registering...' : 'Register Goal ↵'}
               </button>
             </form>
-          </article>
+          </div>
 
-          {/* Goals list */}
+          {/* Goals List */}
           {goals.length === 0 ? (
-            <article className="rounded-xl border border-border bg-surface p-4">
-              <p className="text-sm text-slate-500">No goals yet. Create one above to start aligning your weekly plans.</p>
-            </article>
+            <div className="py-8 text-center font-mono text-xs text-text-tertiary">
+              No long-term strategic goals registered yet.
+            </div>
           ) : (
-            <div className="space-y-2">
+            <div className="divide-y divide-border/20 border-b border-border/30">
               {goals.map((goal) => (
-                <article key={goal.id} className="rounded-xl border border-border bg-surface p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold text-slate-100">{goal.title}</p>
-                      <div className="mt-1 flex flex-wrap items-center gap-2">
-                        <span className="rounded-full border border-border bg-[#111111] px-2 py-0.5 text-[10px] font-medium text-slate-300">
-                          {domainLabels[goal.domain]}
+                <div key={goal.id} className="py-3 flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-sans text-sm font-semibold text-text-primary">{goal.title}</p>
+                    <div className="mt-1 flex flex-wrap items-center gap-2">
+                      <span className="rounded border border-border/40 bg-surface px-2 py-0.2 font-mono text-[10px] text-text-secondary">
+                        {domainLabels[goal.domain]}
+                      </span>
+                      {goal.target_date && (
+                        <span className="font-mono text-xs tabular-nums text-text-tertiary">
+                          Target: {formatWeekDate(goal.target_date)}
                         </span>
-                        {goal.target_date && (
-                          <span className="text-xs text-slate-500">
-                            Target: {formatWeekDate(goal.target_date)}
-                          </span>
-                        )}
-                      </div>
-                      {goal.notes && <p className="mt-1.5 text-xs text-slate-400">{goal.notes}</p>}
+                      )}
                     </div>
-
-                    <select
-                      value={goal.status}
-                      onChange={(event) =>
-                        updateGoalStatus({
-                          id: goal.id,
-                          status: event.target.value as GoalStatus,
-                        })
-                      }
-                      disabled={isUpdatingGoalStatus}
-                      className={`shrink-0 rounded-md border border-border bg-[#111111] px-2 py-1 text-xs font-medium focus:outline-none ${
-                        goal.status === 'completed' ? 'text-emerald-400' : goal.status === 'paused' ? 'text-yellow-400' : 'text-slate-300'
-                      }`}
-                    >
-                      {goalStatuses.map((status) => (
-                        <option key={`${goal.id}-${status}`} value={status}>
-                          {status}
-                        </option>
-                      ))}
-                    </select>
+                    {goal.notes && <p className="mt-1 text-xs text-text-secondary">{goal.notes}</p>}
                   </div>
-                </article>
+
+                  <select
+                    value={goal.status}
+                    onChange={(event) =>
+                      updateGoalStatus({
+                        id: goal.id,
+                        status: event.target.value as GoalStatus,
+                      })
+                    }
+                    disabled={isUpdatingGoalStatus}
+                    className={`shrink-0 rounded border border-border/40 bg-surface px-2 py-1 font-mono text-xs focus:outline-none cursor-pointer ${
+                      goal.status === 'completed'
+                        ? 'text-threat-healthy'
+                        : goal.status === 'paused'
+                          ? 'text-threat-warning'
+                          : 'text-text-primary'
+                    }`}
+                  >
+                    {goalStatuses.map((status) => (
+                      <option key={`${goal.id}-${status}`} value={status}>
+                        {status}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               ))}
             </div>
           )}
@@ -763,14 +772,18 @@ function PlanningPage() {
 
       {/* ── Tab: Review ── */}
       {activeTab === 'review' && (
-        <article className="rounded-xl border border-border bg-surface p-4">
-          <h3 className="text-base font-semibold text-slate-100">End-of-Week Review</h3>
-          <p className="mt-0.5 text-xs text-slate-500">Capture what worked, what blocked progress, and next adjustments.</p>
+        <section className="space-y-6">
+          <div className="border-b border-border/30 pb-6 space-y-2">
+            <h3 className="font-sans text-base font-semibold text-text-primary">End-of-Week Review</h3>
+            <p className="text-xs text-text-tertiary">Honest synthesis of execution wins, friction blockers, and trajectory adjustments.</p>
+          </div>
 
-          <form onSubmit={handleSaveWeeklyReview} className="mt-4 space-y-5">
+          <form onSubmit={handleSaveWeeklyReview} className="space-y-6">
             {/* Wins */}
-            <div>
-              <label className="block text-xs font-medium text-slate-300 mb-2">Wins</label>
+            <div className="space-y-2">
+              <label className="block font-mono text-xs uppercase tracking-wider text-threat-healthy">
+                Execution Wins
+              </label>
               <input
                 value={winsInput}
                 onChange={(event) => setWinsInput(event.target.value)}
@@ -785,15 +798,15 @@ function PlanningPage() {
                   }))
                   setWinsInput('')
                 }}
-                className="w-full rounded-lg border border-border bg-[#111111] px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:border-slate-600 focus:outline-none"
-                placeholder="Add win and press Enter"
+                className="w-full rounded border border-border/40 bg-surface px-3 py-2 text-sm text-text-primary placeholder:text-text-tertiary focus:border-threat-healthy focus:outline-none transition-colors"
+                placeholder="Log a win and press Enter..."
               />
               {reviewWinsItems.length > 0 && (
-                <ul className="mt-2 space-y-1">
+                <ul className="space-y-1 pt-1">
                   {reviewWinsItems.map((item, index) => (
-                    <li key={`${item}-${index}`} className="group flex items-center justify-between gap-2 rounded-md px-2 py-1 hover:bg-[#111111]">
-                      <span className="text-sm text-emerald-300">
-                        <span className="mr-2 text-emerald-600">•</span>
+                    <li key={`${item}-${index}`} className="group flex items-center justify-between gap-2 rounded px-2 py-1 hover:bg-surface">
+                      <span className="font-sans text-sm text-threat-healthy">
+                        <span className="mr-2 font-mono">•</span>
                         {item}
                       </span>
                       <button
@@ -804,10 +817,10 @@ function PlanningPage() {
                             wins: joinBulletItems(removeBulletItem(reviewWinsItems, index)),
                           }))
                         }
-                        className="shrink-0 cursor-pointer rounded p-1 text-neutral-600 opacity-0 transition-all hover:bg-red-950/40 hover:text-red-400 group-hover:opacity-100"
+                        className="cursor-pointer text-text-tertiary opacity-0 transition-opacity hover:text-threat-critical group-hover:opacity-100 p-1"
                         aria-label={`Remove win item ${index + 1}`}
                       >
-                        <svg viewBox="0 0 16 16" fill="currentColor" className="h-3.5 w-3.5">
+                        <svg viewBox="0 0 16 16" fill="currentColor" className="h-3 w-3">
                           <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" />
                         </svg>
                       </button>
@@ -818,8 +831,10 @@ function PlanningPage() {
             </div>
 
             {/* Blockers */}
-            <div>
-              <label className="block text-xs font-medium text-slate-300 mb-2">Blockers</label>
+            <div className="space-y-2">
+              <label className="block font-mono text-xs uppercase tracking-wider text-threat-critical">
+                Blockers & Friction
+              </label>
               <input
                 value={blockersInput}
                 onChange={(event) => setBlockersInput(event.target.value)}
@@ -834,15 +849,15 @@ function PlanningPage() {
                   }))
                   setBlockersInput('')
                 }}
-                className="w-full rounded-lg border border-border bg-[#111111] px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:border-slate-600 focus:outline-none"
-                placeholder="Add blocker and press Enter"
+                className="w-full rounded border border-border/40 bg-surface px-3 py-2 text-sm text-text-primary placeholder:text-text-tertiary focus:border-threat-critical focus:outline-none transition-colors"
+                placeholder="Log a friction point and press Enter..."
               />
               {reviewBlockersItems.length > 0 && (
-                <ul className="mt-2 space-y-1">
+                <ul className="space-y-1 pt-1">
                   {reviewBlockersItems.map((item, index) => (
-                    <li key={`${item}-${index}`} className="group flex items-center justify-between gap-2 rounded-md px-2 py-1 hover:bg-[#111111]">
-                      <span className="text-sm text-red-300">
-                        <span className="mr-2 text-red-600">•</span>
+                    <li key={`${item}-${index}`} className="group flex items-center justify-between gap-2 rounded px-2 py-1 hover:bg-surface">
+                      <span className="font-sans text-sm text-threat-critical">
+                        <span className="mr-2 font-mono">•</span>
                         {item}
                       </span>
                       <button
@@ -853,10 +868,10 @@ function PlanningPage() {
                             blockers: joinBulletItems(removeBulletItem(reviewBlockersItems, index)),
                           }))
                         }
-                        className="shrink-0 cursor-pointer rounded p-1 text-neutral-600 opacity-0 transition-all hover:bg-red-950/40 hover:text-red-400 group-hover:opacity-100"
+                        className="cursor-pointer text-text-tertiary opacity-0 transition-opacity hover:text-threat-critical group-hover:opacity-100 p-1"
                         aria-label={`Remove blocker item ${index + 1}`}
                       >
-                        <svg viewBox="0 0 16 16" fill="currentColor" className="h-3.5 w-3.5">
+                        <svg viewBox="0 0 16 16" fill="currentColor" className="h-3 w-3">
                           <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" />
                         </svg>
                       </button>
@@ -867,8 +882,10 @@ function PlanningPage() {
             </div>
 
             {/* Next Adjustments */}
-            <div>
-              <label className="block text-xs font-medium text-slate-300 mb-2">Next Adjustments</label>
+            <div className="space-y-2">
+              <label className="block font-mono text-xs uppercase tracking-wider text-accent-primary">
+                Next Adjustments
+              </label>
               <input
                 value={nextAdjustmentsInput}
                 onChange={(event) => setNextAdjustmentsInput(event.target.value)}
@@ -883,15 +900,15 @@ function PlanningPage() {
                   }))
                   setNextAdjustmentsInput('')
                 }}
-                className="w-full rounded-lg border border-border bg-[#111111] px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:border-slate-600 focus:outline-none"
-                placeholder="Add adjustment and press Enter"
+                className="w-full rounded border border-border/40 bg-surface px-3 py-2 text-sm text-text-primary placeholder:text-text-tertiary focus:border-accent-primary focus:outline-none transition-colors"
+                placeholder="Log a trajectory adjustment and press Enter..."
               />
               {reviewNextAdjustmentsItems.length > 0 && (
-                <ul className="mt-2 space-y-1">
+                <ul className="space-y-1 pt-1">
                   {reviewNextAdjustmentsItems.map((item, index) => (
-                    <li key={`${item}-${index}`} className="group flex items-center justify-between gap-2 rounded-md px-2 py-1 hover:bg-[#111111]">
-                      <span className="text-sm text-blue-300">
-                        <span className="mr-2 text-blue-600">•</span>
+                    <li key={`${item}-${index}`} className="group flex items-center justify-between gap-2 rounded px-2 py-1 hover:bg-surface">
+                      <span className="font-sans text-sm text-accent-primary">
+                        <span className="mr-2 font-mono">•</span>
                         {item}
                       </span>
                       <button
@@ -902,10 +919,10 @@ function PlanningPage() {
                             nextAdjustments: joinBulletItems(removeBulletItem(reviewNextAdjustmentsItems, index)),
                           }))
                         }
-                        className="shrink-0 cursor-pointer rounded p-1 text-neutral-600 opacity-0 transition-all hover:bg-red-950/40 hover:text-red-400 group-hover:opacity-100"
+                        className="cursor-pointer text-text-tertiary opacity-0 transition-opacity hover:text-threat-critical group-hover:opacity-100 p-1"
                         aria-label={`Remove adjustment item ${index + 1}`}
                       >
-                        <svg viewBox="0 0 16 16" fill="currentColor" className="h-3.5 w-3.5">
+                        <svg viewBox="0 0 16 16" fill="currentColor" className="h-3 w-3">
                           <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" />
                         </svg>
                       </button>
@@ -918,12 +935,12 @@ function PlanningPage() {
             <button
               type="submit"
               disabled={isSavingReview}
-              className="rounded-lg border border-border bg-[#111111] px-4 py-2 text-sm text-slate-100 hover:bg-[#1a1a1a] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="rounded border border-accent-primary/40 bg-accent-primary/10 px-4 py-2 font-mono text-xs text-accent-primary hover:bg-accent-primary/20 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
             >
-              {isSavingReview ? 'Saving...' : 'Save Weekly Review'}
+              {isSavingReview ? 'Saving...' : 'Save Weekly Review ↵'}
             </button>
           </form>
-        </article>
+        </section>
       )}
     </section>
   )
