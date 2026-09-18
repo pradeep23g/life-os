@@ -1,7 +1,7 @@
 # LIFE OS — ARCHITECTURE DECISIONS (ADR)
 
 **Status:** Authoritative Architectural Decision Log  
-**Last Synchronized:** September 2026 (Phase 1 Baseline)
+**Last Synchronized:** September 2026 (Winter Arc Overhaul: ADR-001 through ADR-025)
 
 ---
 
@@ -81,3 +81,34 @@
 - **Context:** Finance OS and Learning OS were not fully factored into Brain Engine directives. In Data Lab, Postgres view module names formatted with spaces (`'Mind / Habits'`, `'Mind / Journal'`) failed strict string equality checks in TypeScript calculators, reporting false 0% consistency.
 - **Decision:** Brain Engine directives and domain signals monitor all 7 operational domains (including budget pressure >90%, high discretionary want spending >3, and Learning roadmap velocity). Data Lab metrics calculators incorporate `normalizeKey()` to reconcile view labels with domain keys.
 - **Consequences:** Complete 7-domain behavioral intelligence; robust SQL-to-TypeScript mapping impervious to whitespace variations.
+
+---
+
+## ADR-023: Kinetic Astrolabe Orb Navigation Architecture
+- **Context:** The legacy persistent sidebar consumed 64px–240px of horizontal layout space, causing content reflow and layout friction across subpage headers. An initial prototype of the orb menu suffered from overlapping text labels across satellite icons, vague orbital distances, and lacked integrated session/profile termination.
+- **Decision:** Replaced traditional navigation sidebars with an edge-anchored 3-ring Kinetic Astrolabe Orb navigation (`src/layout/AstrolabeOrbNav.tsx`).
+  - Orbital radii were tightened by 20% (desktop: 96px, 147px, 198px; mobile: 75px, 119px, 163px) to ensure sharp visual grouping.
+  - Peripheral hover tooltips were eliminated to avoid collision; instead, the open central avatar orb functions as the dynamic telemetry HUD, displaying the hovered module's uppercase title, signature neon branding, and ambient back-glow.
+  - Integrated user profile navigation and Supabase session sign-out directly into the central Astrolabe controls via `AuthContext`.
+- **Consequences:** Clean, edge-to-edge brutalist canvas across all 8 modules; zero tooltip occlusion; unified focal point for multi-module switching on desktop and touch devices.
+
+---
+
+## ADR-024: Chronos Time OS Architecture & Deterministic Bioluminescent Purity
+- **Context:** Time OS relied on legacy components that diverged from the Winter Arc monospace aesthetic. Historical tracking lacked qualitative reinforcement of focus streaks, and early prototypes risked non-deterministic render impurities in React 19.
+- **Decision:** Structured Time OS as a tri-modal engine (`[MONOLITH]`, `[HISTORY]`, `[ANALYTICS]`):
+  - **Chronos Analytics (`TimeInsights.tsx`):** A borderless monospace terminal grid featuring Hero Bucket Distribution cards with massive Geist Mono percentages, dynamic module branding colors, ASCII density meters (`██████··`), and a 7-day trend ledger with peak intensity indicators.
+  - **Chronos History (`TimeHistory.tsx`):** An 84-day (12-week) GitHub-style density grid with circadian ambient color shifts (Amber for morning, Electric Cyan for afternoon, Rose for evening, Cosmic Purple for night) and an 8H+ max-intensity white pulse.
+  - **Streak-Driven Bioluminescent Roots:** A recursive SVG tree visualizer that deepens branch depth based on continuous daily focus streaks. To guarantee 100% React 19 render purity, organic sways are generated via coordinate harmonic sinusoids (`Math.sin(x * 0.05 + y * 0.03 + depth) * 0.1`) without `Math.random()`.
+- **Consequences:** 100% deterministic SSR/CSR rendering; zero React purity warnings; immediate visual reinforcement of temporal focus volume without third-party chart dependencies.
+
+---
+
+## ADR-025: Fitness OS Kinetic Ledger, Dual Categorization & Cross-OS Focus Integration
+- **Context:** Training logs previously suffered from cluttered forms, intrusive rest timers that broke gym tempo, lack of movement-pattern categorization, and complete disconnection from Time OS focus telemetry. Additionally, remote database tables lacked a `movement_pattern` column.
+- **Decision:**
+  - **Kinetic Step-by-Step Ledger (`ActiveWorkoutPanel.tsx`, `WorkoutsPage.tsx`):** Minimal terminal initialization prompt (`> INITIALIZE WORKOUT`), step-by-step active set isolation (Current Set vs Next Set preview), massive Geist Mono mass/rep numerals, a collapsible tactical touch numpad (`1-9, 0, ., CLR`), optional RPE scale, and removed rest timers.
+  - **Dual Categorization & Cybernetic Wireframes (`FitnessLibraryPage.tsx`, `AnatomyWireframe.tsx`):** Dual-mode directory filtering by Primary Muscle and Movement Pattern (Squat, Hinge, Push, Pull, Core, Carry) paired with bespoke cybernetic anatomical wireframe SVGs. Movement patterns are derived at the API transform layer, preserving schema compatibility without requiring unmigrated columns.
+  - **Monument Trophies (`PersonalRecordsPage.tsx`):** Concentric cybernetic sigils supporting mass and isometric hold durations, accompanied by a screen flash celebration banner (`"RECORD OVERWRITTEN // PROTOCOL ASCENDANCY ESTABLISHED"`).
+  - **Automatic Cross-OS Temporal Sync (`useFitness.ts`):** Invoking `endWorkoutSession` automatically inserts a matching session record into `time_logs` under the `'Fitness'` bucket and invalidates Time OS query caches in real time.
+- **Consequences:** Zero manual double-entry between workout tracking and focus tracking; low-friction tactical logging during live physical training; robust schema compatibility guaranteed.
