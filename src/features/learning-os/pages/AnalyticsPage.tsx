@@ -1,16 +1,12 @@
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
+import { ArrowLeft, Clock, Activity, BookOpen } from 'lucide-react'
 import {
-  ArrowLeft,
-  Clock,
-  BookOpen,
-  TrendingUp,
-  BarChart3,
-  Calendar,
-  Activity,
-  Award,
-} from 'lucide-react'
-import { useRoadmaps, useRecentSessionLogs, useSessionAnalytics, useRoadmapProgress } from '../api/useLearningOS'
+  useRoadmaps,
+  useRecentSessionLogs,
+  useSessionAnalytics,
+  useRoadmapProgress,
+} from '../api/useLearningOS'
 
 export function AnalyticsPage() {
   const { data: roadmaps = [], isLoading: roadmapsLoading } = useRoadmaps()
@@ -51,7 +47,7 @@ export function AnalyticsPage() {
     return Math.round(sum / roadmaps.length)
   }, [roadmaps, progressMap])
 
-  // 7-Day Session Distribution
+  // 7-Day Session Distribution (Instrument Mode)
   const last7DaysData = useMemo(() => {
     const days: { label: string; dateStr: string; minutes: number }[] = []
     const now = new Date()
@@ -86,146 +82,168 @@ export function AnalyticsPage() {
   const isLoading = roadmapsLoading || logsLoading || analyticsLoading
 
   return (
-    <div className="space-y-6 pb-28 sm:pb-24">
-      {/* Back Navigation */}
-      <Link
-        to="/learning-os"
-        className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-slate-200 transition-colors"
-      >
-        <ArrowLeft size={16} /> Back to Learning OS
-      </Link>
-
-      {/* Header */}
-      <div className="rounded-xl border border-border bg-surface p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-100 flex items-center gap-2.5">
-              <BarChart3 className="h-6 w-6 text-purple-400" />
-              Learning Telemetry & Analytics
-            </h1>
-            <p className="mt-1 text-sm text-slate-400">
-              Real-time progress breakdown, study duration telemetry, and stage completion metrics.
-            </p>
-          </div>
-        </div>
+    <div className="space-y-16 font-sans text-text-primary">
+      {/* Back Navigation & Breadcrumb */}
+      <div className="flex items-center justify-between border-b border-border-subtle pb-4">
+        <Link
+          to="/learning-os"
+          className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-text-secondary hover:text-text-primary transition-colors"
+        >
+          <ArrowLeft size={14} /> Back to Study Shelf
+        </Link>
+        <span className="text-xs font-mono uppercase tracking-widest text-text-tertiary">
+          INSTRUMENT MODE • TELEMETRY
+        </span>
       </div>
 
-      {/* Primary Telemetry Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-xl border border-border bg-surface p-5">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-              Total Study Time
-            </span>
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-purple-900/40 text-purple-400">
-              <Clock className="h-5 w-5" />
-            </div>
-          </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-slate-100">{totalHours}h</span>
-            <span className="text-xs text-slate-500">({totalMinutes} mins)</span>
-          </div>
-        </div>
-
-        <div className="rounded-xl border border-border bg-surface p-5">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-              Sessions Logged
-            </span>
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-900/40 text-blue-400">
-              <Activity className="h-5 w-5" />
-            </div>
-          </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-slate-100">{analyticsLogs.length}</span>
-            <span className="text-xs text-slate-500">recorded</span>
-          </div>
-        </div>
-
-        <div className="rounded-xl border border-border bg-surface p-5">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-              Avg Session Length
-            </span>
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-900/40 text-emerald-400">
-              <TrendingUp className="h-5 w-5" />
-            </div>
-          </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-slate-100">{avgSessionDuration}m</span>
-            <span className="text-xs text-slate-500">per session</span>
-          </div>
-        </div>
-
-        <div className="rounded-xl border border-border bg-surface p-5">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-              Avg Completion
-            </span>
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-900/40 text-amber-400">
-              <Award className="h-5 w-5" />
-            </div>
-          </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-slate-100">{avgCompletionPct}%</span>
-            <span className="text-xs text-slate-500">across {roadmaps.length} roadmaps</span>
-          </div>
-        </div>
+      {/* Header Monograph */}
+      <div className="space-y-2">
+        <h1 className="text-3xl font-light tracking-tight text-text-primary font-serif">
+          Intellectual Cadence & Telemetry
+        </h1>
+        <p className="text-xs font-mono text-text-secondary uppercase tracking-wider">
+          Study volume breakdown, temporal allocation, and curriculum completion indices.
+        </p>
       </div>
 
-      {/* 7-Day Session Distribution Chart */}
-      <div className="rounded-xl border border-border bg-surface p-6">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-base font-bold text-slate-100 flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-purple-400" />
-              7-Day Study Time Distribution
-            </h2>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Daily study minutes recorded over the last 7 days.
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-end justify-between gap-3 h-44 pt-4 px-2 border-b border-border/60 pb-2">
-          {last7DaysData.map((day) => (
-            <div key={day.dateStr} className="flex flex-1 flex-col items-center gap-2 h-full justify-end">
-              <span className="text-[11px] font-semibold text-slate-400">
-                {day.minutes > 0 ? `${day.minutes}m` : '-'}
+      {/* 1. THE FIELD PRIMITIVE: Tabular Metric Horizon (Zero Card Boxes) */}
+      <section aria-label="Study Telemetry Matrix" className="border-y border-border-subtle py-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+          {/* Metric 1 */}
+          <div className="space-y-1">
+            <span className="text-xs font-mono uppercase tracking-wider text-text-tertiary block">
+              Total Study Volume
+            </span>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-light font-mono tabular-nums text-text-primary">
+                {totalHours}
+                <span className="text-sm font-mono text-text-tertiary ml-0.5">h</span>
               </span>
-              <div className="w-full max-w-[42px] bg-[#141414] rounded-t-lg overflow-hidden flex items-end h-32 border border-border/40">
-                <div
-                  className="w-full bg-purple-600/80 hover:bg-purple-500 transition-all rounded-t-sm"
-                  style={{ height: `${Math.max(day.heightPct, day.minutes > 0 ? 8 : 2)}%` }}
-                  title={`${day.label}: ${day.minutes} minutes`}
-                />
-              </div>
-              <span className="text-xs font-medium text-slate-400 mt-1">{day.label}</span>
+              <span className="text-xs font-mono tabular-nums text-text-secondary">
+                ({totalMinutes}m)
+              </span>
             </div>
-          ))}
-        </div>
-      </div>
+            <span className="text-[11px] font-mono text-text-tertiary block">
+              Cumulative focus time
+            </span>
+          </div>
 
-      {/* Grid: Roadmap Breakdown & Recent Session Logs */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* Roadmap Progress Breakdown Table */}
-        <div className="rounded-xl border border-border bg-surface p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-base font-bold text-slate-100 flex items-center gap-2">
-              <BookOpen className="h-4 w-4 text-purple-400" />
-              Roadmap Progress Breakdown
+          {/* Metric 2 */}
+          <div className="space-y-1">
+            <span className="text-xs font-mono uppercase tracking-wider text-text-tertiary block">
+              Sessions Inscribed
+            </span>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-light font-mono tabular-nums text-accent-primary">
+                {analyticsLogs.length}
+              </span>
+              <span className="text-xs font-mono text-text-secondary">logs</span>
+            </div>
+            <span className="text-[11px] font-mono text-text-tertiary block">
+              Verified entries
+            </span>
+          </div>
+
+          {/* Metric 3 */}
+          <div className="space-y-1">
+            <span className="text-xs font-mono uppercase tracking-wider text-text-tertiary block">
+              Mean Session Span
+            </span>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-light font-mono tabular-nums text-text-primary">
+                {avgSessionDuration}
+                <span className="text-sm font-mono text-text-tertiary ml-0.5">m</span>
+              </span>
+              <span className="text-xs font-mono text-text-secondary">avg</span>
+            </div>
+            <span className="text-[11px] font-mono text-text-tertiary block">
+              Per study engagement
+            </span>
+          </div>
+
+          {/* Metric 4 */}
+          <div className="space-y-1">
+            <span className="text-xs font-mono uppercase tracking-wider text-text-tertiary block">
+              Overall Traversal
+            </span>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-light font-mono tabular-nums text-accent-primary">
+                {avgCompletionPct}
+                <span className="text-sm font-mono text-text-tertiary ml-0.5">%</span>
+              </span>
+              <span className="text-xs font-mono text-text-secondary">ratio</span>
+            </div>
+            <span className="text-[11px] font-mono text-text-tertiary block">
+              Across {roadmaps.length} folios
+            </span>
+          </div>
+        </div>
+      </section>
+
+      {/* 2. INSTRUMENT HISTOGRAM: 7-Day Study Cadence */}
+      <section aria-label="7-Day Study Cadence Histogram" className="space-y-6">
+        <div className="flex items-baseline justify-between border-b border-border-subtle pb-3">
+          <div>
+            <h2 className="text-xs font-mono uppercase tracking-wider text-text-secondary">
+              7-Day Study Cadence Histogram
             </h2>
-            <span className="text-xs text-slate-400">{activeRoadmapsCount} active</span>
+            <p className="text-xs font-serif italic text-text-tertiary mt-0.5">
+              Daily recorded minutes over the rolling 7-day window.
+            </p>
+          </div>
+          <span className="text-xs font-mono text-text-tertiary">
+            Axis: Minutes
+          </span>
+        </div>
+
+        <div className="h-48 pt-4 pb-2 border-b border-border-subtle">
+          <div className="flex items-end justify-between gap-4 h-full">
+            {last7DaysData.map((day) => (
+              <div key={day.dateStr} className="flex-1 flex flex-col items-center justify-end h-full gap-2">
+                <span className="text-xs font-mono tabular-nums text-text-secondary">
+                  {day.minutes > 0 ? `${day.minutes}m` : '—'}
+                </span>
+                <div className="w-full max-w-[48px] bg-surface h-32 flex items-end overflow-hidden">
+                  <div
+                    className="w-full bg-accent-primary transition-all duration-500"
+                    style={{
+                      height: `${Math.max(day.heightPct, day.minutes > 0 ? 6 : 2)}%`,
+                      opacity: day.minutes > 0 ? 1 : 0.2,
+                    }}
+                    title={`${day.label}: ${day.minutes} minutes`}
+                  />
+                </div>
+                <span className="text-xs font-mono uppercase text-text-tertiary">
+                  {day.label}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 3. LEDGER PRIMITIVE: Folio Traversal & Session Stream */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 pt-4">
+        {/* Folio Traversal Breakdown (Ledger) */}
+        <section aria-label="Folio Traversal Breakdown" className="space-y-6">
+          <div className="flex items-baseline justify-between border-b border-border-subtle pb-3">
+            <h2 className="text-xs font-mono uppercase tracking-wider text-text-secondary flex items-center gap-2">
+              <BookOpen size={14} className="text-accent-primary" />
+              Folio Traversal Breakdown
+            </h2>
+            <span className="text-xs font-mono text-text-tertiary">
+              {activeRoadmapsCount} Active
+            </span>
           </div>
 
           {isLoading ? (
-            <p className="text-sm text-slate-400 py-4">Loading telemetry data...</p>
+            <p className="text-xs font-mono text-text-tertiary py-4">Reading telemetry index...</p>
           ) : roadmaps.length === 0 ? (
-            <div className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-slate-500">
+            <div className="border border-dashed border-border-subtle p-8 text-center text-xs font-mono text-text-tertiary">
               No roadmaps available for telemetry breakdown.
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="divide-y divide-border-subtle border-t border-border-subtle">
               {roadmaps.map((roadmap) => {
                 const prog = progressMap.get(roadmap.id)
                 const pct = roadmap.status === 'completed' ? 100 : prog?.pct_complete || 0
@@ -233,36 +251,31 @@ export function AnalyticsPage() {
                 const totalSessions = prog?.total_sessions || 0
 
                 return (
-                  <div
-                    key={roadmap.id}
-                    className="rounded-lg border border-border/60 bg-[#111111] p-4 transition-colors hover:border-border"
-                  >
-                    <div className="flex items-center justify-between mb-2">
+                  <div key={roadmap.id} className="py-4 space-y-2">
+                    <div className="flex items-center justify-between">
                       <Link
                         to={`/learning-os/roadmap/${roadmap.id}`}
-                        className="text-sm font-semibold text-slate-200 hover:text-purple-400 transition-colors"
+                        className="text-sm font-medium text-text-primary hover:text-accent-primary transition-colors"
                       >
                         {roadmap.title}
                       </Link>
-                      <span className="text-xs font-semibold text-purple-400">{pct}%</span>
+                      <span className="text-xs font-mono tabular-nums text-accent-primary">
+                        {pct}%
+                      </span>
                     </div>
 
-                    <div className="h-2 w-full overflow-hidden rounded-full bg-slate-800 mb-2">
+                    {/* Hairline datum indicator */}
+                    <div className="h-1 w-full bg-surface overflow-hidden">
                       <div
-                        className="h-full rounded-full transition-all duration-500"
-                        style={{
-                          width: `${pct}%`,
-                          backgroundColor: roadmap.color || '#8b5cf6',
-                        }}
+                        className="h-full bg-accent-primary transition-all duration-500"
+                        style={{ width: `${pct}%` }}
                       />
                     </div>
 
-                    <div className="flex items-center justify-between text-xs text-slate-500">
+                    <div className="flex items-center justify-between text-xs font-mono text-text-tertiary">
+                      <span className="capitalize">{roadmap.status}</span>
                       <span>
-                        Status: <span className="capitalize text-slate-400">{roadmap.status}</span>
-                      </span>
-                      <span>
-                        {completedSessions} / {totalSessions} sessions completed
+                        {completedSessions} / {totalSessions} modules mastered
                       </span>
                     </div>
                   </div>
@@ -270,50 +283,49 @@ export function AnalyticsPage() {
               })}
             </div>
           )}
-        </div>
+        </section>
 
-        {/* Telemetry Log Stream */}
-        <div className="rounded-xl border border-border bg-surface p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-base font-bold text-slate-100 flex items-center gap-2">
-              <Activity className="h-4 w-4 text-purple-400" />
-              Recent Telemetry Logs
+        {/* Historical Telemetry Log Stream (Ledger) */}
+        <section aria-label="Session Telemetry Ledger" className="space-y-6">
+          <div className="flex items-baseline justify-between border-b border-border-subtle pb-3">
+            <h2 className="text-xs font-mono uppercase tracking-wider text-text-secondary flex items-center gap-2">
+              <Activity size={14} className="text-accent-primary" />
+              Recent Telemetry Ledger
             </h2>
-            <span className="text-xs text-slate-400">{recentLogs.length} logs</span>
+            <span className="text-xs font-mono text-text-tertiary">
+              {recentLogs.length} Records
+            </span>
           </div>
 
           {isLoading ? (
-            <p className="text-sm text-slate-400 py-4">Loading session telemetry...</p>
+            <p className="text-xs font-mono text-text-tertiary py-4">Loading session ledger...</p>
           ) : recentLogs.length === 0 ? (
-            <div className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-slate-500">
+            <div className="border border-dashed border-border-subtle p-8 text-center text-xs font-mono text-text-tertiary">
               No session logs recorded yet.
             </div>
           ) : (
-            <div className="space-y-3 max-h-[380px] overflow-y-auto pr-1">
+            <div className="divide-y divide-border-subtle border-t border-border-subtle max-h-[460px] overflow-y-auto pr-2">
               {recentLogs.map((log) => (
-                <div
-                  key={log.id}
-                  className="rounded-lg border border-border/60 bg-[#111111] p-3.5 space-y-1.5"
-                >
+                <div key={log.id} className="py-3.5 space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-purple-400 flex items-center gap-1.5">
+                    <span className="text-xs font-mono tabular-nums text-accent-primary flex items-center gap-1.5">
                       <Clock size={12} />
-                      {log.duration_minutes ? `${log.duration_minutes} mins` : 'Session'}
+                      {log.duration_minutes ? `${log.duration_minutes} mins` : 'Study Session'}
                     </span>
-                    <span className="text-[11px] text-slate-500">
-                      {new Date(log.logged_at).toLocaleDateString('en-US', {
+                    <span className="text-[11px] font-mono tabular-nums text-text-tertiary">
+                      {new Date(log.logged_at).toLocaleDateString('en-GB', {
+                        day: '2-digit',
                         month: 'short',
-                        day: 'numeric',
-                        hour: 'numeric',
+                        hour: '2-digit',
                         minute: '2-digit',
                       })}
                     </span>
                   </div>
 
                   {log.notes && (
-                    <p className="text-xs text-slate-300 italic line-clamp-2">
+                    <blockquote className="font-serif text-sm italic text-text-secondary line-clamp-2">
                       "{log.notes}"
-                    </p>
+                    </blockquote>
                   )}
 
                   {log.metrics && Object.keys(log.metrics).length > 0 && (
@@ -321,7 +333,7 @@ export function AnalyticsPage() {
                       {Object.entries(log.metrics).map(([key, val]) => (
                         <span
                           key={key}
-                          className="inline-flex items-center rounded bg-purple-950/60 border border-purple-800/40 px-2 py-0.5 text-[10px] text-purple-300 font-mono"
+                          className="inline-flex items-center rounded border border-border-subtle bg-surface px-2 py-0.5 text-[10px] text-text-tertiary font-mono tabular-nums"
                         >
                           {key}: {String(val)}
                         </span>
@@ -332,7 +344,7 @@ export function AnalyticsPage() {
               ))}
             </div>
           )}
-        </div>
+        </section>
       </div>
     </div>
   )

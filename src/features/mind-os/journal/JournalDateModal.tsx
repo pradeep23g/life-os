@@ -1,20 +1,13 @@
 import { useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 import { DeleteButton } from '../../../components/DeleteButton'
-
 import type { JournalEntry } from '../api/useJournal'
-import { formatIndiaDateTime, toIndiaDateKey } from '../utils/date'
-
-const moodOptions = [
-  { value: 1, emoji: '\u{1F61E}', label: 'Very Low' },
-  { value: 2, emoji: '\u{1F610}', label: 'Low' },
-  { value: 3, emoji: '\u{1F642}', label: 'Stable' },
-  { value: 4, emoji: '\u{1F604}', label: 'Good' },
-  { value: 5, emoji: '\u{1F525}', label: 'Excellent' },
-] as const
-
-const greenReplicaButtonClass =
-  'rounded-lg border border-border bg-[#111111] px-4 py-2 text-sm font-medium text-slate-300 transition-colors hover:bg-[#222222]'
+import {
+  formatIndiaDateTime,
+  toIndiaDateKey,
+  CLINICAL_MOOD_SCALE,
+  getMoodLabel,
+} from '../utils/date'
 
 function getReadableErrorMessage(error: unknown): string {
   if (error instanceof Error && error.message) {
@@ -29,10 +22,6 @@ function getReadableErrorMessage(error: unknown): string {
   }
 
   return 'Unknown error'
-}
-
-function moodToEmoji(mood: number) {
-  return moodOptions.find((option) => option.value === mood)?.emoji ?? '\u{1F642}'
 }
 
 function formatSelectedDateLabel(selectedDate: string): string {
@@ -64,7 +53,15 @@ type JournalDateModalProps = {
   onClose: () => void
 }
 
-function JournalDateModal({ selectedDate, entries, isSaving, saveError, onCreateEntry, onDeleteEntry, onClose }: JournalDateModalProps) {
+function JournalDateModal({
+  selectedDate,
+  entries,
+  isSaving,
+  saveError,
+  onCreateEntry,
+  onDeleteEntry,
+  onClose,
+}: JournalDateModalProps) {
   const [isCreateMode, setIsCreateMode] = useState(false)
   const [mood, setMood] = useState<number>(3)
   const [whatWentGood, setWhatWentGood] = useState('')
@@ -103,36 +100,52 @@ function JournalDateModal({ selectedDate, entries, isSaving, saveError, onCreate
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
-      <button type="button" onClick={onClose} className="absolute inset-0" aria-label="Close journal date modal" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
+      <button
+        type="button"
+        onClick={onClose}
+        className="absolute inset-0"
+        aria-label="Close journal date modal"
+      />
 
-      <article className="relative z-10 w-full max-w-3xl rounded-xl border border-border bg-surface p-4 sm:p-5">
-        <div className="flex items-start justify-between gap-3">
+      <div className="relative z-10 w-full max-w-2xl rounded-sm border border-border bg-background p-5 sm:p-6 shadow-2xl text-text-primary">
+        <div className="flex items-start justify-between gap-3 border-b border-border-subtle pb-3">
           <div>
-            <h3 className="text-base font-semibold text-slate-100">{formatSelectedDateLabel(selectedDate)}</h3>
-            <p className="text-xs text-slate-400">Journal timeline for selected date</p>
+            <h3 className="text-xl font-serif font-normal text-text-primary">
+              {formatSelectedDateLabel(selectedDate)}
+            </h3>
+            <p className="text-xs font-mono text-text-tertiary">
+              Chronicle timeline &bull; <span className="tabular-nums">{selectedDate}</span>
+            </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg border border-border bg-[#111111] px-3 py-1 text-sm text-slate-200 transition-colors hover:bg-[#222222]"
+            className="rounded-sm border border-border-subtle px-2.5 py-1 text-xs font-sans text-text-secondary hover:text-text-primary hover:border-border transition-colors"
           >
             Close
           </button>
         </div>
 
         {!isCreateMode ? (
-          <div className="mt-4 space-y-3">
-            <div className="max-h-[45vh] space-y-2 overflow-auto pr-1">
+          <div className="mt-4 space-y-4">
+            <div className="max-h-[50vh] space-y-3 overflow-auto pr-1 divide-y divide-border-subtle/50">
               {entriesForDate.length === 0 ? (
-                <p className="rounded-lg border border-border bg-[#111111] p-3 text-sm text-slate-400">No entries logged for this day yet.</p>
+                <p className="py-6 text-center text-sm font-serif italic text-text-tertiary">
+                  No reflections recorded for this day yet.
+                </p>
               ) : (
                 entriesForDate.map((entry) => (
-                  <article key={entry.id} className="rounded-lg border border-border bg-[#111111] p-3">
+                  <article key={entry.id} className="pt-3 first:pt-0 space-y-2">
                     <div className="flex items-center justify-between gap-2">
-                      <p className="text-sm text-slate-300">
-                        {moodToEmoji(entry.mood)} {formatIndiaDateTime(entry.updated_at || entry.created_at)}
-                      </p>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs text-text-secondary border border-border-subtle px-1.5 py-0.5 rounded-sm bg-elevated/40">
+                          {getMoodLabel(entry.mood)} [0{entry.mood}]
+                        </span>
+                        <span className="font-mono tabular-nums text-xs text-text-tertiary">
+                          {formatIndiaDateTime(entry.updated_at || entry.created_at)}
+                        </span>
+                      </div>
                       <DeleteButton
                         onClick={() => {
                           const confirmed = window.confirm('Delete this journal entry?')
@@ -141,99 +154,138 @@ function JournalDateModal({ selectedDate, entries, isSaving, saveError, onCreate
                         }}
                       />
                     </div>
-                    <div className="mt-2 space-y-2 whitespace-pre-wrap text-sm text-slate-300">
-                      <div>
-                        <p className="font-mono text-xs tracking-widest text-slate-500 uppercase">Topic of the day</p>
-                        <p>{entry.what_went_good || 'No note added.'}</p>
-                      </div>
-                      <div>
-                        <p className="font-mono text-xs tracking-widest text-slate-500 uppercase">What you've learned</p>
-                        <p>{entry.what_you_learned || 'No note added.'}</p>
-                      </div>
-                      <div>
-                        <p className="font-mono text-xs tracking-widest text-slate-500 uppercase">Brief about day</p>
-                        <p>{entry.brief_about_day || 'No note added.'}</p>
-                      </div>
+
+                    <div className="space-y-1.5 text-sm font-serif text-text-primary">
+                      {entry.brief_about_day && (
+                        <p className="leading-relaxed italic">&ldquo;{entry.brief_about_day}&rdquo;</p>
+                      )}
+                      {entry.what_went_good && (
+                        <p className="text-xs font-sans text-text-secondary">
+                          <span className="font-mono text-[10px] uppercase tracking-wider text-text-tertiary mr-1.5">
+                            Clarity:
+                          </span>
+                          {entry.what_went_good}
+                        </p>
+                      )}
+                      {entry.what_you_learned && (
+                        <p className="text-xs font-sans text-text-secondary">
+                          <span className="font-mono text-[10px] uppercase tracking-wider text-text-tertiary mr-1.5">
+                            Distilled:
+                          </span>
+                          {entry.what_you_learned}
+                        </p>
+                      )}
                     </div>
                   </article>
                 ))
               )}
             </div>
 
-            <button type="button" onClick={() => setIsCreateMode(true)} className={greenReplicaButtonClass}>
-              + Create New Entry
-            </button>
+            <div className="pt-2 border-t border-border-subtle">
+              <button
+                type="button"
+                onClick={() => setIsCreateMode(true)}
+                className="px-3.5 py-1.5 text-xs font-sans rounded-sm bg-accent-primary/20 text-accent-primary border border-accent-primary/50 hover:bg-accent-primary/30 transition-colors font-medium"
+              >
+                + Record Entry for This Date
+              </button>
+            </div>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="mt-4 space-y-4">
             <div>
-              <p className="mb-2 text-sm text-slate-300">Mood Selector</p>
-              <div className="flex flex-wrap gap-2">
-                {moodOptions.map((option) => (
+              <p className="mb-2 text-xs font-mono uppercase tracking-wider text-text-tertiary">
+                Clinical Mood Scale
+              </p>
+              <div className="grid grid-cols-5 gap-1.5">
+                {CLINICAL_MOOD_SCALE.map((option) => (
                   <button
                     key={option.value}
                     type="button"
                     onClick={() => setMood(option.value)}
-                    className={`rounded-md border px-3 py-1 text-lg ${
-                      mood === option.value ? 'border-green-700 bg-green-950/20' : 'border-border bg-[#111111] hover:bg-[#222222]'
+                    className={`py-1.5 px-1 text-center rounded-sm border transition-colors ${
+                      mood === option.value
+                        ? 'border-accent-primary bg-accent-primary/15 text-text-primary font-medium'
+                        : 'border-border-subtle text-text-secondary hover:border-border'
                     }`}
-                    title={option.label}
                   >
-                    {option.emoji}
+                    <div className="font-mono tabular-nums text-[10px] text-text-tertiary">0{option.value}</div>
+                    <div className="truncate text-xs font-sans">{option.label}</div>
                   </button>
                 ))}
               </div>
             </div>
 
-            <label className="block text-sm text-slate-300">
-              Topic of the day
-              <textarea
-                value={whatWentGood}
-                onChange={(event) => setWhatWentGood(event.target.value)}
-                rows={3}
-                className="mt-1 w-full rounded-lg border border-border bg-[#111111] p-2 text-slate-100"
-              />
-            </label>
-
-            <label className="block text-sm text-slate-300">
-              What you've learned
-              <textarea
-                value={whatYouLearned}
-                onChange={(event) => setWhatYouLearned(event.target.value)}
-                rows={3}
-                className="mt-1 w-full rounded-lg border border-border bg-[#111111] p-2 text-slate-100"
-              />
-            </label>
-
-            <label className="block text-sm text-slate-300">
-              Brief about day
+            <div>
+              <label className="block text-xs font-sans text-text-secondary mb-1">
+                Brief about day / Reflection
+              </label>
               <textarea
                 value={briefAboutDay}
                 onChange={(event) => setBriefAboutDay(event.target.value)}
-                rows={4}
-                className="mt-1 w-full rounded-lg border border-border bg-[#111111] p-2 text-slate-100"
+                rows={3}
+                placeholder="Self-honest observation..."
+                className="w-full rounded-sm border border-border-subtle bg-background p-2.5 text-sm font-serif text-text-primary placeholder:text-text-tertiary focus:outline-none focus:border-border"
+                autoFocus
               />
-            </label>
+            </div>
 
-            {saveError ? <p className="text-sm text-red-400">Failed to save journal entry: {getReadableErrorMessage(saveError)}</p> : null}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-sans text-text-secondary mb-1">
+                  Topic of the day / What went well
+                </label>
+                <input
+                  type="text"
+                  value={whatWentGood}
+                  onChange={(event) => setWhatWentGood(event.target.value)}
+                  placeholder="Small victory or clarity..."
+                  className="w-full rounded-sm border border-border-subtle bg-background px-3 py-1.5 text-xs font-sans text-text-primary placeholder:text-text-tertiary focus:outline-none focus:border-border"
+                />
+              </div>
 
-            <div className="flex flex-wrap gap-2">
-              <button type="submit" disabled={isSaving || !hasContent} className={`${greenReplicaButtonClass} disabled:opacity-60`}>
-                {isSaving ? 'Saving...' : 'Save Entry'}
-              </button>
+              <div>
+                <label className="block text-xs font-sans text-text-secondary mb-1">
+                  What did you learn?
+                </label>
+                <input
+                  type="text"
+                  value={whatYouLearned}
+                  onChange={(event) => setWhatYouLearned(event.target.value)}
+                  placeholder="Distilled insight..."
+                  className="w-full rounded-sm border border-border-subtle bg-background px-3 py-1.5 text-xs font-sans text-text-primary placeholder:text-text-tertiary focus:outline-none focus:border-border"
+                />
+              </div>
+            </div>
+
+            {saveError ? (
+              <p className="text-xs font-sans text-threat-critical">
+                Failed to save journal entry: {getReadableErrorMessage(saveError)}
+              </p>
+            ) : null}
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-border-subtle">
               <button
                 type="button"
                 onClick={() => setIsCreateMode(false)}
-                className="rounded-lg border border-border bg-[#111111] px-4 py-2 text-sm text-slate-300 transition-colors hover:bg-[#222222]"
+                className="rounded-sm border border-border-subtle px-3 py-1.5 text-xs font-sans text-text-secondary hover:text-text-primary transition-colors"
               >
                 Back to Entries
+              </button>
+              <button
+                type="submit"
+                disabled={isSaving || !hasContent}
+                className="px-4 py-1.5 text-xs font-sans rounded-sm bg-accent-primary/20 text-accent-primary border border-accent-primary/50 hover:bg-accent-primary/30 transition-colors font-medium disabled:opacity-50"
+              >
+                {isSaving ? 'Saving...' : 'Save Entry'}
               </button>
             </div>
           </form>
         )}
-      </article>
+      </div>
     </div>
   )
 }
 
 export default JournalDateModal
+

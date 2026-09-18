@@ -22,7 +22,7 @@ function getErrorMessage(error: unknown): string {
       return msg
     }
   }
-  return 'Failed to log session. Please try again.'
+  return 'Failed to record study session. Please try again.'
 }
 
 export function LogSessionModal({
@@ -71,13 +71,13 @@ export function LogSessionModal({
   const validateForm = (): { isValid: boolean; parsedDuration?: number; parsedMetrics?: Record<string, unknown> } => {
     const trimmedDuration = durationMinutes.trim()
     if (!trimmedDuration) {
-      setValidationError('Duration is required.')
+      setValidationError('Study duration is required.')
       return { isValid: false }
     }
 
     const parsedDuration = Number(trimmedDuration)
     if (isNaN(parsedDuration) || parsedDuration <= 0) {
-      setValidationError('Duration must be a positive number greater than 0.')
+      setValidationError('Duration must be a positive integer greater than 0.')
       return { isValid: false }
     }
 
@@ -87,7 +87,7 @@ export function LogSessionModal({
       try {
         const parsed = JSON.parse(trimmedMetrics)
         if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
-          setValidationError('Metrics must be a valid JSON object (e.g. {"score": 95}).')
+          setValidationError('Metrics must be a valid JSON dictionary (e.g. {"pagesRead": 25}).')
           return { isValid: false }
         }
         parsedMetrics = parsed as Record<string, unknown>
@@ -125,12 +125,11 @@ export function LogSessionModal({
         onSuccess()
       }
 
-      // Close modal after brief success feedback
       setTimeout(() => {
         handleClose()
-      }, 800)
+      }, 700)
     } catch {
-      // Mutation error is captured by React Query and displayed in UI
+      // Mutation error handled via mutationError in UI
     }
   }
 
@@ -138,42 +137,50 @@ export function LogSessionModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/85 backdrop-blur-sm transition-opacity"
+        className="fixed inset-0 bg-background/80 backdrop-blur-sm transition-opacity"
         onClick={handleClose}
         aria-hidden="true"
       />
 
       {/* Modal Dialog */}
-      <article className="relative z-10 w-full max-w-lg overflow-hidden rounded-xl border border-border bg-surface p-6 shadow-2xl">
+      <article className="relative z-10 w-full max-w-lg overflow-hidden rounded-lg border border-border bg-surface p-6 shadow-2xl font-sans">
         {/* Header */}
-        <div className="flex items-start justify-between gap-3 pb-4 border-b border-border">
+        <div className="flex items-start justify-between gap-3 pb-4 border-b border-border-subtle">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-900/40 text-purple-400">
+            <div className="flex h-10 w-10 items-center justify-center rounded border border-border-subtle bg-elevated text-accent-primary">
               <Clock className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-slate-100">Log Study Session</h2>
-              <p className="text-xs text-slate-400">
-                {sessionTitle ? `Session: ${sessionTitle}` : 'Record completed study duration, notes, and metrics.'}
+              <h2 className="text-lg font-medium text-text-primary">Inscribe Study Session</h2>
+              <p className="text-xs font-mono text-text-tertiary uppercase tracking-wider">
+                {sessionTitle ? `Station: ${sessionTitle}` : 'Record completed study duration & telemetry'}
               </p>
             </div>
           </div>
           <button
             type="button"
             onClick={handleClose}
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-[#111111] text-slate-400 hover:bg-[#222222] hover:text-slate-100 transition-colors"
+            className="flex h-8 w-8 items-center justify-center rounded border border-border-subtle bg-surface text-text-tertiary hover:bg-elevated hover:text-text-primary transition-colors"
             aria-label="Close modal"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
+        {/* Success Banner */}
+        {isSuccess && (
+          <div className="mt-4 flex items-center gap-2.5 rounded border border-threat-healthy/40 bg-threat-healthy/10 p-3 text-xs text-threat-healthy">
+            <CheckCircle2 className="h-4 w-4 shrink-0" />
+            <span>Study session inscribed into permanent ledger.</span>
+          </div>
+        )}
+
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="mt-5 space-y-4">
           {/* Duration Minutes */}
           <div>
-            <label htmlFor="log-duration" className="block text-xs font-semibold text-slate-300 mb-1.5">
-              Duration (Minutes) <span className="text-purple-400">*</span>
+            <label htmlFor="log-duration" className="block text-xs font-mono uppercase tracking-wider text-text-secondary mb-1.5">
+              Study Duration (Minutes) <span className="text-accent-primary">*</span>
             </label>
             <input
               id="log-duration"
@@ -181,72 +188,67 @@ export function LogSessionModal({
               min="1"
               step="1"
               required
+              disabled={isPending || isSuccess}
               value={durationMinutes}
               onChange={(e) => {
                 setDurationMinutes(e.target.value)
                 if (validationError) setValidationError(null)
               }}
-              placeholder="e.g. 45"
-              className="w-full rounded-lg border border-border bg-[#111111] px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+              placeholder="e.g. 50"
+              className="w-full rounded border border-border bg-background px-3.5 py-2.5 text-sm font-mono tabular-nums text-text-primary placeholder-text-tertiary/50 focus:outline-none focus:ring-1 focus:ring-accent-primary focus:border-accent-primary transition-colors disabled:opacity-50"
             />
           </div>
 
-          {/* Notes */}
+          {/* Notes (Editorial Newsreader font for scholarly takeaways) */}
           <div>
-            <label htmlFor="log-notes" className="block text-xs font-semibold text-slate-300 mb-1.5">
-              Notes <span className="text-slate-500 font-normal">(Optional)</span>
+            <label htmlFor="log-notes" className="block text-xs font-mono uppercase tracking-wider text-text-secondary mb-1.5">
+              Scholarly Marginalia & Synthesis Notes <span className="text-text-tertiary font-normal">(Optional)</span>
             </label>
             <textarea
               id="log-notes"
               rows={3}
+              disabled={isPending || isSuccess}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Summary of topics covered, key insights, or questions to review..."
-              className="w-full rounded-lg border border-border bg-[#111111] px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 transition-colors resize-none"
+              placeholder="Key insights discovered, proof synthesis, architectural realizations, or open questions..."
+              className="w-full rounded border border-border bg-background px-3.5 py-2.5 text-sm font-serif text-text-primary placeholder-text-tertiary/50 focus:outline-none focus:ring-1 focus:ring-accent-primary focus:border-accent-primary transition-colors resize-none disabled:opacity-50"
             />
           </div>
 
           {/* Metrics JSON */}
           <div>
-            <label htmlFor="log-metrics" className="block text-xs font-semibold text-slate-300 mb-1.5">
-              Metrics JSON <span className="text-slate-500 font-normal">(Optional)</span>
+            <label htmlFor="log-metrics" className="block text-xs font-mono uppercase tracking-wider text-text-secondary mb-1.5">
+              Telemetry Parameters <span className="text-text-tertiary font-normal">(Optional JSON)</span>
             </label>
             <textarea
               id="log-metrics"
               rows={2}
+              disabled={isPending || isSuccess}
               value={metricsJson}
               onChange={(e) => {
                 setMetricsJson(e.target.value)
                 if (validationError) setValidationError(null)
               }}
-              placeholder='e.g. {"focusRating": 5, "pagesRead": 20}'
-              className="font-mono text-xs w-full rounded-lg border border-border bg-[#111111] px-3.5 py-2.5 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 transition-colors resize-none"
+              placeholder='{"pagesRead": 35, "theoremsDerived": 3, "focusRating": 5}'
+              className="font-mono text-xs w-full rounded border border-border bg-background px-3.5 py-2.5 text-text-primary placeholder-text-tertiary/50 focus:outline-none focus:ring-1 focus:ring-accent-primary focus:border-accent-primary transition-colors resize-none disabled:opacity-50"
             />
           </div>
 
           {/* Error Banner */}
           {(validationError || mutationError) && (
-            <div className="flex items-start gap-2.5 rounded-lg border border-red-900/50 bg-red-950/30 p-3 text-xs text-red-400">
+            <div className="flex items-start gap-2.5 rounded border border-threat-critical/40 bg-threat-critical/10 p-3 text-xs text-threat-critical">
               <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
               <span>{validationError || getErrorMessage(mutationError)}</span>
             </div>
           )}
 
-          {/* Success Banner */}
-          {isSuccess && (
-            <div className="flex items-center gap-2.5 rounded-lg border border-emerald-900/50 bg-emerald-950/30 p-3 text-xs text-emerald-400">
-              <CheckCircle2 className="h-4 w-4 shrink-0" />
-              <span>Session logged successfully!</span>
-            </div>
-          )}
-
           {/* Action Buttons */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-border mt-6">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-border-subtle mt-6">
             <button
               type="button"
               onClick={handleClose}
               disabled={isPending}
-              className="rounded-lg border border-border bg-transparent px-4 py-2 text-sm font-medium text-slate-300 hover:bg-[#111111] transition-colors disabled:opacity-50"
+              className="rounded border border-border bg-transparent px-4 py-2 text-sm font-mono uppercase tracking-wider text-text-secondary hover:bg-elevated hover:text-text-primary transition-colors disabled:opacity-50"
             >
               Cancel
             </button>
@@ -254,20 +256,20 @@ export function LogSessionModal({
             <button
               type="submit"
               disabled={isPending || !durationMinutes.trim() || isSuccess}
-              className="flex items-center justify-center gap-2 rounded-lg bg-purple-600 px-5 py-2 text-sm font-medium text-white hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="flex items-center justify-center gap-2 rounded bg-accent-primary px-5 py-2 text-sm font-mono uppercase tracking-wider text-background font-medium hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
             >
               {isPending ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Logging...
+                  Inscribing...
                 </>
               ) : isSuccess ? (
                 <>
                   <CheckCircle2 className="h-4 w-4" />
-                  Logged!
+                  Inscribed
                 </>
               ) : (
-                'Log Session'
+                'Inscribe Session'
               )}
             </button>
           </div>

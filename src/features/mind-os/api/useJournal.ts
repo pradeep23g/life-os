@@ -237,3 +237,31 @@ export function useDeleteJournalEntry() {
     },
   })
 }
+
+async function updateJournalEntryMood({ id, mood }: { id: string; mood: number }): Promise<void> {
+  const userId = await requireUserId()
+  const now = new Date().toISOString()
+
+  const { error } = await supabase
+    .from('journal_entries')
+    .update({ mood, updated_at: now })
+    .eq('id', id)
+    .eq('user_id', userId)
+
+  if (error) {
+    throw buildError('Update mood failed', error)
+  }
+}
+
+export function useUpdateJournalEntryMood() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: updateJournalEntryMood,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: mindOsJournalsQueryKey })
+      queryClient.invalidateQueries({ queryKey: systemStatusQueryKey })
+    },
+  })
+}
+

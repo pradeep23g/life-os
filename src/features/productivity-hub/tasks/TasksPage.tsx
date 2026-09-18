@@ -11,6 +11,7 @@ import {
   useTasks,
   useToggleTaskCompletion,
 } from '../api/useTasks'
+import { LoadingView } from '../../../components/LoadingView'
 import {
   buildMonthGrid,
   formatIndiaDate,
@@ -164,40 +165,52 @@ function TasksPage() {
   }
 
   return (
-    <section className="space-y-4 bg-black pb-28 sm:pb-24">
-      <article className="rounded-xl border border-border bg-surface p-4">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+    <section className="space-y-8 pb-28 sm:pb-24 font-sans text-text-primary max-w-5xl mx-auto px-2 sm:px-4">
+      {/* ─── Task Entry Ledger ─── */}
+      <div className="border-b border-border/40 pb-6 space-y-4">
+        <div className="flex flex-col gap-2 lg:flex-row lg:items-baseline lg:justify-between">
           <div>
-            <h2 className="text-base font-semibold text-slate-100">Task Ledger</h2>
-            <p className="mt-1 text-sm text-slate-400">Calendar-first execution tracking with historical visibility and active task pressure.</p>
+            <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-text-tertiary">
+              <span>Task Ledger</span>
+              <span>•</span>
+              <span className="tabular-nums">{tasks.length} Total Registered</span>
+            </div>
+            <h2 className="text-xl font-semibold tracking-tight text-text-primary sm:text-2xl">
+              Temporal Task Ledger
+            </h2>
+            <p className="mt-1 text-sm text-text-secondary">
+              Calendar-first execution tracking with historical visibility and active deadline pressure.
+            </p>
           </div>
-          <div className="rounded-lg border border-border bg-black px-3 py-2">
-            <p className="text-xs text-slate-400">Active Queue</p>
-            <p className="mt-1 text-base font-semibold text-slate-100">{isLoading ? '--' : activeTasks.length}</p>
+          <div className="rounded border border-border/40 bg-surface px-3 py-1.5 font-mono text-xs">
+            <span className="text-text-tertiary">Active Queue: </span>
+            <span className="tabular-nums font-semibold text-text-primary">
+              {isLoading ? '--' : activeTasks.length}
+            </span>
           </div>
         </div>
 
-        <form onSubmit={handleCreateTask} className="mt-4 grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_320px_160px]">
+        <form onSubmit={handleCreateTask} className="mt-4 grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_320px_140px]">
           <input
             type="text"
             value={title}
             onChange={(event) => setTitle(event.target.value)}
-            placeholder="Log a new task"
-            className="rounded-lg border border-border bg-black p-3 text-sm text-slate-100 outline-none placeholder:text-slate-500 focus:border-slate-600"
+            placeholder="Log a new task..."
+            className="rounded border border-border/50 bg-surface p-3 text-sm text-text-primary outline-none placeholder:text-text-tertiary focus:border-accent-primary transition-colors"
           />
 
-          <div className="rounded-lg border border-border bg-black p-2">
-            <p className="text-xs text-slate-400">Deadline Type</p>
-            <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3">
+          <div className="rounded border border-border/50 bg-surface p-2">
+            <p className="text-xs font-mono text-text-tertiary">Deadline Horizon</p>
+            <div className="mt-2 grid grid-cols-3 gap-1.5">
               {deadlineOptions.map((option) => (
                 <button
                   key={option.value}
                   type="button"
                   onClick={() => setDeadlineType(option.value)}
-                  className={`rounded-md border px-3 py-2 text-sm transition-colors ${
+                  className={`rounded border px-2 py-1.5 font-mono text-xs transition-colors cursor-pointer ${
                     deadlineType === option.value
-                      ? 'border-green-900 bg-green-950/20 text-green-300'
-                      : 'border-border bg-surface text-slate-300 hover:bg-[#111111]'
+                      ? 'border-accent-primary bg-accent-primary/10 text-accent-primary font-medium'
+                      : 'border-border/40 bg-surface text-text-secondary hover:bg-elevated'
                   }`}
                 >
                   {option.label}
@@ -209,7 +222,7 @@ function TasksPage() {
                 type="date"
                 value={deadlineDate}
                 onChange={(event) => setDeadlineDate(event.target.value)}
-                className="mt-2 w-full rounded-lg border border-border bg-black p-2 text-sm text-slate-100 outline-none focus:border-slate-600"
+                className="mt-2 w-full rounded border border-border bg-background p-2 font-mono text-xs text-text-primary outline-none focus:border-accent-primary"
               />
             ) : null}
           </div>
@@ -217,53 +230,59 @@ function TasksPage() {
           <button
             type="submit"
             disabled={isCreating || !title.trim() || (deadlineType === 'specific_date' && !deadlineDate)}
-            className="rounded-lg border border-border bg-[#111111] px-4 py-3 text-sm text-slate-300 transition-colors hover:bg-[#222222] disabled:opacity-60"
+            className="rounded border border-border bg-surface px-4 py-3 font-mono text-xs text-text-primary transition-all hover:bg-elevated active:scale-95 disabled:opacity-40 cursor-pointer"
           >
-            {isCreating ? 'Creating...' : 'Add Task'}
+            {isCreating ? 'Logging...' : 'Queue Task ↵'}
           </button>
         </form>
 
-        {createError ? <p className="mt-3 text-sm text-red-400">{createError.message}</p> : null}
-      </article>
+        {createError ? <p className="text-xs font-mono text-threat-critical">{createError.message}</p> : null}
+      </div>
 
-      {isError ? <p className="text-sm text-red-400">{error.message}</p> : null}
-      {updateError ? <p className="text-sm text-red-400">{updateError.message}</p> : null}
-      {deleteError ? <p className="text-sm text-red-400">{deleteError.message}</p> : null}
-      {startTimerError ? <p className="text-sm text-red-400">{startTimerError.message}</p> : null}
+      {isError ? <p className="text-xs font-mono text-threat-critical">{error.message}</p> : null}
+      {updateError ? <p className="text-xs font-mono text-threat-critical">{updateError.message}</p> : null}
+      {deleteError ? <p className="text-xs font-mono text-threat-critical">{deleteError.message}</p> : null}
+      {startTimerError ? <p className="text-xs font-mono text-threat-critical">{startTimerError.message}</p> : null}
 
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1.35fr_0.95fr]">
-        <article className="rounded-xl border border-border bg-surface p-4">
-          <div className="flex items-center justify-between gap-3">
+      {/* ─── Calendar Ledger & Active Focus Ledger ─── */}
+      <div className="grid grid-cols-1 gap-8 xl:grid-cols-[1.35fr_0.95fr]">
+        {/* Left Column: Monthly Calendar Ledger */}
+        <section className="space-y-4" aria-label="Monthly Calendar Ledger">
+          <div className="flex items-center justify-between gap-3 border-b border-border/30 pb-3">
             <div>
-              <h3 className="text-base font-semibold text-slate-100">Monthly Calendar Ledger</h3>
-              <p className="mt-1 text-xs text-slate-400">Cells warn when pending specific-date tasks land on that exact day.</p>
+              <h3 className="font-sans text-base font-semibold text-text-primary">Monthly Calendar Ledger</h3>
+              <p className="mt-0.5 text-xs text-text-tertiary">
+                Cells indicate deadlines, creation events, and completions for that exact date.
+              </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 font-mono text-xs">
               <button
                 type="button"
                 onClick={() => setCalendarMonth((previous) => shiftMonth(previous, -1))}
-                className="rounded-md border border-border bg-[#111111] px-3 py-1.5 text-sm text-slate-100 hover:bg-[#222222]"
+                className="rounded border border-border/40 bg-surface px-2.5 py-1 text-text-secondary hover:bg-elevated cursor-pointer"
               >
-                Previous
+                Prev
               </button>
-              <p className="text-sm font-semibold text-slate-200">{getMonthLabel(calendarMonth)}</p>
+              <p className="font-semibold tabular-nums text-text-primary min-w-[5rem] text-center">
+                {getMonthLabel(calendarMonth)}
+              </p>
               <button
                 type="button"
                 onClick={() => setCalendarMonth((previous) => shiftMonth(previous, 1))}
-                className="rounded-md border border-border bg-[#111111] px-3 py-1.5 text-sm text-slate-100 hover:bg-[#222222]"
+                className="rounded border border-border/40 bg-surface px-2.5 py-1 text-text-secondary hover:bg-elevated cursor-pointer"
               >
                 Next
               </button>
             </div>
           </div>
 
-          <div className="mt-4 grid grid-cols-7 gap-2 text-center text-xs text-slate-500">
+          <div className="grid grid-cols-7 gap-1.5 text-center font-mono text-xs text-text-tertiary uppercase">
             {weekdayHeaders.map((weekday) => (
-              <p key={weekday}>{weekday}</p>
+              <span key={weekday}>{weekday}</span>
             ))}
           </div>
 
-          <div className="mt-2 grid grid-cols-7 gap-2">
+          <div className="grid grid-cols-7 gap-1.5">
             {monthCells.map((day) => {
               const activity = dayActivityByDate.get(day.dateKey) ?? { created: [], completed: [], duePending: [] }
               const hasWarning = activity.duePending.length > 0
@@ -276,107 +295,139 @@ function TasksPage() {
                   key={day.dateKey}
                   type="button"
                   onClick={() => setSelectedDateKey((previous) => (previous === day.dateKey ? null : day.dateKey))}
-                  className={`min-h-[118px] rounded-md border p-2 text-left transition-colors ${
+                  className={`min-h-[100px] rounded border p-2 text-left transition-colors cursor-pointer ${
                     hasWarning
-                      ? 'border-amber-500/60 bg-amber-500/10'
+                      ? 'border-threat-warning/60 bg-threat-warning/10'
                       : hasCompleted
-                        ? 'border-green-500/35 bg-green-500/10'
+                        ? 'border-threat-healthy/40 bg-threat-healthy/10'
                         : hasCreated
-                          ? 'border-sky-500/35 bg-sky-500/10'
-                          : 'border-border bg-black'
-                  } ${day.inCurrentMonth ? '' : 'opacity-35'} ${isSelected ? 'ring-1 ring-slate-300/70' : ''}`}
+                          ? 'border-accent-primary/40 bg-accent-primary/10'
+                          : 'border-border/30 bg-surface/50'
+                  } ${day.inCurrentMonth ? '' : 'opacity-30'} ${isSelected ? 'ring-1 ring-accent-primary' : ''}`}
                 >
-                  <p className="text-sm font-semibold text-slate-100">{day.day}</p>
-                  <div className="mt-3 space-y-1 text-xs">
-                    <p className="text-slate-400">Created: <span className="text-slate-200">{activity.created.length}</span></p>
-                    <p className="text-slate-400">Done: <span className="text-slate-200">{activity.completed.length}</span></p>
-                    <p className={`${hasWarning ? 'text-amber-300' : 'text-slate-500'}`}>Due: {activity.duePending.length}</p>
+                  <p className="font-mono text-xs font-semibold tabular-nums text-text-primary">{day.day}</p>
+                  <div className="mt-2 space-y-0.5 font-mono text-[11px] tabular-nums">
+                    {activity.created.length > 0 && (
+                      <p className="text-text-tertiary">
+                        +<span className="text-text-secondary">{activity.created.length}</span>
+                      </p>
+                    )}
+                    {activity.completed.length > 0 && (
+                      <p className="text-threat-healthy">
+                        ✓<span>{activity.completed.length}</span>
+                      </p>
+                    )}
+                    {activity.duePending.length > 0 && (
+                      <p className="text-threat-warning font-semibold">
+                        !<span>{activity.duePending.length} due</span>
+                      </p>
+                    )}
                   </div>
                 </button>
               )
             })}
           </div>
 
+          {/* Selected Date Activity Drawer */}
           {selectedDayActivity ? (
-            <div className="mt-4 rounded-xl border border-border bg-[#111111] p-4">
-              <div className="flex items-center justify-between gap-3">
+            <div className="border border-border/40 bg-surface/80 p-4 space-y-4 rounded">
+              <div className="flex items-center justify-between gap-3 border-b border-border/30 pb-2">
                 <div>
-                  <h4 className="text-sm font-semibold text-slate-100">{selectedDateLabel}</h4>
-                  <p className="mt-1 text-xs text-slate-400">Created tasks and completion events recorded for this exact day.</p>
+                  <h4 className="font-sans text-sm font-semibold text-text-primary">{selectedDateLabel}</h4>
+                  <p className="text-xs font-mono text-text-tertiary">Daily activity breakdown</p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setSelectedDateKey(null)}
-                  className="rounded-md border border-border px-3 py-1 text-sm text-slate-200 hover:bg-[#222222]"
+                  className="rounded border border-border/40 bg-surface px-2 py-0.5 font-mono text-xs text-text-secondary hover:bg-elevated cursor-pointer"
                 >
-                  Collapse
+                  Close
                 </button>
               </div>
 
-              <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
-                <section>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-300">Created</p>
-                  {selectedDayActivity.created.length === 0 ? <p className="mt-2 text-sm text-slate-500">No tasks created.</p> : null}
-                  <ul className="mt-2 space-y-2">
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                <div className="space-y-2">
+                  <p className="font-mono text-xs font-semibold uppercase text-text-secondary">
+                    Created ({selectedDayActivity.created.length})
+                  </p>
+                  {selectedDayActivity.created.length === 0 ? (
+                    <p className="text-xs font-mono text-text-tertiary">None recorded.</p>
+                  ) : null}
+                  <ul className="space-y-1.5">
                     {selectedDayActivity.created.map((task) => (
-                      <li key={`created-${task.id}`} className="rounded-md border border-border bg-surface p-3">
-                        <p className="text-sm font-medium text-slate-100">{task.title}</p>
-                        <p className="mt-1 text-xs text-slate-400">
+                      <li key={`created-${task.id}`} className="rounded border border-border/30 bg-surface p-2 text-xs">
+                        <p className="font-medium text-text-primary">{task.title}</p>
+                        <p className="mt-0.5 font-mono text-[11px] text-text-tertiary tabular-nums">
                           {getTaskTimelineLabel(task)} • {formatIndiaDateTime(task.created_at)}
                         </p>
                       </li>
                     ))}
                   </ul>
-                </section>
+                </div>
 
-                <section>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-300">Completed</p>
-                  {selectedDayActivity.completed.length === 0 ? <p className="mt-2 text-sm text-slate-500">No tasks completed.</p> : null}
-                  <ul className="mt-2 space-y-2">
+                <div className="space-y-2">
+                  <p className="font-mono text-xs font-semibold uppercase text-text-secondary">
+                    Completed ({selectedDayActivity.completed.length})
+                  </p>
+                  {selectedDayActivity.completed.length === 0 ? (
+                    <p className="text-xs font-mono text-text-tertiary">None recorded.</p>
+                  ) : null}
+                  <ul className="space-y-1.5">
                     {selectedDayActivity.completed.map((task) => (
-                      <li key={`completed-${task.id}`} className="rounded-md border border-border bg-surface p-3">
-                        <p className="text-sm font-medium text-slate-100">{task.title}</p>
-                        <p className="mt-1 text-xs text-slate-400">
-                          Completed • {formatIndiaDateTime(task.updated_at)}
+                      <li key={`completed-${task.id}`} className="rounded border border-border/30 bg-surface p-2 text-xs">
+                        <p className="font-medium text-text-primary line-through text-text-tertiary">{task.title}</p>
+                        <p className="mt-0.5 font-mono text-[11px] text-threat-healthy tabular-nums">
+                          Done • {formatIndiaDateTime(task.updated_at)}
                         </p>
                       </li>
                     ))}
                   </ul>
-                </section>
+                </div>
               </div>
             </div>
           ) : null}
-        </article>
+        </section>
 
-        <article className="rounded-xl border border-border bg-surface p-4">
-          <div className="flex items-center justify-between gap-3">
+        {/* Right Column: Active Focus Ledger */}
+        <section className="space-y-4" aria-label="Active Focus Ledger">
+          <div className="flex items-center justify-between gap-3 border-b border-border/30 pb-3">
             <div>
-              <h3 className="text-base font-semibold text-slate-100">Active Focus Ledger</h3>
-              <p className="mt-1 text-xs text-slate-400">Pending tasks that are still actionable right now.</p>
+              <h3 className="font-sans text-base font-semibold text-text-primary">Active Focus Ledger</h3>
+              <p className="mt-0.5 text-xs text-text-tertiary">Tasks currently actionable in this window.</p>
             </div>
-            <span className="rounded-md border border-border bg-black px-2 py-1 text-xs text-slate-300">
+            <span className="font-mono text-xs tabular-nums text-text-tertiary">
               {isLoading ? '--' : `${activeTasks.length} active`}
             </span>
           </div>
 
-          {isLoading ? <p className="mt-4 text-sm text-slate-400">Loading tasks...</p> : null}
-          {!isLoading && activeTasks.length === 0 ? <p className="mt-4 text-sm text-slate-400">No active tasks in the current window.</p> : null}
+          {isLoading ? (
+            <div className="py-6">
+              <LoadingView
+                variant="inline"
+                label="Indexing Task Ledger"
+                sublabel="Loading actionable assignments..."
+              />
+            </div>
+          ) : null}
+          {!isLoading && activeTasks.length === 0 ? (
+            <p className="font-mono text-xs text-text-tertiary">No active tasks in current window.</p>
+          ) : null}
 
-          <ul className="mt-4 space-y-3">
+          <ul className="divide-y divide-border/20 border-b border-border/30">
             {activeTasks.map((task) => (
-              <li key={task.id} className="rounded-lg border border-border bg-black p-3">
+              <li key={task.id} className="py-3 space-y-2">
                 <div className="flex items-start justify-between gap-3">
-                  <label className="flex min-w-0 flex-1 items-start gap-3">
+                  <label className="flex min-w-0 flex-1 items-start gap-2.5 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={task.is_completed}
                       onChange={(event) => toggleCompletion({ id: task.id, isCompleted: event.target.checked })}
                       disabled={isUpdating}
-                      className="mt-1 h-4 w-4 rounded border-border bg-black text-green-500 focus:ring-green-900"
+                      className="mt-0.5 h-4 w-4 rounded border-border bg-surface text-accent-primary focus:ring-0 cursor-pointer"
                     />
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-slate-100">{task.title}</p>
-                      <p className="mt-1 text-xs text-slate-400">
+                      <p className="font-sans text-sm font-medium text-text-primary leading-snug">{task.title}</p>
+                      <p className="mt-0.5 font-mono text-xs text-text-tertiary tabular-nums">
                         {getTaskTimelineLabel(task)} • Created {formatIndiaDateTime(task.created_at)}
                       </p>
                     </div>
@@ -385,17 +436,14 @@ function TasksPage() {
                   <DeleteButton
                     onClick={(e) => {
                       e.stopPropagation()
-                      const confirmed = window.confirm('Archive this task?')
-                      if (!confirmed) {
-                        return
+                      if (window.confirm('Archive this task?')) {
+                        deleteTask({ id: task.id })
                       }
-
-                      deleteTask({ id: task.id })
                     }}
                   />
                 </div>
 
-                <div className="mt-3 flex flex-wrap gap-2">
+                <div className="flex items-center gap-2 pl-6">
                   <button
                     type="button"
                     onClick={() => {
@@ -404,65 +452,69 @@ function TasksPage() {
                       setFocusDescription('')
                     }}
                     disabled={Boolean(activeTimer) || isStartingTimer}
-                    className="rounded-md border border-border bg-[#111111] px-2 py-1 text-xs text-slate-300 hover:bg-[#222222] disabled:opacity-50 transition-colors"
+                    className="rounded border border-border/40 bg-surface px-2 py-0.5 font-mono text-xs text-text-secondary hover:bg-elevated hover:text-text-primary disabled:opacity-40 transition-colors cursor-pointer"
                   >
-                    {activeTimer?.task_id === task.id ? 'Running' : 'Start Focus'}
+                    {activeTimer?.task_id === task.id ? 'Running' : 'Launch Focus'}
                   </button>
                 </div>
 
                 {focusTaskId === task.id ? (
-                  <div className="mt-3 rounded-lg border border-border bg-surface p-3">
-                    <label className="text-xs font-medium text-slate-300">Bucket</label>
-                    <select
-                      value={focusBucket}
-                      onChange={(event) => setFocusBucket(event.target.value as TimeBucket)}
-                      className="mt-1 w-full rounded-md border border-border bg-[#111111] p-2 text-sm text-slate-100"
-                    >
-                      {TIME_BUCKETS.map((bucket) => (
-                        <option key={bucket} value={bucket}>
-                          {bucket}
-                        </option>
-                      ))}
-                    </select>
+                  <div className="ml-6 mt-2 rounded border border-border/40 bg-surface/90 p-3 space-y-2 text-xs">
+                    <div>
+                      <label className="font-mono text-[11px] text-text-tertiary">Focus Bucket</label>
+                      <select
+                        value={focusBucket}
+                        onChange={(event) => setFocusBucket(event.target.value as TimeBucket)}
+                        className="mt-1 w-full rounded border border-border bg-background p-1.5 font-sans text-xs text-text-primary"
+                      >
+                        {TIME_BUCKETS.map((bucket) => (
+                          <option key={bucket} value={bucket}>
+                            {bucket}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
 
                     <input
                       type="text"
                       value={focusDescription}
                       onChange={(event) => setFocusDescription(event.target.value)}
-                      placeholder="Quick focus note (optional)"
-                      className="mt-2 w-full rounded-md border border-border bg-[#111111] p-2 text-sm text-slate-100"
+                      placeholder="Quick note (optional)"
+                      className="w-full rounded border border-border bg-background p-1.5 font-sans text-xs text-text-primary outline-none focus:border-accent-primary"
                     />
 
-                    <div className="mt-2 flex gap-2">
+                    <div className="flex gap-2 pt-1">
                       <button
                         type="button"
                         onClick={() => handleStartFocus(task.id)}
                         disabled={isStartingTimer || Boolean(activeTimer)}
-                        className="rounded-md border border-border bg-slate-100 px-3 py-1 text-xs font-medium text-black hover:bg-slate-200 disabled:opacity-50 transition-colors"
+                        className="rounded border border-accent-primary bg-accent-primary px-3 py-1 font-sans text-xs font-medium text-background hover:opacity-90 disabled:opacity-40 cursor-pointer"
                       >
-                        {isStartingTimer ? 'Starting...' : 'Start'}
+                        {isStartingTimer ? 'Initiating...' : 'Start Session'}
                       </button>
                       <button
                         type="button"
                         onClick={() => setFocusTaskId(null)}
-                        className="rounded-md border border-transparent bg-transparent px-3 py-1 text-xs text-slate-400 hover:bg-surface transition-colors"
+                        className="rounded px-3 py-1 font-sans text-xs text-text-tertiary hover:text-text-secondary cursor-pointer"
                       >
                         Cancel
                       </button>
                     </div>
 
                     {activeTimer ? (
-                      <p className="mt-2 text-xs text-slate-400">A timer is already running. Stop it from the global timer bar first.</p>
+                      <p className="font-mono text-[11px] text-threat-warning">
+                        Another focus session is currently active. Stop it first.
+                      </p>
                     ) : null}
                   </div>
                 ) : null}
               </li>
             ))}
           </ul>
-        </article>
+        </section>
       </div>
 
-      {isUpdating ? <p className="text-xs text-slate-400">Updating task completion...</p> : null}
+      {isUpdating ? <p className="font-mono text-xs text-text-tertiary">Updating task completion...</p> : null}
     </section>
   )
 }

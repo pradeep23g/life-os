@@ -1,5 +1,6 @@
 export type ThreatSeverity = 'critical' | 'warning' | 'healthy'
 export type SystemStatusLevel = 'Healthy' | 'Needs Input' | 'Warning' | 'Critical'
+export type LifeState = 'Recovering' | 'Stable' | 'Building' | 'Accelerating' | 'Overloaded' | 'Drifting'
 
 export interface ThreatCard {
   id: string
@@ -42,6 +43,7 @@ export interface BrainState {
   threats: ThreatCard[]
   reasoning: string[]
   confidence: number
+  lifeState: LifeState
 }
 
 export interface SystemEvent {

@@ -1,34 +1,21 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
-
+import { Link } from 'react-router-dom'
 import { useCreateJournalEntry, useDeleteJournalEntry, useJournalEntries } from '../api/useJournal'
 import JournalDateModal from './JournalDateModal'
 import { DeleteButton } from '../../../components/DeleteButton'
+import { LoadingView } from '../../../components/LoadingView'
 import {
   buildMonthGrid,
   formatIndiaDateTime,
   getMonthLabel,
   shiftMonth,
   toIndiaDateKey,
-  toIndiaTimeParts,
+  CLINICAL_MOOD_SCALE,
+  getMoodLabel,
 } from '../utils/date'
 
 const weekdayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const
-
-const moodOptions = [
-  { value: 1, emoji: '\u{1F62D}', label: 'Very Low' },
-  { value: 2, emoji: '\u{1F614}', label: 'Low' },
-  { value: 3, emoji: '\u{1F610}', label: 'Stable' },
-  { value: 4, emoji: '\u{1F60E}', label: 'Good' },
-  { value: 5, emoji: '\u{1F525}', label: 'Excellent' },
-] as const
-
-const greenReplicaButtonClass =
-  'rounded-lg border border-border bg-[#111111] px-4 py-2 text-sm font-medium text-slate-300 transition-colors hover:bg-[#222222]'
-
-function moodToEmoji(mood: number) {
-  return moodOptions.find((option) => option.value === mood)?.emoji ?? '\u{1F642}'
-}
 
 function getReadableErrorMessage(error: unknown): string {
   if (error instanceof Error && error.message) {
@@ -45,75 +32,11 @@ function getReadableErrorMessage(error: unknown): string {
   return 'Unknown error'
 }
 
-function AnalogClockWidget() {
-  const [now, setNow] = useState(() => new Date())
-
-  useEffect(() => {
-    const timer = window.setInterval(() => {
-      setNow(new Date())
-    }, 1_000)
-
-    return () => {
-      window.clearInterval(timer)
-    }
-  }, [])
-
-  const { hour, minute, second } = toIndiaTimeParts(now)
-  const hourDegrees = (hour % 12) * 30 + minute * 0.5
-  const minuteDegrees = minute * 6 + second * 0.1
-  const secondDegrees = second * 6
-
-  return (
-    <article className="rounded-xl border border-border bg-surface p-4">
-      <h2 className="text-base font-semibold text-slate-100">IST Clock</h2>
-      <p className="mt-1 text-xs text-slate-400">Asia/Kolkata</p>
-
-      <div className="mx-auto mt-4 h-40 w-40 rounded-full border border-border bg-black p-2">
-        <div className="relative h-full w-full rounded-full border border-border">
-          {[...Array(12)].map((_, index) => (
-            <span
-              key={index}
-              className="absolute left-1/2 top-1/2 block h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-slate-500"
-              style={{
-                transform: `translate(-50%, -50%) rotate(${index * 30}deg) translateY(-54px)`,
-              }}
-            />
-          ))}
-
-          <span
-            className="absolute left-1/2 top-1/2 block h-10 w-1 -translate-x-1/2 -translate-y-full rounded bg-slate-100"
-            style={{ transform: `translate(-50%, -100%) rotate(${hourDegrees}deg)`, transformOrigin: 'bottom center' }}
-          />
-          <span
-            className="absolute left-1/2 top-1/2 block h-14 w-1 -translate-x-1/2 -translate-y-full rounded bg-slate-300"
-            style={{ transform: `translate(-50%, -100%) rotate(${minuteDegrees}deg)`, transformOrigin: 'bottom center' }}
-          />
-          <span
-            className="absolute left-1/2 top-1/2 block h-16 w-[2px] -translate-x-1/2 -translate-y-full rounded bg-emerald-400"
-            style={{ transform: `translate(-50%, -100%) rotate(${secondDegrees}deg)`, transformOrigin: 'bottom center' }}
-          />
-          <span className="absolute left-1/2 top-1/2 block h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-slate-100" />
-        </div>
-      </div>
-
-      <p className="mt-3 text-center text-sm text-slate-200">{formatIndiaDateTime(now)}</p>
-    </article>
-  )
-}
-
-function PenIcon({ className = 'h-5 w-5' }: { className?: string }) {
+function PenIcon({ className = 'h-4 w-4' }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true">
       <path d="M4 20l4.5-1 9-9a1.8 1.8 0 000-2.5l-1-1a1.8 1.8 0 00-2.5 0l-9 9L4 20z" strokeLinecap="round" strokeLinejoin="round" />
       <path d="M13 7l4 4" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function CloseIcon({ className = 'h-5 w-5' }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true">
-      <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
     </svg>
   )
 }
@@ -231,28 +154,171 @@ function JournalPage() {
   }
 
   return (
-    <section className="space-y-4 bg-black pb-28 sm:pb-24">
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1.2fr_1fr]">
-        <article
-          className="cursor-pointer rounded-xl border border-border bg-surface p-4"
-          onClick={() => {
-            setCalendarMonth(new Date())
-            setIsCalendarOpen(true)
-          }}
-        >
-          <div className="flex items-center justify-between">
-            <h2 className="text-base font-semibold text-slate-100">Journal Calendar</h2>
-            <span className="rounded-md border border-border px-2 py-1 text-xs text-slate-300">Open</span>
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 md:py-10 space-y-10 text-text-primary">
+      {/* Editorial Header */}
+      <header className="border-b border-border-subtle pb-5 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="font-mono text-xs uppercase tracking-wider text-text-tertiary">
+              Mind OS &bull; Chronicle Archive
+            </span>
+            <span className="text-text-tertiary font-mono text-xs">&bull;</span>
+            <Link
+              to="/mind-os"
+              className="text-xs font-mono text-text-secondary hover:text-text-primary transition-colors underline-offset-4 hover:underline"
+            >
+              &larr; Back to The Study
+            </Link>
           </div>
-          <p className="mt-1 text-xs text-slate-400">Logged days are green with mood emoji.</p>
+          <h1 className="text-3xl sm:text-4xl font-serif font-normal tracking-tight text-text-primary mt-1">
+            Chronicle
+          </h1>
+          <p className="text-xs sm:text-sm font-sans text-text-secondary max-w-lg mt-0.5">
+            The literary archive of internal reflections, distilled observations, and daily psychological state.
+          </p>
+        </div>
 
-          <div className="mt-3 grid grid-cols-7 gap-1 text-center text-xs text-slate-500">
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => {
+              setCalendarMonth(new Date())
+              setIsCalendarOpen(true)
+            }}
+            className="px-3 py-1.5 text-xs font-sans rounded-sm border border-border-subtle text-text-secondary hover:text-text-primary hover:border-border transition-colors"
+          >
+            Monthly Ledger
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsCreateModalOpen(true)}
+            className="px-3.5 py-1.5 text-xs font-sans rounded-sm bg-accent-primary/20 text-accent-primary border border-accent-primary/50 hover:bg-accent-primary/30 transition-colors font-medium flex items-center gap-1.5"
+          >
+            <PenIcon />
+            <span>Write Entry</span>
+          </button>
+        </div>
+      </header>
+
+      {/* Main Grid: Entries Stream (Left) & Mini Month Navigator (Right) */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-10 items-start">
+        {/* Left Column: Reflections Stream */}
+        <section className="space-y-6" aria-labelledby="reflections-heading">
+          <div className="flex items-center justify-between border-b border-border-subtle pb-2">
+            <h2 id="reflections-heading" className="text-xs font-mono uppercase tracking-wider text-text-tertiary">
+              Archived Reflections ({entries.length})
+            </h2>
+            <span className="font-mono text-xs text-text-tertiary tabular-nums">
+              Tabular Index
+            </span>
+          </div>
+
+          {isLoading && (
+            <div className="py-6">
+              <LoadingView
+                variant="inline"
+                label="Indexing Chronicle"
+                sublabel="Loading archived psychological reflections..."
+              />
+            </div>
+          )}
+
+          {isError && (
+            <p className="text-sm font-sans text-threat-critical">Failed to load journal reflections.</p>
+          )}
+
+          {!isLoading && !isError && entries.length === 0 && (
+            <div className="py-12 text-center text-text-tertiary font-serif italic text-base border-b border-border-subtle">
+              The archive is currently unwritten. Record your first reflection above.
+            </div>
+          )}
+
+          {!isLoading && entries.length > 0 && (
+            <div className="divide-y divide-border-subtle/50" role="feed" aria-label="Journal entries feed">
+              {entries.map((entry) => (
+                <article key={entry.id} className="py-5 space-y-3 group" role="article">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-3">
+                      <span className="font-mono tabular-nums text-xs text-text-tertiary">
+                        {formatIndiaDateTime(entry.updated_at || entry.created_at)}
+                      </span>
+                      <span className="font-mono text-xs text-text-secondary border border-border-subtle px-1.5 py-0.5 rounded-sm bg-elevated/40">
+                        {getMoodLabel(entry.mood)} [0{entry.mood}]
+                      </span>
+                    </div>
+
+                    <DeleteButton
+                      className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
+                      onClick={() => {
+                        const confirmed = window.confirm('Delete this journal reflection?')
+                        if (!confirmed) return
+                        deleteEntry(entry.id)
+                      }}
+                      aria-label="Delete reflection"
+                    />
+                  </div>
+
+                  {entry.brief_about_day && (
+                    <blockquote className="text-lg sm:text-xl font-serif font-light text-text-primary leading-relaxed text-balance">
+                      &ldquo;{entry.brief_about_day}&rdquo;
+                    </blockquote>
+                  )}
+
+                  {(entry.what_went_good || entry.what_you_learned) && (
+                    <div className="space-y-1.5 pt-1 text-xs font-sans text-text-secondary border-t border-border-subtle/40">
+                      {entry.what_went_good && (
+                        <p className="leading-relaxed">
+                          <span className="font-mono text-[10px] uppercase tracking-wider text-text-tertiary mr-2">
+                            Clarity:
+                          </span>
+                          {entry.what_went_good}
+                        </p>
+                      )}
+                      {entry.what_you_learned && (
+                        <p className="leading-relaxed">
+                          <span className="font-mono text-[10px] uppercase tracking-wider text-text-tertiary mr-2">
+                            Distilled:
+                          </span>
+                          {entry.what_you_learned}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </article>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* Right Column: Month Navigator Strip */}
+        <aside className="space-y-4 border border-border-subtle rounded-sm p-4 bg-elevated/20">
+          <div className="flex items-center justify-between border-b border-border-subtle pb-2">
+            <h3 className="text-xs font-mono uppercase tracking-wider text-text-tertiary">
+              Month Horizon
+            </h3>
+            <button
+              type="button"
+              onClick={() => {
+                setCalendarMonth(new Date())
+                setIsCalendarOpen(true)
+              }}
+              className="text-xs font-sans text-text-secondary hover:text-text-primary transition-colors underline underline-offset-4"
+            >
+              Expand
+            </button>
+          </div>
+
+          <p className="text-xs font-sans text-text-secondary">
+            Select any day to inspect or add retroactive entries.
+          </p>
+
+          <div className="grid grid-cols-7 gap-1 text-center font-mono text-[11px] text-text-tertiary">
             {weekdayHeaders.map((weekday) => (
-              <p key={weekday}>{weekday}</p>
+              <span key={weekday}>{weekday[0]}</span>
             ))}
           </div>
 
-          <div className="mt-1 grid grid-cols-7 gap-1">
+          <div className="grid grid-cols-7 gap-1">
             {miniMonthCells.map((day) => {
               const summary = dateMoodSummary.get(day.dateKey)
               const isLogged = Boolean(summary)
@@ -262,244 +328,243 @@ function JournalPage() {
                 <button
                   key={day.dateKey}
                   type="button"
-                  onClick={(event) => {
-                    event.stopPropagation()
-                    setSelectedDate(day.dateKey)
-                  }}
-                  className={`cursor-pointer rounded border p-1 text-center text-xs transition-colors hover:bg-[#222222] ${
+                  onClick={() => setSelectedDate(day.dateKey)}
+                  className={`py-1.5 px-0.5 text-center text-xs font-mono tabular-nums rounded-sm border transition-colors flex flex-col items-center justify-center gap-0.5 ${
                     isLogged
-                      ? 'border-green-500/60 bg-green-500/20 text-green-100'
-                      : 'border-border bg-black text-slate-400'
-                  } ${day.inCurrentMonth ? '' : 'opacity-40'}`}
+                      ? 'border-accent-primary/60 bg-accent-primary/10 text-accent-primary'
+                      : 'border-border-subtle text-text-secondary hover:border-border hover:text-text-primary'
+                  } ${day.inCurrentMonth ? '' : 'opacity-30'}`}
+                  title={`${day.dateKey}: ${isLogged ? `${entryCount} entries (${getMoodLabel(summary?.averageMood ?? 3)})` : 'No entries'}`}
                 >
-                  <p>{day.day}</p>
-                  <p className="leading-none">{summary ? moodToEmoji(summary.averageMood) : ''}</p>
-                  {entryCount > 1 ? (
-                    <span className="absolute right-0.5 top-0.5 rounded-full border border-border bg-black px-1 text-xs leading-4 text-slate-300">
-                      x{entryCount}
-                    </span>
-                  ) : null}
+                  <span>{day.day}</span>
+                  <span
+                    className={`h-1 w-1 rounded-full ${isLogged ? 'bg-accent-primary' : 'bg-transparent'}`}
+                    aria-hidden="true"
+                  />
                 </button>
               )
             })}
           </div>
-        </article>
-
-        <AnalogClockWidget />
+        </aside>
       </div>
 
-      <article className="rounded-xl border border-border bg-surface p-4">
-        <h2 className="text-base font-semibold text-slate-100">Recent Journal Entries</h2>
-
-        {isLoading ? <p className="mt-3 text-sm text-slate-400">Loading entries...</p> : null}
-        {isError ? <p className="mt-3 text-sm text-red-400">Failed to load entries.</p> : null}
-
-        {!isLoading && !isError && entries.length === 0 ? <p className="mt-3 text-sm text-slate-400">No journal entries yet.</p> : null}
-
-        <ul className="mt-3 space-y-3">
-            {entries.slice(0, 5).map((entry) => (
-              <li key={entry.id} className="group rounded-lg border border-border bg-black p-3">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-sm text-slate-300">
-                    {moodToEmoji(entry.mood)} {formatIndiaDateTime(entry.updated_at || entry.created_at)}
-                  </p>
-                  <DeleteButton
-                    className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
-                    onClick={() => {
-                      const confirmed = window.confirm('Delete this journal entry?')
-                      if (!confirmed) return
-                      deleteEntry(entry.id)
-                    }}
-                  />
-                </div>
-                <p className="mt-1 text-sm text-slate-200">{entry.what_went_good || 'No note added.'}</p>
-              </li>
-            ))}
-        </ul>
-      </article>
-
-      <button
-        type="button"
-        onClick={() => setIsCreateModalOpen(true)}
-        className="fixed bottom-6 right-6 z-30 inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-border bg-[#111111] text-slate-100 shadow-xl shadow-black/60 transition hover:bg-[#222222]"
-        aria-label="Create journal entry"
-      >
-        <PenIcon />
-      </button>
-
-      {isCreateModalOpen ? (
-        <div className="fixed inset-0 z-40 flex items-center justify-center p-3">
+      {/* New Entry Modal */}
+      {isCreateModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
           <button
             type="button"
             onClick={() => setIsCreateModalOpen(false)}
-            className="absolute inset-0 bg-black/85"
-            aria-label="Close journal entry modal"
+            className="absolute inset-0"
+            aria-label="Close modal"
           />
 
-          <article className="relative z-10 h-[88vh] w-[90%] max-w-4xl overflow-auto rounded-xl border border-border bg-surface p-4 sm:p-6">
-            <div className="flex items-start justify-between gap-3">
+          <div className="relative z-10 w-full max-w-xl rounded-sm border border-border bg-background p-5 sm:p-6 shadow-2xl space-y-4">
+            <div className="flex items-start justify-between gap-3 border-b border-border-subtle pb-3">
               <div>
-                <h2 className="text-base font-semibold text-slate-100">New Journal Entry</h2>
-                <p className="text-sm text-slate-400">Capture what went good, your mood, learnings, and day summary.</p>
+                <h3 className="text-xl font-serif font-normal text-text-primary">
+                  New Journal Reflection
+                </h3>
+                <p className="text-xs font-mono text-text-tertiary">
+                  Record self-honest thought &bull; <span className="tabular-nums">{toIndiaDateKey(new Date())}</span>
+                </p>
               </div>
               <button
                 type="button"
                 onClick={() => setIsCreateModalOpen(false)}
-                className="flex h-9 w-9 items-center justify-center rounded-md border border-border bg-[#111111] text-slate-100 hover:bg-[#222222]"
-                aria-label="Close"
-              >
-                <CloseIcon />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-              <div>
-                <p className="mb-2 text-sm text-slate-300">Mood Selector</p>
-                <div className="flex flex-wrap gap-2">
-                  {moodOptions.map((option) => (
-                    <button
-                      key={option.value}
-                      type="button"
-                      onClick={() => setMood(option.value)}
-                      style={{
-                        fontFamily: '"Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif',
-                      }}
-                      className={`rounded-md border px-3 py-1 text-lg ${
-                        mood === option.value
-                          ? 'border-green-500 bg-green-500/10'
-                          : 'border-border bg-[#111111] hover:bg-[#222222]'
-                      }`}
-                      title={option.label}
-                    >
-                      {option.emoji}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <label className="block text-sm text-slate-300">
-                Topic of the day
-                <textarea
-                  value={whatWentGood}
-                  onChange={(event) => setWhatWentGood(event.target.value)}
-                  rows={4}
-                  className="mt-1 w-full rounded-lg border border-border bg-[#111111] p-2 text-slate-100"
-                />
-              </label>
-
-              <label className="block text-sm text-slate-300">
-                What you've learned
-                <textarea
-                  value={whatYouLearned}
-                  onChange={(event) => setWhatYouLearned(event.target.value)}
-                  rows={4}
-                  className="mt-1 w-full rounded-lg border border-border bg-[#111111] p-2 text-slate-100"
-                />
-              </label>
-
-              <label className="block text-sm text-slate-300">
-                Brief about day
-                <textarea
-                  value={briefAboutDay}
-                  onChange={(event) => setBriefAboutDay(event.target.value)}
-                  rows={5}
-                  className="mt-1 w-full rounded-lg border border-border bg-[#111111] p-2 text-slate-100"
-                />
-              </label>
-
-              {createError ? (
-                <p className="text-sm text-red-400">Failed to save journal entry: {getReadableErrorMessage(createError)}</p>
-              ) : null}
-
-              <button type="submit" disabled={isPending || !hasContent} className={`w-full ${greenReplicaButtonClass} disabled:opacity-60`}>
-                {isPending ? 'Saving...' : 'Save Entry'}
-              </button>
-            </form>
-          </article>
-        </div>
-      ) : null}
-
-      {isCalendarOpen ? (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/85 p-3">
-          <section className="h-[92vh] w-[96vw] max-w-6xl overflow-auto rounded-xl border border-border bg-surface p-4">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <h3 className="text-base font-semibold text-slate-100">Journal Calendar View</h3>
-                <p className="text-xs text-slate-400">Click any date to open timeline and add retroactive entries.</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsCalendarOpen(false)}
-                className="rounded-md border border-border px-3 py-1 text-sm text-slate-100 hover:bg-[#111111]"
+                className="rounded-sm border border-border-subtle px-2.5 py-1 text-xs font-sans text-text-secondary hover:text-text-primary hover:border-border transition-colors"
               >
                 Close
               </button>
             </div>
 
-            <div className="mt-4 flex items-center justify-between">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <p className="mb-2 text-xs font-mono uppercase tracking-wider text-text-tertiary">
+                  Clinical Mood Scale
+                </p>
+                <div className="grid grid-cols-5 gap-1.5">
+                  {CLINICAL_MOOD_SCALE.map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => setMood(option.value)}
+                      className={`py-1.5 px-1 text-center rounded-sm border transition-colors ${
+                        mood === option.value
+                          ? 'border-accent-primary bg-accent-primary/15 text-text-primary font-medium'
+                          : 'border-border-subtle text-text-secondary hover:border-border'
+                      }`}
+                    >
+                      <div className="font-mono tabular-nums text-[10px] text-text-tertiary">0{option.value}</div>
+                      <div className="truncate text-xs font-sans">{option.label}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-sans text-text-secondary mb-1">
+                  Brief about day / Core Reflection
+                </label>
+                <textarea
+                  value={briefAboutDay}
+                  onChange={(event) => setBriefAboutDay(event.target.value)}
+                  rows={3}
+                  placeholder="What was the dominant rhythm or weather today?"
+                  className="w-full rounded-sm border border-border-subtle bg-background p-2.5 text-sm font-serif text-text-primary placeholder:text-text-tertiary focus:outline-none focus:border-border"
+                  autoFocus
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-sans text-text-secondary mb-1">
+                    What went well / Clarity
+                  </label>
+                  <input
+                    type="text"
+                    value={whatWentGood}
+                    onChange={(event) => setWhatWentGood(event.target.value)}
+                    placeholder="Small victory..."
+                    className="w-full rounded-sm border border-border-subtle bg-background px-3 py-1.5 text-xs font-sans text-text-primary placeholder:text-text-tertiary focus:outline-none focus:border-border"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-sans text-text-secondary mb-1">
+                    What did you learn?
+                  </label>
+                  <input
+                    type="text"
+                    value={whatYouLearned}
+                    onChange={(event) => setWhatYouLearned(event.target.value)}
+                    placeholder="Distilled insight..."
+                    className="w-full rounded-sm border border-border-subtle bg-background px-3 py-1.5 text-xs font-sans text-text-primary placeholder:text-text-tertiary focus:outline-none focus:border-border"
+                  />
+                </div>
+              </div>
+
+              {createError && (
+                <p className="text-xs font-sans text-threat-critical">
+                  Failed to save journal entry: {getReadableErrorMessage(createError)}
+                </p>
+              )}
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-border-subtle">
+                <button
+                  type="button"
+                  onClick={() => setIsCreateModalOpen(false)}
+                  className="rounded-sm border border-border-subtle px-3 py-1.5 text-xs font-sans text-text-secondary hover:text-text-primary transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isPending || !hasContent}
+                  className="px-4 py-1.5 text-xs font-sans rounded-sm bg-accent-primary/20 text-accent-primary border border-accent-primary/50 hover:bg-accent-primary/30 transition-colors font-medium disabled:opacity-50"
+                >
+                  {isPending ? 'Saving...' : 'Save Reflection'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Monthly Horizon Modal */}
+      {isCalendarOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
+          <button
+            type="button"
+            onClick={() => setIsCalendarOpen(false)}
+            className="absolute inset-0"
+            aria-label="Close monthly view"
+          />
+
+          <div className="relative z-10 w-full max-w-4xl rounded-sm border border-border bg-background p-5 sm:p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-border-subtle pb-3">
+              <div>
+                <h3 className="text-xl font-serif font-normal text-text-primary">
+                  Chronicle Calendar &bull; {getMonthLabel(calendarMonth)}
+                </h3>
+                <p className="text-xs font-mono text-text-tertiary">
+                  Click any date to inspect entries or record retroactive reflections.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsCalendarOpen(false)}
+                className="rounded-sm border border-border-subtle px-2.5 py-1 text-xs font-sans text-text-secondary hover:text-text-primary hover:border-border transition-colors"
+              >
+                Close
+              </button>
+            </div>
+
+            <div className="flex items-center justify-between">
               <button
                 type="button"
                 onClick={() => setCalendarMonth((previous) => shiftMonth(previous, -1))}
-                className="rounded-md border border-border px-3 py-1 text-sm text-slate-100 hover:bg-[#111111]"
+                className="rounded-sm border border-border-subtle px-3 py-1 text-xs font-mono text-text-secondary hover:text-text-primary hover:border-border transition-colors"
               >
-                Previous
+                &larr; Previous Month
               </button>
-              <p className="text-base font-semibold text-slate-200">{getMonthLabel(calendarMonth)}</p>
+              <span className="font-mono text-sm text-text-primary font-medium">
+                {getMonthLabel(calendarMonth)}
+              </span>
               <button
                 type="button"
                 onClick={() => setCalendarMonth((previous) => shiftMonth(previous, 1))}
-                className="rounded-md border border-border px-3 py-1 text-sm text-slate-100 hover:bg-[#111111]"
+                className="rounded-sm border border-border-subtle px-3 py-1 text-xs font-mono text-text-secondary hover:text-text-primary hover:border-border transition-colors"
               >
-                Next
+                Next Month &rarr;
               </button>
             </div>
 
-            <div className="mt-4 grid grid-cols-7 gap-2 text-center text-xs text-slate-400">
+            <div className="grid grid-cols-7 gap-1.5 text-center font-mono text-xs text-text-tertiary">
               {weekdayHeaders.map((weekday) => (
-                <p key={weekday}>{weekday}</p>
+                <div key={weekday} className="py-1">{weekday}</div>
               ))}
             </div>
 
-            <div className="mt-2 grid grid-cols-7 gap-2">
+            <div className="grid grid-cols-7 gap-1.5">
               {monthCells.map((day) => {
                 const summary = dateMoodSummary.get(day.dateKey)
                 const isLogged = Boolean(summary)
                 const entryCount = summary?.count ?? 0
 
                 return (
-                  <div key={day.dateKey} className="group relative">
-                    <button
-                      type="button"
-                      onClick={() => setSelectedDate(day.dateKey)}
-                      className={`w-full cursor-pointer rounded-md border p-2 text-left transition-colors hover:bg-[#222222] ${
-                        isLogged
-                          ? 'border-green-500/70 bg-green-500/20 text-green-100 hover:bg-green-500/30'
-                          : 'border-border bg-black text-slate-400 hover:bg-[#111111]'
-                      } ${day.inCurrentMonth ? '' : 'opacity-40'}`}
-                    >
-                      <p className="text-sm font-semibold">{day.day}</p>
-                      <p className="mt-2 text-lg leading-none">{summary ? moodToEmoji(summary.averageMood) : ''}</p>
-                      {entryCount > 1 ? (
-                        <span className="absolute right-1 top-1 rounded-full border border-border bg-black px-1.5 text-xs leading-4 text-slate-300">
+                  <button
+                    key={day.dateKey}
+                    type="button"
+                    onClick={() => setSelectedDate(day.dateKey)}
+                    className={`h-20 p-2 text-left rounded-sm border transition-colors flex flex-col justify-between ${
+                      isLogged
+                        ? 'border-accent-primary/60 bg-accent-primary/10 text-text-primary hover:bg-accent-primary/20'
+                        : 'border-border-subtle text-text-secondary hover:border-border hover:text-text-primary'
+                    } ${day.inCurrentMonth ? '' : 'opacity-30'}`}
+                  >
+                    <div className="flex items-center justify-between w-full">
+                      <span className="font-mono tabular-nums text-xs font-medium">{day.day}</span>
+                      {entryCount > 1 && (
+                        <span className="font-mono text-[10px] text-text-tertiary">
                           x{entryCount}
                         </span>
-                      ) : null}
-                    </button>
-
-                    {summary ? (
-                      <div className="pointer-events-none absolute left-1/2 top-full z-30 mt-1 hidden -translate-x-1/2 whitespace-nowrap rounded-md border border-border bg-black px-2 py-1 text-xs text-slate-100 group-hover:block">
-                        Avg mood: {moodToEmoji(summary.averageMood)} ({entryCount} entries)
+                      )}
+                    </div>
+                    {isLogged && (
+                      <div className="font-mono text-[11px] text-accent-primary truncate">
+                        {getMoodLabel(summary?.averageMood ?? 3)}
                       </div>
-                    ) : null}
-                  </div>
+                    )}
+                  </button>
                 )
               })}
             </div>
-          </section>
+          </div>
         </div>
-      ) : null}
+      )}
 
-      {selectedDate ? (
+      {/* Date detail modal */}
+      {selectedDate && (
         <JournalDateModal
           selectedDate={selectedDate}
           entries={entries}
@@ -509,9 +574,10 @@ function JournalPage() {
           onDeleteEntry={(id) => deleteEntry(id)}
           onClose={() => setSelectedDate(null)}
         />
-      ) : null}
-    </section>
+      )}
+    </div>
   )
 }
 
 export default JournalPage
+

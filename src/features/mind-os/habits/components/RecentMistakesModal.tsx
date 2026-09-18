@@ -19,45 +19,52 @@ export function RecentMistakesModal({ isOpen, onClose, mistakes }: RecentMistake
   }
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center p-3">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
       <button
         type="button"
         onClick={onClose}
-        className="absolute inset-0 bg-black/85"
+        className="absolute inset-0"
         aria-label="Close missed habits modal"
       />
 
-      <article className="relative z-10 max-h-[85vh] w-[96vw] max-w-3xl overflow-auto rounded-xl border border-border bg-surface p-4 sm:p-6">
-        <div className="flex items-center justify-between gap-3">
+      <div className="relative z-10 max-h-[85vh] w-full max-w-2xl overflow-auto rounded-sm border border-border bg-background p-5 sm:p-6 shadow-2xl text-text-primary">
+        <div className="flex items-center justify-between gap-3 border-b border-border-subtle pb-3">
           <div>
-            <h3 className="text-base font-semibold text-slate-100">Missed Habits (Last 5 Days)</h3>
-            <p className="text-xs text-slate-400">Full list of streak losses recorded in the past 5 days.</p>
+            <h3 className="text-xl font-serif font-normal text-text-primary">Missed Habits (Last 5 Days)</h3>
+            <p className="text-xs font-mono text-text-tertiary">Historical streak interruptions requiring reconciliation.</p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md border border-[#333333] px-2 py-1 text-sm text-slate-100 hover:bg-[#222222]"
+            className="rounded-sm border border-border-subtle px-2.5 py-1 text-xs font-sans text-text-secondary hover:text-text-primary hover:border-border transition-colors"
           >
             Close
           </button>
         </div>
 
         {mistakes.length === 0 ? (
-          <p className="mt-4 text-sm text-slate-400">No missed habits in the last 5 days.</p>
+          <p className="py-8 text-center text-sm font-serif italic text-text-tertiary">
+            No streak interruptions recorded in the past 5 days.
+          </p>
         ) : (
-          <ul className="mt-4 space-y-2">
+          <ul className="mt-4 divide-y divide-border-subtle/50" role="list">
             {mistakes.map((mistake) => (
-              <li key={`recent-${mistake.id}`} className="rounded-md border border-border bg-[#111111] p-3">
+              <li key={`recent-${mistake.id}`} className="py-3 space-y-1">
                 <div className="flex items-center justify-between gap-2">
-                  <p className="text-sm font-semibold text-slate-100">{mistake.habitTitle}</p>
-                  <span className="text-xs text-slate-400">{formatIndiaDate(mistake.break_date)}</span>
+                  <p className="text-sm font-serif font-medium text-text-primary">{mistake.habitTitle}</p>
+                  <span className="font-mono tabular-nums text-xs text-text-tertiary">
+                    {formatIndiaDate(mistake.break_date)}
+                  </span>
                 </div>
-                <p className="mt-1 text-xs text-slate-300">{mistake.reason || 'No reason added.'}</p>
+                <p className="text-xs font-sans text-text-secondary">
+                  {mistake.reason ? `Break reason: "${mistake.reason}"` : 'No break reason recorded.'}
+                </p>
               </li>
             ))}
           </ul>
         )}
-      </article>
+      </div>
     </div>
   )
 }
+
