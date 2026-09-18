@@ -13,6 +13,7 @@ import {
   FITNESS_EXERCISE_LOG_CREATED,
   FITNESS_EXERCISE_LOG_UPDATED,
   FITNESS_EXERCISE_LOG_DELETED,
+  TIME_SESSION_LOGGED,
 } from '../../../lib/eventTaxonomy'
 import { supabase } from '../../../lib/supabase'
 import { emitSystemFeedback } from '../../system/feedback'
@@ -36,11 +37,24 @@ export type FitnessExercise = {
   category: string | null
   equipment: string[] | null
   target_muscles: string[] | null
+  primary_muscle?: string | null
+  movement_pattern: string | null
   default_unit: string | null
   notes: string | null
   created_at: string
   updated_at: string
   deleted_at: string | null
+}
+
+function deriveMovementPattern(name: string, category: string | null, targetMuscles: string[] | null): string {
+  const n = `${name} ${category || ''} ${targetMuscles?.join(' ') || ''}`.toLowerCase()
+  if (n.includes('squat') || n.includes('lunge') || n.includes('leg press')) return 'Squat'
+  if (n.includes('deadlift') || n.includes('hinge') || n.includes('rdl') || n.includes('good morning')) return 'Hinge'
+  if (n.includes('bench') || n.includes('push') || n.includes('press') || n.includes('dip')) return 'Push'
+  if (n.includes('row') || n.includes('pull') || n.includes('chin') || n.includes('curl') || n.includes('lat')) return 'Pull'
+  if (n.includes('plank') || n.includes('crunch') || n.includes('ab') || n.includes('core')) return 'Core'
+  if (n.includes('carry') || n.includes('farmer') || n.includes('walk')) return 'Carry'
+  return 'Compound'
 }
 
 export type Workout = {
@@ -68,6 +82,7 @@ export type ExerciseLog = {
   reps_total: number | null
   weight_kg: number | null
   duration_minutes: number | null
+  duration_seconds: number | null
   distance_km: number | null
   rpe: number | null
   notes: string | null
@@ -129,6 +144,7 @@ type CreateExerciseInput = {
   category?: string
   equipment?: string[]
   targetMuscles?: string[]
+  movementPattern?: string
   defaultUnit?: string
   notes?: string
 }
@@ -139,6 +155,7 @@ type UpdateExerciseInput = {
   category?: string
   equipment?: string[]
   targetMuscles?: string[]
+  movementPattern?: string
   defaultUnit?: string
   notes?: string
 }
@@ -307,6 +324,8 @@ async function fetchFitnessExercises(): Promise<FitnessExercise[]> {
   return (data ?? []).map((row) => ({
     ...row,
     equipment: Array.isArray(row.equipment) ? row.equipment : (row.equipment ? [row.equipment] : null),
+    primary_muscle: row.target_muscles?.[0] || row.category || 'Full Body',
+    movement_pattern: deriveMovementPattern(row.name, row.category, row.target_muscles),
   }))
 }
 
@@ -450,6 +469,7 @@ async function fetchWorkoutDetail(workoutId: string): Promise<WorkoutDetail | nu
       reps_total: row.reps_total,
       weight_kg: row.weight_kg,
       duration_minutes: row.duration_minutes,
+      duration_seconds: row.duration_minutes ? row.duration_minutes * 60 : null,
       distance_km: row.distance_km,
       rpe: row.rpe,
       notes: row.notes,
@@ -578,6 +598,7 @@ async function fetchAllExerciseLogs(): Promise<ExerciseLog[]> {
       reps_total: row.reps_total,
       weight_kg: row.weight_kg,
       duration_minutes: row.duration_minutes,
+      duration_seconds: row.duration_minutes ? Math.round(row.duration_minutes * 60) : null,
       distance_km: row.distance_km,
       rpe: row.rpe,
       notes: row.notes,
@@ -697,6 +718,49 @@ async function endWorkoutSession({ workoutId, startTime }: EndWorkoutSessionInpu
     throw buildError('Failed to end workout session', error)
   }
 
+  // Cross-system sync: Log automatically into Time OS as bucket 'Fitness'
+  try {
+    const { data: workoutData } = await supabase
+      .from('workouts')
+      .select('title')
+      .eq('id', workoutId)
+      .single()
+
+    const sessionTitle = workoutData?.title ? `Fitness OS: ${workoutData.title}` : 'Fitness OS Session'
+    const durationToLog = Math.max(1, diffMinutes)
+
+    const { data: insertedTimeLog, error: timeLogError } = await supabase
+      .from('time_logs')
+      .insert({
+        user_id: userId,
+        bucket: 'Fitness',
+        description: sessionTitle,
+        start_time: startDate.toISOString(),
+        end_time: endDate.toISOString(),
+        duration_minutes: durationToLog,
+        updated_at: endTimeIso,
+      })
+      .select('id')
+      .single()
+
+    if (!timeLogError && insertedTimeLog?.id) {
+      await logEventSafe({
+        userId,
+        domain: 'time-os',
+        entityType: 'time_log',
+        entityId: insertedTimeLog.id,
+        eventType: TIME_SESSION_LOGGED,
+        payload: {
+          bucket: 'Fitness',
+          durationMinutes: durationToLog,
+          source: 'fitness-os-auto-sync',
+        },
+      })
+    }
+  } catch (syncErr) {
+    console.warn('Time OS sync non-fatal warning:', syncErr)
+  }
+
   await logEventSafe({
     userId,
     domain: 'fitness-os',
@@ -791,6 +855,7 @@ async function createExercise(input: CreateExerciseInput): Promise<void> {
       category: input.category?.trim() || null,
       equipment: normalizeTagArray(input.equipment),
       target_muscles: normalizeTagArray(input.targetMuscles),
+      movement_pattern: input.movementPattern?.trim() || null,
       default_unit: input.defaultUnit?.trim() || null,
       notes: input.notes?.trim() || null,
       updated_at: new Date().toISOString(),
@@ -813,6 +878,7 @@ async function createExercise(input: CreateExerciseInput): Promise<void> {
 
 async function updateExercise(input: UpdateExerciseInput): Promise<void> {
   const userId = await requireUserId()
+
   const { error } = await supabase
     .from('fitness_exercises')
     .update({
@@ -820,6 +886,7 @@ async function updateExercise(input: UpdateExerciseInput): Promise<void> {
       category: input.category?.trim() || null,
       equipment: normalizeTagArray(input.equipment),
       target_muscles: normalizeTagArray(input.targetMuscles),
+      movement_pattern: input.movementPattern?.trim() || null,
       default_unit: input.defaultUnit?.trim() || null,
       notes: input.notes?.trim() || null,
       updated_at: new Date().toISOString(),
@@ -928,6 +995,53 @@ async function addExerciseLog(input: ExerciseLogInput): Promise<void> {
       exerciseId: input.exerciseId,
     },
   })
+}
+
+async function addExerciseLogsBatch(inputs: ExerciseLogInput[]): Promise<void> {
+  if (inputs.length === 0) return
+  const userId = await requireUserId()
+  const workoutId = inputs[0].workoutId
+  const startingOrderIndex = await resolveLogOrderIndex(userId, workoutId)
+
+  const rows = inputs.map((input, idx) => ({
+    user_id: userId,
+    workout_id: input.workoutId,
+    exercise_id: input.exerciseId,
+    order_index: input.orderIndex ?? (startingOrderIndex + idx),
+    sets: normalizeInteger(input.sets),
+    reps_total: normalizeInteger(input.repsTotal),
+    weight_kg: normalizeNumber(input.weightKg),
+    duration_minutes: normalizeInteger(input.durationMinutes),
+    distance_km: normalizeNumber(input.distanceKm),
+    rpe: normalizeInteger(input.rpe),
+    notes: input.notes?.trim() || null,
+    updated_at: new Date().toISOString(),
+  }))
+
+  const { data, error } = await supabase
+    .from('exercise_logs')
+    .insert(rows)
+    .select('id, exercise_id')
+
+  if (error) {
+    throw buildError('Failed to add exercise logs batch', error)
+  }
+
+  if (data) {
+    for (const log of data) {
+      await logEventSafe({
+        userId,
+        domain: 'fitness-os',
+        entityType: 'exercise_log',
+        entityId: log.id,
+        eventType: FITNESS_EXERCISE_LOG_CREATED,
+        payload: {
+          workoutId,
+          exerciseId: log.exercise_id,
+        },
+      })
+    }
+  }
 }
 
 async function updateExerciseLog(input: UpdateExerciseLogInput): Promise<void> {
@@ -1047,6 +1161,7 @@ function invalidateFitnessQueries(queryClient: ReturnType<typeof useQueryClient>
   queryClient.invalidateQueries({ queryKey: fitnessActiveWorkoutQueryKey })
   queryClient.invalidateQueries({ queryKey: fitnessDashboardQueryKey })
   queryClient.invalidateQueries({ queryKey: fitnessWeeklySummaryQueryKey })
+  queryClient.invalidateQueries({ queryKey: fitnessAllExerciseLogsQueryKey })
   queryClient.invalidateQueries({ queryKey: systemStatusQueryKey })
   emitSystemFeedback({
     title: '+1 Awareness',
@@ -1086,6 +1201,8 @@ export function useEndWorkoutSession() {
       invalidateFitnessQueries(queryClient)
       queryClient.invalidateQueries({ queryKey: fitnessWorkoutDetailQueryKey(variables.workoutId) })
       queryClient.invalidateQueries({ queryKey: systemStatusQueryKey })
+      queryClient.invalidateQueries({ queryKey: ['time-os', 'time-logs'] })
+      queryClient.invalidateQueries({ queryKey: ['time-os', 'analytics'] })
       emitEvent(FITNESS_WORKOUT_COMPLETED, {
         workoutId: variables.workoutId,
       })
@@ -1182,6 +1299,20 @@ export function useAddExerciseLog() {
     onSuccess: (_, variables) => {
       invalidateFitnessQueries(queryClient)
       queryClient.invalidateQueries({ queryKey: fitnessWorkoutDetailQueryKey(variables.workoutId) })
+    },
+  })
+}
+
+export function useAddExerciseLogsBatch() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: addExerciseLogsBatch,
+    onSuccess: (_, variables) => {
+      invalidateFitnessQueries(queryClient)
+      if (variables[0]?.workoutId) {
+        queryClient.invalidateQueries({ queryKey: fitnessWorkoutDetailQueryKey(variables[0].workoutId) })
+      }
     },
   })
 }

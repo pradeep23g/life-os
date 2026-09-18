@@ -1,5 +1,5 @@
-export { default as FitnessOsDashboard } from './pages/Dashboard'
+export { default as FitnessOsDashboard } from './dashboard/FitnessOsDashboard'
 export { default as WorkoutsPage } from './workouts/WorkoutsPage'
-export { default as FitnessLibraryPage } from './pages/Library'
+export { default as FitnessLibraryPage } from './library/FitnessLibraryPage'
 export { default as PersonalRecordsPage } from './library/PersonalRecordsPage'
 export * from './api/useFitness'
