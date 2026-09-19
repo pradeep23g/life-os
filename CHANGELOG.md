@@ -2,6 +2,8 @@
 
 All notable changes to the Life OS platform will be documented in this file.
 
+> **Historical Archive:** For historical releases prior to 2.0.0 (Milestones 1 through 9), see [`docs/historical/CHANGELOG.md`](docs/historical/CHANGELOG.md).
+
 ## [2.0.0-winter-arc] - 2026-09-17
 
 ### Added

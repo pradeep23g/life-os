@@ -1,3 +1,10 @@
+---
+title: "Winter Arc — Phase F Preflight Verification"
+status: "active"
+last_synchronized_commit: "77d1a5b"
+domain: "winter-arc"
+---
+
 # WINTER ARC — PHASE F DESIGN PRE-FLIGHT
 **DATE**: 2026-09-09
 **STATUS**: READY FOR SPECIALIST PROPOSALS

@@ -1,3 +1,10 @@
+---
+title: "Winter Arc — Architecture Specification"
+status: "active"
+last_synchronized_commit: "77d1a5b"
+domain: "winter-arc"
+---
+
 # Winter Arc Architecture Evolution
 
 This document outlines the intended high-level architectural evolution for the Winter Arc campaign. It establishes the baseline, the target state, and the critical invariants that must be maintained during the transition.
@@ -207,4 +214,5 @@ flowchart TD
 * [Database Schema](../architecture/DATABASE_SCHEMA.md)
 * [Architecture Decisions](../decisions/ARCHITECTURE_DECISIONS.md)
 * [Winter Arc Master Plan](WINTER_ARC_MASTER_PLAN.md)
-* [Final Current State Context](LIFE_OS_FINAL_CURRENT_STATE_CONTEXT.md)
+* [Historical Baseline Snapshot (Phase 1)](../historical/PHASE1_BASELINE_SNAPSHOT_ad488a2.md)
+* [Agent Quickstart](../AGENT_QUICKSTART.md)

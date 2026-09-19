@@ -1,3 +1,10 @@
+---
+title: "Winter Arc — System Remediation and Audit 2026"
+status: "active"
+last_synchronized_commit: "77d1a5b"
+domain: "winter-arc"
+---
+
 # Winter Arc 2026 — Comprehensive System Remediation & Forensic Audit
 
 > **Document Type:** System Forensic Audit, Codebase Cleanliness Baseline & Remediation Log  
@@ -12,7 +19,7 @@
 Prior to initiating the comprehensive debugging session for Life OS, an exhaustive, forensic inspection of the codebase was conducted across:
 - **82 TSX Components** across all feature domains (`arc`, `home`, `mission-control`, `mind-os`, `productivity-hub`, `fitness-os`, `time-os`, `finance-os`, `data-lab`, `learning-os`, `profile`, `reports`, `auth`).
 - **30 Supabase SQL Migrations** and generated TypeScript schemas (`src/types/database.types.ts`).
-- **All Winter Arc Specifications** under `docs/winter-arc/` and `LIFE_OS_FINAL_CURRENT_STATE_CONTEXT.md`.
+- **All Winter Arc Specifications** under `docs/winter-arc/` and historical baseline snapshot `docs/historical/PHASE1_BASELINE_SNAPSHOT_ad488a2.md`.
 
 ### Core Architectural Invariants Preserved
 Throughout all remediation steps, the foundational system contracts remain strictly inviolate:
@@ -155,7 +162,7 @@ During the forensic audit, five key discrepancies between existing documentation
 
 | Subject | Documentation Claim (`docs/winter-arc/`) | Codebase Reality | Status / Recommendation |
 |---------|------------------------------------------|------------------|-------------------------|
-| **Data Lab Structure** | `LIFE_OS_FINAL_CURRENT_STATE_CONTEXT.md` describes 3 tabs (Overview, Behavior, Telemetry) with Recharts charts | `DataLabPage.tsx` was intentionally redesigned into a single 30-day spatial dot-matrix canvas | Documented reality. The single-canvas spatial timeline is now canonical; obsolete tabs purged. |
+| **Data Lab Structure** | Historical snapshot (`PHASE1_BASELINE_SNAPSHOT_ad488a2.md`) describes 3 tabs (Overview, Behavior, Telemetry) with Recharts charts | `DataLabPage.tsx` was intentionally redesigned into a single 30-day spatial dot-matrix canvas | Documented reality. The single-canvas spatial timeline is now canonical; obsolete tabs purged. |
 | **Signal View Names** | Docs cite `data_lab_signal_habits`, `data_lab_signal_tasks`, etc. | Actual Supabase migration SQL names are `data_lab_signal_mind_habits`, `data_lab_signal_productivity_tasks`, etc. | Migrations (`202607270001_signal_views.sql`) and `database.types.ts` are authoritative. |
 | **View Type Safety** | Docs claim signal views are untyped in `src/types/database.types.ts` | All 15 SQL views are fully generated under `Tables:` with complete row typing | Documented. Type safety is 100% complete. |
 | **Recharts Dependency** | ADR-021 states Recharts is the mandated charting library | `recharts` is **not** installed in `package.json`. Data Lab canvas and sparklines use pure SVG and Tailwind | Recommendation: Retain pure SVG implementation to minimize bundle size, or install `recharts` only when complex Cartesian charts are explicitly required. |

@@ -1,3 +1,10 @@
+---
+title: "Life OS — Documentation Root"
+status: "canonical"
+last_synchronized_commit: "77d1a5b"
+domain: "operations"
+---
+
 # Life OS Documentation Index
 
 This directory contains the canonical documentation for the Life OS platform, organized by domain:

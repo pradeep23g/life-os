@@ -1,14 +1,22 @@
+---
+title: "Winter Arc Master Plan"
+status: "active"
+last_synchronized_commit: "77d1a5b"
+domain: "winter-arc"
+---
+
 # Winter Arc Master Plan
 
-> **STATUS: VISUAL REFOUNDATION & DATABASE REMEDIATION VERIFIED (GREEN BASELINE)**
-> *Visual language, Living Horizon shell, and Supabase database schemas (`life_seasons`, `user_achievements`, `pulse_logs`, etc.) are deployed and verified. Current focus: Admin Control Layer (ADR-023), Recovery OS Grief Protocol (ADR-024), and AI Curriculum Ingestion (ADR-025).*
+> **STATUS: VISUAL REFOUNDATION & DATABASE REMEDIATION VERIFIED (GREEN BASELINE)**  
+> *Visual language, Living Horizon shell, and Supabase database schemas (`life_seasons`, `user_achievements`, `pulse_logs`, etc.) are deployed and verified. Current focus: Admin Control Layer (ADR-026), Recovery OS Grief Protocol (ADR-027), and AI Curriculum Ingestion (ADR-028).*
 
 ## Executive Summary
 This document serves as the central command center and feature inventory for the Winter Arc evolution of Life OS. It maps out 46 distinct features across 9 implementation waves, providing a structured blueprint from the current baseline to the target state. It establishes the architectural dependencies, required workstreams, and integration points for every planned feature.
 
 ## Critical References
-- [Current State Context](../../LIFE_OS_FINAL_CURRENT_STATE_CONTEXT.md)
-- [Winter Arc Master Spec](./WINTER_ARC_MASTER_SPEC.md)
+- [Historical Baseline Snapshot (Phase 1)](../historical/PHASE1_BASELINE_SNAPSHOT_ad488a2.md)
+- [Agent Quickstart](../AGENT_QUICKSTART.md)
+- [Winter Arc Master Spec](../Life%20OS%20—%20Winter%20Arc%202026%20Master%20Change%20Specification.md)
 - [Forensic System Remediation & Cleanliness Audit](./WINTER_ARC_SYSTEM_REMEDIATION_AND_AUDIT_2026.md)
 
 ## Conceptual Architecture Diagram

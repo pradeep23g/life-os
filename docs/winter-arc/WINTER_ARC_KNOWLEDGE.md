@@ -1,3 +1,10 @@
+---
+title: "Winter Arc — Knowledge Architecture & Graph"
+status: "active"
+last_synchronized_commit: "77d1a5b"
+domain: "winter-arc"
+---
+
 # Winter Arc: Knowledge Vault & Learning OS
 
 This document covers the Knowledge Vault (Books, Videos, Media Tracking) and Learning OS Completion (Features F-20 through F-23, Wave 4).

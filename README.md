@@ -16,17 +16,22 @@ Life OS is a **multi-domain behavioral operating system** designed to accumulate
 
 ---
 
-##  Active Domain Modules
+## 🏛️ Active Domain Modules
 
 ```text
 src/features/
-├── auth/               — Supabase email/password authentication
-├── mission-control/    — Executive aggregator dashboard & Brain Engine hero
+├── auth/               — Supabase email/password authentication & session tokens
+├── home/               — The Porch: Asymmetric Swiss Stage & living solar presence
+├── arc/                — Winter Arc Grand Hall: 90-day countdown, chapter vows, & milestones
+├── mission-control/    — Executive aggregator dashboard & Brain Engine momentum hero
+├── profile/            — Personal biographical chronicle, heroic avatar, & achievement crests
+├── admin/              — Life OS control plane: DB health, table telemetry, & JSON schema tools
+├── reports/            — Sunday field dossier: broadsheet synthesis of weekly execution
 ├── mind-os/            — Habit tracker with 5/month streak heals & daily reflection journal
 ├── productivity-hub/   — Deadline tasks, weekly planning, goal alignment, & weekly reviews
 ├── learning-os/        — Structured skill roadmaps, curriculum stages, sessions, & study logs
-├── fitness-os/         — Strength/cardio workouts, custom exercise catalog, & personal records
-├── time-os/            — Focus time logs, single-timer constraint, & Document PiP overlay
+├── fitness-os/         — Kinetic Ledger: live workouts, set-by-set numpad, & movement patterns
+├── time-os/            — Chronos Tri-Modal Engine: focus timer, Document PiP, & root visualizer
 ├── finance-os/         — Behavioral spending ledger with Need vs Want classification
 ├── data-lab/           — 90-day activity rollups, module consistency, & telemetry health
 └── system/             — Brain Engine algorithms, Evening Sync, & feedback toasts
@@ -34,16 +39,18 @@ src/features/
 
 ---
 
-##  Architecture & Data Flow
+## ⚡ Architecture & Data Flow
 
 ```text
 Browser Client (React 19 + TypeScript 5.9 + Vite 7 SPA)
-  ├── React Router v7 (Nested routing with route-level code splitting)
+  ├── React Router v7 (14 active client routes with route-level lazy loading)
+  ├── Astrolabe Orb Navigation (3-ring kinetic orb shell with touch launcher)
+  ├── Tailwind CSS v3 (True-black design system + OKLCH Solar Themes)
   ├── TanStack React Query v5 (Exclusive server state management)
   ├── Zustand v5 (Operational event bus for immediate UI reactivity)
   └── Supabase Client (PostgreSQL 15+ with Row Level Security)
         ↓
-PostgreSQL Aggregation Layer (security_invoker = true)
+PostgreSQL Aggregation Layer (33 Base Tables, 15 Active Views, security_invoker = true)
   ├── current_day_snapshot & current_day_snapshot_history_14d (Brain Engine)
   ├── data_lab_daily_activity_90d & data_lab_weekly_system_score_12w (Data Lab)
   └── Domain Signal Views (habits, journal, tasks, time, fitness, finance, learning)
@@ -109,6 +116,8 @@ node scripts/smoke/run-browser-verification.mjs
 
 Comprehensive architectural and operational specifications are available in the [`docs/`](./docs/) directory:
 
+- [Agent Quickstart (AI Entrypoint)](./docs/AGENT_QUICKSTART.md)
+- [Documentation Index & Token Ledger](./docs/INDEX.md)
 - [System Architecture](./docs/architecture/SYSTEM_ARCHITECTURE.md)
 - [Database Schema](./docs/architecture/DATABASE_SCHEMA.md)
 - [Event Taxonomy](./docs/architecture/EVENT_TAXONOMY.md)

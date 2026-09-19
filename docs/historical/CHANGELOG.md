@@ -1,7 +1,15 @@
+---
+title: "Historical Changelog"
+status: "historical"
+last_synchronized_commit: "77d1a5b"
+domain: "historical"
+---
+
 # LIFE OS — HISTORICAL CHANGELOG
 
 **Status:** Historical Project Changelog Snapshot  
-**Last Updated:** September 2026 (Phase 1 Baseline)
+**Last Updated:** September 2026 (Phase 1 Baseline)  
+**Current Changelog:** For current releases from Winter Arc 2.0.0 onwards, see the root [`CHANGELOG.md`](../../CHANGELOG.md).
 
 ---
 

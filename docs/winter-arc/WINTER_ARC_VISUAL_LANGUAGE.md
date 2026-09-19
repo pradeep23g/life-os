@@ -1,3 +1,10 @@
+---
+title: "Winter Arc — Visual Language & Typography"
+status: "active"
+last_synchronized_commit: "77d1a5b"
+domain: "winter-arc"
+---
+
 # Winter Arc: Visual Language & Design Refoundation
 
 ## 1. Global Philosophy & Locked Principles

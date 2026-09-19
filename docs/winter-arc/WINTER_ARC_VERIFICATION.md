@@ -1,3 +1,10 @@
+---
+title: "Winter Arc — Verification Matrix"
+status: "active"
+last_synchronized_commit: "77d1a5b"
+domain: "winter-arc"
+---
+
 # Winter Arc Verification Plan
 
 This document outlines the verification plan for each implementation wave of the Winter Arc campaign. All existing verification gates must pass, and new features must add sufficient test coverage.

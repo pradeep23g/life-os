@@ -1,28 +1,39 @@
+---
+title: "Life OS — Release Gate Checklist"
+status: canonical
+last_synchronized_commit: "77d1a5b"
+domain: operations
+---
+
 # LIFE OS — RELEASE GATE CHECKLIST
 
 **Status:** Authoritative Release Verification Gate  
-**Last Synchronized:** September 2026 (Phase 1 Baseline)
+**Last Synchronized:** September 2026 (Phase 1 Baseline / Commit `77d1a5b`)
 
 ---
 
 ## 1. Automated Release Quality Gates
 
-Before merging or cutting a release, all three commands MUST pass cleanly from repository root:
+Before merging or cutting a release, all quality gates MUST pass cleanly from repository root:
 
 ```bash
-# 1. Static Lint Analysis
+# Gate 0: Documentation Drift Verification
+npm run verify:docs
+
+# Gate 1: Static Lint Analysis
 npm run lint
 
-# 2. Production TypeCheck & Build
+# Gate 2: Production TypeCheck & Build
 npm run build
 
-# 3. Canonical Verification Gate
+# Gate 3: Canonical Composite Release Gate (runs verify:docs, lint, typecheck, build)
 npm run verify:release
 ```
 
 **Pass Criteria:**
-- Zero ESLint errors.
-- Zero TypeScript (`tsc -b`) compilation errors.
+- Zero documentation drift errors (`verify:docs` exits code 0: schema parity, route coverage, ADR monotonicity, link integrity, task tracker parity).
+- Zero ESLint errors (`npm run lint`).
+- Zero TypeScript (`tsc -b`) compilation errors (`npm run build`).
 - Clean Vite production bundle generation in `dist/`.
 
 ---

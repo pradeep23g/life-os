@@ -1,7 +1,15 @@
+---
+title: "Life Rules & Behavioral Principles"
+status: "active"
+last_synchronized_commit: "77d1a5b"
+domain: "architecture"
+---
+
 # LIFE OS — LIFE RULES
 
 **Status:** Authoritative Behavioral Principles  
-**Last Synchronized:** September 2026 (Phase 1 Baseline)
+**Last Synchronized:** September 2026 (Winter Arc 2.0 Baseline — Commit `77d1a5b`)  
+**Target Repository:** `pradeep23g/life-os`
 
 ---
 
@@ -48,11 +56,16 @@ Life OS is architected to preserve multi-year longitudinal personal data safely.
 ---
 
 ## Rule 8 — Growth Is Multi-Dimensional
-Human life spans multiple interconnected dimensions:
-- **Discipline & Habits:** Mind OS
-- **Execution & Objectives:** Productivity Hub
-- **Skill Acquisition:** Learning OS
-- **Physical Training:** Fitness OS
-- **Focus & Deep Work:** Time OS
-- **Financial Awareness:** Finance OS
-- **Cognitive Reflection:** Mind OS Journal
+Human development spans multiple interconnected dimensions operating in synchrony:
+- **Discipline & Daily Habits:** Mind OS (`habits`, `habit_logs`)
+- **Execution & Objectives:** Productivity Hub (`tasks`, `goals`, `weekly_plans`)
+- **Skill Acquisition & Mastery:** Learning OS (`learning_roadmaps`, `learning_stages`)
+- **Kinetic Discipline & Physical Exertion:** Fitness OS (`workouts`, `exercise_logs`)
+- **Focus & Temporal Density:** Time OS (`time_logs`, Chronos engine)
+- **Financial Discipline & Capital Awareness:** Finance OS (`transactions`)
+- **Cognitive Reflection & Unburdening:** Mind OS Journal (`journal_entries`)
+- **Seasonal Cycles & Vows:** Winter Arc (`life_seasons`, chapter epochs)
+- **Long-Term Progression & Crests:** Profile (`user_achievements`, avatar)
+- **Longitudinal Observability:** Data Lab (cross-domain correlation)
+- **Synthesis & Field Dossiers:** Field Reports (Sunday broadsheet retrospectives)
+

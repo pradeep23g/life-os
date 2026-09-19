@@ -1,3 +1,10 @@
+---
+title: "Life OS — Future Migrations Plan (Archived)"
+status: "historical"
+last_synchronized_commit: "77d1a5b"
+domain: "historical"
+---
+
 # Future Migrations (Queued / Historical Planning)
 
 **Status:** Prepared Reference  

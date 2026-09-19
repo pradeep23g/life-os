@@ -1,3 +1,10 @@
+---
+title: "Winter Arc — Mobile & Android Product Directive"
+status: "active"
+last_synchronized_commit: "77d1a5b"
+domain: "winter-arc"
+---
+
 # Winter Arc: Android Product Directive
 
 ## 1. Core Philosophy

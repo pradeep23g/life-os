@@ -1,3 +1,10 @@
+---
+title: "Life OS — Winter Arc 2026 Master Change Specification"
+status: "canonical"
+last_synchronized_commit: "77d1a5b"
+domain: "winter-arc"
+---
+
 # LIFE OS — WINTER ARC 2026
 ## Master Change & Feature Specification
 

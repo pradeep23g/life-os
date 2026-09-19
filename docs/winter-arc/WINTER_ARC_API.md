@@ -1,3 +1,10 @@
+---
+title: "Winter Arc — API & Data Contracts"
+status: "active"
+last_synchronized_commit: "77d1a5b"
+domain: "winter-arc"
+---
+
 # Winter Arc: API, MCP, and AI Gateway
 
 > [!NOTE]

@@ -1,7 +1,14 @@
+---
+title: "Agent & Maintainer Operational Handbook"
+status: "active"
+last_synchronized_commit: "77d1a5b"
+domain: "operations"
+---
+
 # LIFE OS — AI AGENT & MAINTAINER OPERATIONAL HANDBOOK
 
 **Status:** Authoritative Operational Engineering Guide  
-**Last Synchronized:** September 2026 (Post-Integrity Campaign Baseline)  
+**Last Synchronized:** September 2026 (Winter Arc 2.0 Baseline — Commit `77d1a5b`)  
 **Audience:** AI Coding Agents, Software Architects, and Core Maintainers  
 **Target Repository:** `pradeep23g/life-os`
 
@@ -24,18 +31,37 @@ As an AI agent or maintainer working on this codebase:
 
 When codebase artifacts, database tables, or documents disagree, resolve conflicts strictly in this order:
 
-1. **Verified Current Runtime Behavior:** Actual execution proven by browser E2E and automated test suites.
-2. **Verified Remote Supabase Schema:** The live PostgreSQL schema on the linked project (`db.lhxwyzceiaopetrhcugr.supabase.co`).
-3. **Current Supabase Migrations:** Sequential migrations in `supabase/migrations/`.
-4. **Current Generated Types:** `src/types/database.types.ts` generated from live remote schema.
+1. **Remote PostgreSQL Migrations & Live Schema:** `supabase/migrations/` and remote Supabase tables.
+2. **Generated Database Types:** `src/types/database.types.ts` generated from live schema.
+3. **Canonical Architectural Decisions:** `docs/decisions/ARCHITECTURE_DECISIONS.md` (ADR-001 through ADR-028).
+4. **Canonical Architecture Documentation:** `docs/architecture/SYSTEM_ARCHITECTURE.md` and `docs/architecture/DATABASE_SCHEMA.md`.
 5. **Current Application Source Code:** Active implementations in `src/`.
-6. **Verified Test & Verification Evidence:** Evidence in `scripts/smoke/` and verified audit reports.
-7. **Agent Handoff Reports:** Completed work package handoffs (`LOS-INTEGRITY-005`, `LOS-INTEGRITY-008`, `FINAL_INTEGRITY_REPAIR`).
-8. **System Audits & Plans:** `LIFE_OS_CURRENT_STATE_AUDIT.md`, `LIFE_OS_MULTI_AGENT_SYSTEM_INTEGRITY_PLAN.md`.
-9. **Existing Documentation:** `docs/architecture/`, `docs/operations/`.
+6. **Feature Specifications & Taxonomy:** `docs/architecture/MODULE_GUIDE.md` and `docs/architecture/EVENT_TAXONOMY.md`.
+7. **Operational Guides & Checklists:** `docs/operations/DEV_WORKFLOW.md` and `docs/operations/RELEASE_GATE_CHECKLIST.md`.
+
+> [!IMPORTANT]
+> **Mandatory Fix-on-Discovery Rule:** When a discrepancy between physical code/schema reality and documentation is discovered, you MUST NOT silently bypass or ignore the documentation. You MUST correct the documentation immediately to restore truth parity.
+
+---
+
+## Common Agent Mistakes — DO NOT
 
 > [!CAUTION]
-> Existing documentation is NOT authoritative when contradicted by verified implementation, generated database types, or live PostgreSQL schema.
+> These mistakes have been made by previous agents. Each one caused production regressions
+> or wasted significant effort. Learn from them.
+
+| ❌ Mistake | Why It's Wrong | ✅ Correct Action |
+|---|---|---|
+| Creating a `Sidebar.tsx` or sidebar component | Sidebar was retired in ADR-023. Navigation is Astrolabe Orb only. | Modify `AstrolabeOrbNav.tsx` |
+| Changing `/` to render `MissionControl` | `/` is `HomePage` ("The Porch"). Mission Control is at `/system`. | Check route table in AGENT_QUICKSTART.md |
+| Querying table `telemetry_events` | Table doesn't exist. The events table is `public.events`. | Use `events` or check DATABASE_SCHEMA.md |
+| Querying table `focus_sessions` | Not a table — it's a computed view column from `time_logs`. | Use `time_logs` |
+| Using column `achievement_key` | Column doesn't exist. The correct column is `badge_id`. | Check DATABASE_SCHEMA.md |
+| Using table name `seasons` | Table is `life_seasons` (with `life_` prefix). | Check DATABASE_SCHEMA.md |
+| Picking up tasks from `tasks/todo.md` | All tasks are completed and archived (PR #1). | Check `docs/operations/PROJECT_ROADMAP.md` for real work |
+| Reading `LIFE_OS_FINAL_CURRENT_STATE_CONTEXT.md` as current | It's a historical snapshot from Sept 5. | Read `docs/AGENT_QUICKSTART.md` instead |
+| Using `Math.random()` in React rendering | Non-deterministic renders break React 19 reconciliation. | Use deterministic functions or `useMemo` with stable seeds |
+| Casting Supabase queries with `as any` | Bypasses TypeScript safety, hides table name errors. | Use typed Supabase client |
 
 ---
 
@@ -55,7 +81,12 @@ Presenting execution pressure (overdue tasks, impending deadlines, backlog count
 
 | Subsystem | Directory | Ownership Rules |
 |---|---|---|
+| **Home** | `src/features/home/` | The Porch: Asymmetric Swiss Stage, solar presence, dynamic CTA portal. |
+| **Winter Arc** | `src/features/arc/` | Winter Arc Grand Hall: 90-day countdown, chapter milestones, seasonal vows (`life_seasons`). |
 | **Mission Control** | `src/features/mission-control/` | Consumes `useSystemStatus()`, `usePendingEventsCount()`, and domain queries. Renders real EMA sparklines (no synthetic offsets) and deterministic confidence. |
+| **Profile** | `src/features/profile/` | Personal biographical chronicle, heroic avatar presence, capability crests (`user_achievements`). |
+| **Admin Console** | `src/features/admin/` | Life OS control plane: database health, table telemetry monitor (`events`, `time_logs`), JSON schema import/export. |
+| **Field Reports** | `src/features/reports/` | Sunday field dossier broadsheet: automated synthesis of weekly planning, reviews, time density, and financial discipline. |
 | **Mind OS** | `src/features/mind-os/` | Owns habits, streak breaks, streak heals (5/mo limit), and journal entries. Emits `mind.*` canonical events. |
 | **Productivity Hub** | `src/features/productivity-hub/` | Owns tasks, goals, weekly plans, plan items, and reviews. Emits `productivity.*` canonical events. |
 | **Learning OS** | `src/features/learning-os/` | Owns roadmaps, stages, sessions, session logs, milestones, projects, reflections. Distinguishes `useRecentSessionLogs(20)` from `useSessionAnalytics()`. |
@@ -64,6 +95,7 @@ Presenting execution pressure (overdue tasks, impending deadlines, backlog count
 | **Finance OS** | `src/features/finance-os/` | Owns behavioral spending in `transactions`. Measures Need vs Want discretionary spending. |
 | **Data Lab** | `src/features/data-lab/` | Read-only analytical workbench querying SQL views. Uses normalized key matching (`normalizeKey()`). |
 | **System Engine** | `src/features/system/` | Owns Brain Engine scoring, directives, and Evening Sync queue flushing. |
+| **Shell & Navigation** | `src/layout/` | Owns `AstrolabeOrbNav.tsx`, `ModuleHeader.tsx`, and shell layout wrappers. (Sidebar retired in 2.0). |
 | **Event Store** | `src/store/useEventBus.ts` | Owns operational queue, retry backoff, peek-and-splice persistence invariant, and bounded capacity. |
 | **Database Types** | `src/types/database.types.ts` | **STRICTLY PROTECTED FILE.** Never hand-edit. Generated via Supabase CLI. |
 | **Migrations** | `supabase/migrations/` | **IMMUTABLE HISTORY.** Only create new sequential additive migrations. |
@@ -110,7 +142,77 @@ Presenting execution pressure (overdue tasks, impending deadlines, backlog count
 
 ---
 
-## 7. Brain Engine & Intelligence Rules
+## 7. New Module Creation Protocol
+
+When creating a new feature module, complete every step in order:
+
+### Scaffolding
+- [ ] Create `src/features/<name>/` directory
+- [ ] Create `pages/<Name>Page.tsx` (or `<Name>Layout.tsx` for multi-view modules)
+- [ ] Create `api/use<Name>.ts` for TanStack React Query hooks
+- [ ] Create `components/` directory for module-specific components
+
+### Integration
+- [ ] Add `<Route>` in `src/App.tsx` (lazy-load with `React.lazy()`)
+- [ ] Add orbital node in `src/layout/AstrolabeOrbNav.tsx` (coordinate with ring/angle geometry)
+- [ ] Choose module signature color (OKLCH format, add to UI_SYSTEM.md)
+
+### Database (if needed)
+- [ ] Create migration: `supabase/migrations/<YYYYMMDDHHMMSS>_<description>.sql`
+- [ ] Enable RLS: `ALTER TABLE ... ENABLE ROW LEVEL SECURITY`
+- [ ] Add policy: `CREATE POLICY ... USING (auth.uid() = user_id)`
+- [ ] Regenerate types: `supabase gen types typescript --project-id <id> > src/types/database.types.ts`
+
+### Documentation (MANDATORY — not optional)
+- [ ] Update `docs/architecture/DATABASE_SCHEMA.md` with new tables/columns
+- [ ] Update `docs/architecture/MODULE_GUIDE.md` with new module section
+- [ ] Update `docs/AGENT_QUICKSTART.md` route table
+- [ ] Update `docs/architecture/SYSTEM_ARCHITECTURE.md` route table
+- [ ] Log session in Agent Session Ledger (see Section 8)
+
+### Verification
+- [ ] `npx tsc -b` passes
+- [ ] `npx eslint src` passes
+- [ ] `npm run build` succeeds
+- [ ] `npm run verify:docs` passes
+
+---
+
+## 8. Agent Session Documentation Protocol (MANDATORY)
+
+Every agent session that modifies code or documentation MUST:
+
+### Before Starting Work
+1. Read `docs/AGENT_QUICKSTART.md` (Tier 0)
+2. Read `docs/agent-ledger/HANDOFF.md` for current context
+3. Read `docs/agent-ledger/MISTAKES.md` if working in a domain where mistakes were logged
+
+### During Work
+4. Log any bugs, drift, or insights discovered in `docs/agent-ledger/FINDINGS.md`
+5. If you make an error that costs time or causes a regression, document it in
+   `docs/agent-ledger/MISTAKES.md` with root cause analysis
+
+### After Completing Work
+6. Append a session entry to `docs/agent-ledger/SESSION_LOG.md`
+7. Update `docs/agent-ledger/HANDOFF.md` with current context for the next agent
+8. Update any documentation files affected by your code changes:
+   - New tables → DATABASE_SCHEMA.md + AGENT_QUICKSTART.md quick ref
+   - New routes → SYSTEM_ARCHITECTURE.md + AGENT_QUICKSTART.md + MODULE_GUIDE.md
+   - New ADRs → ARCHITECTURE_DECISIONS.md
+   - New modules → MODULE_GUIDE.md
+
+### Documentation Is a First-Class Deliverable
+> [!IMPORTANT]
+> Documentation updates are NOT optional cleanup. They are a **required deliverable**
+> of every session, equal in importance to the code itself. A session that modifies
+> code without updating documentation is **incomplete**.
+>
+> If you discover a doc/code discrepancy but cannot fix it in this session,
+> you MUST log it in FINDINGS.md as an OPEN finding.
+
+---
+
+## 9. Brain Engine & Intelligence Rules
 
 1. **No Simulated Intelligence:**
    - Mission Control sparklines MUST display the actual `emaSeries` array from `analyzeMomentum.ts`.
@@ -125,7 +227,7 @@ Presenting execution pressure (overdue tasks, impending deadlines, backlog count
 
 ---
 
-## 8. Evening Sync & Queue Flushing Invariants
+## 10. Evening Sync & Queue Flushing Invariants
 
 1. **Cross-Day Queue Flushing:**
    - Evening Sync queries `public.system_event_queue` in bounded batches of 50 without date restrictions. It must flush events from previous days that were queued offline.
@@ -138,7 +240,7 @@ Presenting execution pressure (overdue tasks, impending deadlines, backlog count
 
 ---
 
-## 9. What Agents MUST NOT Modify Casually
+## 11. What Agents MUST NOT Modify Casually
 
 1. **DO NOT hand-edit `src/types/database.types.ts`:** Regenerate only via Supabase CLI.
 2. **DO NOT alter historical migrations:** Existing migrations in `supabase/migrations/` are immutable history.
@@ -149,7 +251,7 @@ Presenting execution pressure (overdue tasks, impending deadlines, backlog count
 
 ---
 
-## 10. Automated Verification & Quality Gates
+## 12. Automated Verification & Quality Gates
 
 Before concluding any development task or declaring work complete, execute the required quality gates from repository root:
 
@@ -178,7 +280,7 @@ node scripts/smoke/run-browser-verification.mjs
 
 ---
 
-## 11. Active vs Historical Entities Matrix
+## 13. Active vs Historical Entities Matrix
 
 | Entity | Classification | Handling Rule |
 |---|---|---|

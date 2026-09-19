@@ -1,3 +1,10 @@
+---
+title: "Winter Arc — Data Model Specification"
+status: "active"
+last_synchronized_commit: "77d1a5b"
+domain: "winter-arc"
+---
+
 # Winter Arc Data Model Gap Analysis
 
 **Status:** [CURRENT]  

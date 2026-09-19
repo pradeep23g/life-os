@@ -1,3 +1,10 @@
+---
+title: "Winter Arc — Progression & Momentum Dynamics"
+status: "active"
+last_synchronized_commit: "77d1a5b"
+domain: "winter-arc"
+---
+
 # Winter Arc Progression System
 
 > [!NOTE]

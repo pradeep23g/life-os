@@ -1,3 +1,10 @@
+---
+title: "Winter Arc — Room & Page Blueprints"
+status: "active"
+last_synchronized_commit: "77d1a5b"
+domain: "winter-arc"
+---
+
 # Winter Arc: Page Blueprints
 
 This document outlines the architectural blueprints for every major surface in Life OS. It enforces strict narrative distinctiveness between domains.

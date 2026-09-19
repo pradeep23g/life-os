@@ -1,3 +1,10 @@
+---
+title: "Winter Arc — Telemetry & Event Ingestion"
+status: "active"
+last_synchronized_commit: "77d1a5b"
+domain: "winter-arc"
+---
+
 # Winter Arc Telemetry Audit
 
 This document audits Winter Arc features against the existing event taxonomy and identifies genuinely necessary new canonical events.

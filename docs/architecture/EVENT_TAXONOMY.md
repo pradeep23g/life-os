@@ -1,7 +1,14 @@
+---
+title: "Event Taxonomy"
+status: "active"
+last_synchronized_commit: "77d1a5b"
+domain: "architecture"
+---
+
 # LIFE OS — EVENT TAXONOMY
 
 **Status:** Authoritative Event & Telemetry Reference  
-**Last Synchronized:** September 2026 (Post-Integrity Campaign Baseline)  
+**Last Synchronized:** September 2026 (Winter Arc 2.0 Baseline — Commit `77d1a5b`)  
 **Source of Truth:** `src/lib/eventTaxonomy.ts` & `src/store/useEventBus.ts`
 
 ---
@@ -38,7 +45,7 @@ All durable analytics events adhere strictly to:
 
 Rules:
 1. **Lowercase Only:** No camelCase or UPPERCASE event strings in `public.events`.
-2. **Namespace Hierarchy:** `domain` corresponds to one of the 7 active domains (`mind`, `productivity`, `learning`, `fitness`, `time`, `finance`, `system`).
+2. **Namespace Hierarchy:** `domain` corresponds to one of the 7 active scoring domains (`mind`, `productivity`, `learning`, `fitness`, `time`, `finance`, `system`).
 3. **Canonical Constants:** Every event MUST be imported from `src/lib/eventTaxonomy.ts`. Inline string literals are strictly prohibited.
 4. **Exact Count:** Exactly 45 canonical event constants exist in `EVENT_TYPES`.
 
@@ -203,4 +210,21 @@ When implementing or modifying any mutation:
 
 - **Retired Progress Hub Events:** All 12 legacy `progress_hub.*` event types (`skill_created`, `challenge_completed`, etc.) are permanently retired and dropped.
 - **Legacy String Literals:** Hardcoded snake_case strings (`'task_created'`, `'habit_logged_done'`, `'finance_transaction_logged'`) are deprecated. All active emitters have been converted to canonical dot-notation.
+
+---
+
+## 8. Winter Arc & Extension Domain Telemetry Guidance (Planned Constants)
+
+The Winter Arc architecture introduced 6 new database entities (`life_seasons`, `user_achievements`, `pulse_logs`, `knowledge_resources`, `experiments`, `user_settings`).
+
+Until formal constants are registered in `src/lib/eventTaxonomy.ts` under a dedicated migration wave, mutations on these tables follow this standard:
+- **Direct Database Mutation:** Standard Supabase React Query mutations operate directly on these tables under their RLS policies (`auth.uid() = user_id`).
+- **Planned Telemetry Constants:**
+  - `season.cycle.started` / `season.cycle.completed` / `season.vow.updated`
+  - `progression.achievement.unlocked`
+  - `pulse.entry.logged`
+  - `knowledge.resource.created` / `knowledge.resource.updated`
+  - `experiment.protocol.started` / `experiment.protocol.concluded`
+- **Standard Invalidation:** Any mutation on these entities should invalidate their respective query cache keys (e.g. `['life-seasons']`, `['user-achievements']`, `['pulse-logs']`).
+
 

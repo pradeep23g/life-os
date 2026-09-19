@@ -1,3 +1,10 @@
+---
+title: "Winter Arc — Visual Refoundation 2.0"
+status: "active"
+last_synchronized_commit: "77d1a5b"
+domain: "winter-arc"
+---
+
 # Life OS — Winter Arc: Visual Refoundation 2.0
 # Core System Specification & Design Architecture
 

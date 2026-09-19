@@ -1,3 +1,10 @@
+---
+title: "Winter Arc — Field Reports & Telemetry Dossier"
+status: "active"
+last_synchronized_commit: "77d1a5b"
+domain: "winter-arc"
+---
+
 # Life OS Winter Arc: Reporting, Export & Archive (Wave 6) & Advanced Engines (Wave 7)
 
 This document outlines the architecture and requirements for the Reporting System, Recovery OS, Life Experiments, Pattern Engine, and Life Timeline. These features encompass Waves 6 and 7 of the Winter Arc master plan.

@@ -1,3 +1,10 @@
+---
+title: "Winter Arc 2026 — Documentation Suite"
+status: "active"
+last_synchronized_commit: "77d1a5b"
+domain: "winter-arc"
+---
+
 # Winter Arc Documentation System
 
 > **Created:** September 6, 2026 (Wave 0 — Documentation & Architecture Preparation)
@@ -10,7 +17,7 @@
 
 **Before implementing ANY Winter Arc feature, read these documents in order:**
 
-1. **[LIFE_OS_FINAL_CURRENT_STATE_CONTEXT.md](../../LIFE_OS_FINAL_CURRENT_STATE_CONTEXT.md)** — Authoritative current state (Phase 1 baseline)
+1. **[AGENT_QUICKSTART.md](../AGENT_QUICKSTART.md)** — Authoritative current system state (see also [Historical Snapshot](../historical/PHASE1_BASELINE_SNAPSHOT_ad488a2.md))
 2. **[WINTER_ARC_MASTER_PLAN.md](WINTER_ARC_MASTER_PLAN.md)** — Complete feature inventory with 46 features across 9 waves
 3. **The relevant feature specification** from the documents below
 4. **[WINTER_ARC_IMPLEMENTATION_SEQUENCE.md](WINTER_ARC_IMPLEMENTATION_SEQUENCE.md)** — Wave dependencies and critical path

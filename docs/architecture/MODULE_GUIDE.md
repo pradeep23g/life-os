@@ -1,14 +1,21 @@
+---
+title: "Module Guide"
+status: "active"
+last_synchronized_commit: "77d1a5b"
+domain: "architecture"
+---
+
 # LIFE OS — MODULE GUIDE
 
 **Status:** Authoritative Module Reference  
-**Last Synchronized:** September 2026 (Post-Integrity Campaign Baseline)  
+**Last Synchronized:** September 2026 (Winter Arc 2.0 Baseline — Commit `77d1a5b`)  
 **Target Repository:** `pradeep23g/life-os`
 
 ---
 
 ## 1. Mission Control
 
-**Route:** `/mission-control` (and `/`)  
+**Route:** `/system` (legacy `/mission-control` redirects here)  
 **Type:** Executive Command Center (Read-Only Aggregator)  
 **Location:** `src/features/mission-control/`
 
@@ -180,4 +187,109 @@ The central intelligence engine that computes real-time momentum, evaluates mult
 - `analyzeMomentum.ts`: Computes Exponential Moving Average (EMA, $\alpha = 0.6$) momentum, symmetric trend deltas, intra-day deep work bonuses (+4 points for > 120 min), and low-momentum acceleration.
 - `generateDirectives.ts`: Calculates domain urgency scores and selects the top actionable directive.
 - `useEveningSync.ts`: Processes all pending events in `public.system_event_queue` across all dates in batches of 50, updates `public.system_metrics`, flushes the queue, and invalidates query caches.
+
+---
+
+## 10. Home (The Porch)
+
+**Route:** `/`  
+**Type:** Threshold & Orientation Sanctuary  
+**Location:** `src/features/home/`
+
+### Responsibility
+The Porch serves as the initial, serene threshold when stepping into Life OS. Built upon an asymmetric Swiss Stage layout, it re-anchors the user's presence without immediate cognitive overwhelm. It integrates solar time awareness, living avatar presence, and a single, dominant daily call-to-action button that dynamically points to the highest-priority directive evaluated by the Brain Engine.
+
+### Key Components & Hooks
+- `HomePage.tsx`: Asymmetric stage layout featuring dynamic day/night atmospheric backdrop, circadian greeting, and responsive viewport scaling.
+- `SolarPresence`: Living circadian visualizer synchronizing with local time of day (`dawn`, `day`, `dusk`, `midnight`).
+- `DynamicActionPortal`: Single dominant action button (`"COMMENCE DEEP WORK"`, `"LOG WORKOUT"`, `"EVENING REFLECTION"`) dynamically routed to the top Brain Engine directive.
+- `LivingEmblem`: Ambient avatar presence indicator displaying current momentum phase and protective aura.
+
+---
+
+## 11. Winter Arc
+
+**Route:** `/arc`  
+**Type:** 90-Day Developmental Campaign & Grand Hall  
+**Location:** `src/features/arc/`
+
+### Responsibility
+The dedicated workspace for high-intensity seasonal developmental campaigns (ADR-012). Displays the 90-day countdown ledger, chapter milestones, seasonal vows, daily protocol execution, and unlocked capability crests.
+
+### Key Components & Hooks
+- `ArcPage.tsx`: Grand Hall layout organizing seasonal progression into Three Epochs: Foundation (Days 1–14), Deep Arc (Days 15–75), and Harvest & Transition (Days 76–90).
+- `useSeasonData`: Reads active season from `public.life_seasons` where `start_date <= current_date AND end_date >= current_date`.
+- `SeasonLedger.tsx`: 90-day countdown progress bar, elapsed days counter, and daily integrity percentage.
+- `EpochRail.tsx`: Visual timeline indicating current developmental chapter and upcoming seasonal gates.
+- `VowsChecklist.tsx`: Interactive tracker for seasonal non-negotiables stored in `life_seasons.vows` jsonb array.
+
+---
+
+## 12. Profile
+
+**Route:** `/profile`  
+**Type:** Personal Biographical Chronicle & Avatar Sanctuary  
+**Location:** `src/features/profile/`
+
+### Responsibility
+The user's personal chronicle, biographical identity, and long-term achievement record. Displays the full heroic avatar, capability crests and badges (`public.user_achievements`), historical seasons ledger, system telemetry statistics, and cryptographic session termination.
+
+### Key Components & Hooks
+- `ProfilePage.tsx`: Personal chronicle view uniting avatar customization, badge credentials, and account settings.
+- `AvatarHero.tsx`: Full-scale composable SVG avatar with active cosmetic equipment and seasonal aura (ADR-013).
+- `AchievementGrid.tsx`: Grid of unlocked capability crests and tiered badges (`user_achievements.badge_id`) with unlock timestamps and criteria tooltips (ADR-016).
+- `SeasonArchive.tsx`: Historical timeline of completed life seasons and seasonal vow retrospectives.
+- `SessionSignOut`: Cryptographically invalidates local Supabase session tokens and redirects to `/auth`.
+
+---
+
+## 13. Admin Console
+
+**Route:** `/admin`  
+**Type:** System Operations & Control Plane  
+**Location:** `src/features/admin/`
+
+### Responsibility
+The central maintenance and governance cockpit for Life OS. Provides database health monitoring against canonical tables (`public.events`, `public.time_logs`), JSON schema ingestion and export for roadmaps and seasons, table telemetry audits, and administrative overrides.
+
+### Key Components & Hooks
+- `AdminConsolePage.tsx`: Administrative dashboard layout with database health status, telemetry counters, and configuration controls.
+- `DatabaseHealthMonitor.tsx`: Queries canonical tables (`events` for total telemetry volume, `time_logs` for focus duration records) to verify RLS connectivity and table health.
+- `SchemaImportExportModal.tsx`: Validates and ingests JSON payloads for Learning OS roadmaps (ADR-028) and seasonal directives (ADR-026).
+- `DataExportEngine.ts`: Generates structured, encrypted JSON backups of user behavioral records.
+
+---
+
+## 14. Field Reports
+
+**Route:** `/reports`  
+**Type:** Broadsheet Sunday Field Dossier  
+**Location:** `src/features/reports/`
+
+### Responsibility
+A dense, editorial-style Sunday field dossier synthesizing cross-domain performance. Modeled on broadsheet print layout standards (Geist Mono and Newsreader serif typography), it compiles weekly planning goals (`weekly_plans`), commitment items (`weekly_plan_items`), retrospective reviews (`weekly_reviews`), time density, and financial discipline into an executive summary ready for print or digital reflection.
+
+### Key Components & Hooks
+- `FieldReportPage.tsx`: Responsive broadsheet container with print-ready CSS pagination styles.
+- `BroadsheetDossier.tsx`: High-density multi-column editorial report layout.
+- `WeeklySynthesisEngine.ts`: Automatically aggregates weekly wins, bottlenecks, time allocation per bucket, and habit adherence into bulleted narrative briefs.
+- `DossierMetrics.tsx`: High-contrast summary blocks reporting weekly discipline index, workout completions, and need-to-want financial ratio.
+
+---
+
+## 15. Auth
+
+**Route:** `/auth` (public, outside `ProtectedRoute`)  
+**Type:** Authentication & Session Gateway  
+**Location:** `src/features/auth/`
+
+### Responsibility
+Supabase email/password authentication, session token management, redirect to `/` on successful login.
+
+### Key Components & Details
+- **Component:** `AuthPage.tsx`
+- **Key Dependencies:** `@supabase/supabase-js` v2, Supabase Auth
+- **RLS Integration:** Provides `auth.uid()` that all RLS policies depend on
+
+
 

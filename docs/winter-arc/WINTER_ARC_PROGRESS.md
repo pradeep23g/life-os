@@ -1,7 +1,14 @@
+---
+title: "Winter Arc Progress Ledger"
+status: "active"
+last_synchronized_commit: "77d1a5b"
+domain: "winter-arc"
+---
+
 # LIFE OS — WINTER ARC
 ## Development Progress Ledger
 
-> **Note:** Canonical progress is synchronized in [WINTER_ARC_PROGRESS.md](./WINTER_ARC_PROGRESS.md).
+> **Note:** This document is the canonical development progress ledger for the Winter Arc campaign.
 
 ### Current Status
 
@@ -12,6 +19,7 @@
   2. **TypeScript Strict Type Sync:** Regenerated `src/types/database.types.ts` against remote database and eliminated all synthetic `(supabase as any)` hacks.
   3. **Living Avatar Emblem Rendering:** Resolved SVG CSS color bug (`oklch(...)` wrapping) allowing the generative geometric emblem to render reliably across solar themes and life states.
   4. **Release Gate Verification:** `npm run verify:release` passing with 0 errors, 0 warnings, and clean 2000-module production build.
+  5. **System Remediation & Forensic Audit Baseline (Sept 2026):** Executed complete codebase forensic audit. Purged 49 unreferenced Data Lab files, dead `SystemStatusCard.tsx`, test simulations, and default starter files. Eradicated all 46 `text-text-primary0` typo classes and rogue hex codes. Eliminated 10-query route waterfall in `Sidebar.tsx` via `useSystemStatus()`. Parameterized Avatar momentum with real Brain Engine telemetry, and aligned `/arc` default season fallback with canonical 90-day Winter Arc 2026 contract. Documented in [WINTER_ARC_SYSTEM_REMEDIATION_AND_AUDIT_2026.md](./WINTER_ARC_SYSTEM_REMEDIATION_AND_AUDIT_2026.md).
 - **Current Blockers:** None.
 
 ---
@@ -31,9 +39,9 @@
 | **Phase I** | Android Widgets, Notifications, Deep Links | NOT STARTED | Android Specialist | App Widgets, Notification Engine |
 | **Phase J** | API / MCP Server Integration | NOT STARTED | Systems Guardian | Model Context Protocol Server |
 | **Phase K** | AI Gateway & Provider Router | NOT STARTED | Intelligence Specialist | AI Engine |
-| **Phase L** | Seasons & Achievements Admin Control Layer (ADR-023) | PLANNED / SPECIFIED | Systems Specialist | `/system/admin` |
-| **Phase M** | Recovery OS — Sanctuary & Grief Protocol (ADR-024) | PLANNED / SPECIFIED | Empathy & Sanctuary Specialist | `/recovery`, `.theme-recovery` |
-| **Phase N** | Learning OS AI Curriculum Importer (ADR-025) | PLANNED / SPECIFIED | Intelligence & Learning Specialist | `/learning-os` Modal |
+| **Phase L** | Seasons & Achievements Admin Control Layer (ADR-026) | PLANNED / SPECIFIED | Systems Specialist | `/admin` |
+| **Phase M** | Recovery OS — Sanctuary & Grief Protocol (ADR-027) | PLANNED / SPECIFIED | Empathy & Sanctuary Specialist | `/recovery`, `.theme-recovery` |
+| **Phase N** | Learning OS AI Curriculum Importer (ADR-028) | PLANNED / SPECIFIED | Intelligence & Learning Specialist | `/learning-os` Modal |
 
 ---
 

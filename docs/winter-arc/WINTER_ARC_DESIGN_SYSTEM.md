@@ -1,3 +1,10 @@
+---
+title: "Winter Arc — Design System & Tokens"
+status: "active"
+last_synchronized_commit: "77d1a5b"
+domain: "winter-arc"
+---
+
 # Winter Arc Design System
 
 This document outlines the visual identity, themes, time-of-day modes, and design language for the Winter Arc campaign in Life OS.

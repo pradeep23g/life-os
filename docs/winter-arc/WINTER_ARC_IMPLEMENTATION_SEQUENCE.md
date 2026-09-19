@@ -1,3 +1,10 @@
+---
+title: "Winter Arc — Implementation Sequence"
+status: "active"
+last_synchronized_commit: "77d1a5b"
+domain: "winter-arc"
+---
+
 # Winter Arc Implementation Sequence & Multi-Agent Model
 
 This document outlines the authoritative implementation sequence and agent responsibilities for the Winter Arc evolution of Life OS.

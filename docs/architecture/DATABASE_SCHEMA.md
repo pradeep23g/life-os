@@ -1,7 +1,14 @@
+---
+title: "Database Schema"
+status: "active"
+last_synchronized_commit: "77d1a5b"
+domain: "architecture"
+---
+
 # LIFE OS — DATABASE SCHEMA
 
 **Status:** Authoritative Database Reference  
-**Last Synchronized:** September 2026 (Post-Integrity Campaign Baseline)  
+**Last Synchronized:** September 2026 (Winter Arc 2.0 Baseline — Commit `77d1a5b`)  
 **Source of Truth:** Remote Supabase Cloud Instance & `src/types/database.types.ts`
 
 ---
@@ -10,15 +17,15 @@
 
 The Life OS database runs on hosted PostgreSQL 15+ via Supabase.
 
-- **Total Base Tables:** **27 tables** (26 active operational tables + 1 historical archive table).
-- **Total Views:** **15 SQL aggregation views** (all created `WITH (security_invoker = true)`).
-- **Row Level Security (RLS):** Enabled and enforced on all 27 application tables. Every query executes under `auth.uid() = user_id`.
+- **Total Base Tables:** **33 base tables** (32 active operational tables + 1 historical archive table).
+- **Total Views:** **15 active SQL aggregation views** (+ 4 planned views).
+- **Row Level Security (RLS):** Enabled and enforced on all 33 application tables. Every query executes under `auth.uid() = user_id`.
 - **Security Invoker Views:** All 15 SQL views run with `security_invoker = true`, ensuring view queries automatically execute under the authenticated user's RLS permissions.
 - **Timezone Standardization:** All behavioral day partitions, rolling windows, and aggregations are normalized to Indian Standard Time (`Asia/Kolkata`, IST, UTC+5:30).
 
 ---
 
-## 2. Active Domain Tables (27 Tables)
+## 2. Active Domain Tables (32 Tables)
 
 ### 2.1 Mind OS (5 Tables)
 
@@ -29,10 +36,11 @@ Tracks habit definitions, types, and daily targets.
 | `id` | `uuid` | No | `gen_random_uuid()` | Primary Key |
 | `user_id` | `uuid` | No | — | Foreign Key $\rightarrow$ `auth.users(id)` |
 | `title` | `text` | No | — | Habit title |
-| `habit_type` | `text` | No | `'binary'` | Habit type (`'binary'` or `'count'`) |
+| `habit_type` | `text` | No | `'binary'` | Habit type (`check (habit_type in ('binary', 'target'))`) |
 | `target_value` | `integer` | No | `1` | Daily completion target value |
 | `unit` | `text` | Yes | `null` | Optional unit for count habits (e.g. `pages`, `glasses`) |
 | `created_at` | `timestamptz` | No | `now()` | Creation timestamp |
+| `updated_at` | `timestamptz` | No | `now()` | Last update timestamp |
 | `deleted_at` | `timestamptz` | Yes | `null` | Soft delete timestamp |
 
 #### `public.habit_logs`
@@ -88,6 +96,9 @@ Structured daily reflection entries with mood scoring (multi-entry supported).
 | `updated_at` | `timestamptz` | No | `now()` | Last update timestamp |
 | `deleted_at` | `timestamptz` | Yes | `null` | Soft delete timestamp |
 
+> [!NOTE]
+> Columns `went_well`, `went_wrong`, and `lesson_learned` persist in remote PostgreSQL as legacy nullable text columns from migration `01_mind_os_schema.sql`, but active UI forms and queries use `what_went_good`, `what_you_learned`, and `brief_about_day`.
+
 ---
 
 ### 2.2 Productivity Hub (5 Tables)
@@ -105,6 +116,9 @@ Actionable task ledger with deadline constraints.
 | `created_at` | `timestamptz` | No | `now()` | Creation timestamp |
 | `updated_at` | `timestamptz` | No | `now()` | Update timestamp |
 | `deleted_at` | `timestamptz` | Yes | `null` | Soft delete timestamp |
+
+> [!NOTE]
+> Columns `priority` and `status` were formally removed from `tasks` in migration `202606230001_database_cleanup.sql` in favor of boolean `is_completed` and task prioritization in `weekly_plan_items`.
 
 #### `public.goals`
 High-level strategic objectives tied to weekly planning.
@@ -127,7 +141,7 @@ Weekly focus themes and timeframes.
 | `id` | `uuid` | No | `gen_random_uuid()` | Primary Key |
 | `user_id` | `uuid` | No | — | Foreign Key $\rightarrow$ `auth.users(id)` |
 | `week_start_date`| `date` | No | — | Monday of target week |
-| `focus_text` | `text` | Yes | `null` | Main theme/focus for the week |
+| `focus_text` | `text` | No | — | Main theme/focus for the week |
 | `created_at` | `timestamptz` | No | `now()` | Creation timestamp |
 
 *Constraint:* Unique on `(user_id, week_start_date)`.
@@ -235,14 +249,15 @@ Execution log of completed study sessions.
 |---|---|---|---|---|
 | `id` | `uuid` | No | `gen_random_uuid()` | Primary Key |
 | `user_id` | `uuid` | No | — | Foreign Key $\rightarrow$ `auth.users(id)` |
-| `session_id` | `uuid` | No | — | Foreign Key $\rightarrow$ `public.learning_sessions(id) on delete cascade` |
+| `session_id` | `uuid` | Yes | `null` | Foreign Key $\rightarrow$ `public.learning_sessions(id) on delete set null` |
 | `roadmap_id` | `uuid` | No | — | Foreign Key $\rightarrow$ `public.learning_roadmaps(id) on delete cascade` |
 | `time_log_id` | `uuid` | Yes | `null` | Foreign Key $\rightarrow$ `public.time_logs(id) on delete set null` |
 | `logged_at` | `timestamptz` | No | `now()` | Study timestamp |
-| `duration_minutes`| `integer` | No | `0` | Minutes studied |
+| `duration_minutes`| `integer` | Yes | `null` | Minutes studied (null when skipped or untimed) |
 | `notes` | `text` | Yes | `null` | Session notes |
 | `metrics` | `jsonb` | Yes | `'{}'::jsonb` | Study metrics |
 | `created_at` | `timestamptz` | No | `now()` | Creation timestamp |
+| `updated_at` | `timestamptz` | No | `now()` | Update timestamp |
 | `deleted_at` | `timestamptz` | Yes | `null` | Soft delete timestamp |
 
 #### `public.learning_milestones`
@@ -267,11 +282,11 @@ Proof-of-work project implementations tied to a learning roadmap.
 | `id` | `uuid` | No | `gen_random_uuid()` | Primary Key |
 | `user_id` | `uuid` | No | — | Foreign Key $\rightarrow$ `auth.users(id)` |
 | `roadmap_id` | `uuid` | No | — | Foreign Key $\rightarrow$ `public.learning_roadmaps(id)` |
-| `stage_id` | `uuid` | Yes | `null` | Foreign Key $\rightarrow$ `public.learning_stages(id)` |
+| `stage_id` | `uuid` | Yes | `null` | Foreign Key $\rightarrow$ `public.learning_stages(id) on delete set null` |
 | `title` | `text` | No | — | Project title |
 | `description` | `text` | Yes | `null` | Project description |
 | `repo_url` | `text` | Yes | `null` | Code repository URL |
-| `status` | `text` | No | `'in_progress'` | Project lifecycle status |
+| `status` | `text` | No | `'not_started'` | Project lifecycle status (`check (status in ('not_started', 'in_progress', 'done'))`) |
 | `completed_at` | `timestamptz` | Yes | `null` | Completion timestamp |
 | `created_at` | `timestamptz` | No | `now()` | Creation timestamp |
 | `updated_at` | `timestamptz` | No | `now()` | Update timestamp |
@@ -284,9 +299,9 @@ Teach-back and conceptual reflections tied to learning roadmaps.
 | `id` | `uuid` | No | `gen_random_uuid()` | Primary Key |
 | `user_id` | `uuid` | No | — | Foreign Key $\rightarrow$ `auth.users(id)` |
 | `roadmap_id` | `uuid` | No | — | Foreign Key $\rightarrow$ `public.learning_roadmaps(id)` |
-| `stage_id` | `uuid` | Yes | `null` | Foreign Key $\rightarrow$ `public.learning_stages(id)` |
-| `session_id` | `uuid` | Yes | `null` | Foreign Key $\rightarrow$ `public.learning_sessions(id)` |
-| `reflection_type`| `text` | No | `'concept'` | Reflection format |
+| `stage_id` | `uuid` | Yes | `null` | Foreign Key $\rightarrow$ `public.learning_stages(id) on delete set null` |
+| `session_id` | `uuid` | Yes | `null` | Foreign Key $\rightarrow$ `public.learning_sessions(id) on delete set null` |
+| `reflection_type`| `text` | No | `'concept'` | Reflection format (`check (reflection_type in ('concept', 'teach_back', 'retrospective'))`) |
 | `content` | `text` | No | — | Reflection content |
 | `created_at` | `timestamptz` | No | `now()` | Creation timestamp |
 | `updated_at` | `timestamptz` | No | `now()` | Update timestamp |
@@ -304,6 +319,7 @@ Custom and standard exercise movement catalog.
 | `user_id` | `uuid` | No | — | Foreign Key $\rightarrow$ `auth.users(id)` |
 | `name` | `text` | No | — | Exercise name |
 | `category` | `text` | Yes | `null` | Movement category (`strength`, `cardio`, etc.) |
+| `movement_pattern`| `text` | Yes | `null` | Architectural movement pattern (`push`, `pull`, `legs`, `core`, etc. added in `20260916232300_fitness_kinetic_fields.sql`) |
 | `target_muscles` | `text[]` | Yes | `null` | Target muscle groups |
 | `equipment` | `text[]` | Yes | `null` | Equipment required |
 | `default_unit` | `text` | Yes | `'kg'` | Default weight/distance unit |
@@ -318,15 +334,18 @@ Workout training sessions.
 |---|---|---|---|---|
 | `id` | `uuid` | No | `gen_random_uuid()` | Primary Key |
 | `user_id` | `uuid` | No | — | Foreign Key $\rightarrow$ `auth.users(id)` |
-| `title` | `text` | No | — | Workout title |
 | `workout_date`| `date` | No | — | IST date |
+| `title` | `text` | No | — | Workout title |
+| `session_type` | `text` | Yes | `null` | Optional workout session type / split |
+| `duration_minutes`| `integer` | No | `0` | Total completed duration (`check (duration_minutes >= 0)`) |
 | `start_time` | `timestamptz` | Yes | `null` | Session start timestamp |
 | `end_time` | `timestamptz` | Yes | `null` | Session end timestamp (`null` = in-progress) |
-| `duration_minutes`| `integer` | Yes | `null` | Total completed duration |
 | `notes` | `text` | Yes | `null` | Post-workout reflection |
 | `created_at` | `timestamptz` | No | `now()` | Creation timestamp |
 | `updated_at` | `timestamptz` | No | `now()` | Update timestamp |
 | `deleted_at` | `timestamptz` | Yes | `null` | Soft delete timestamp |
+
+*Single Active Workout Invariant:* PostgreSQL partial unique index `idx_workouts_single_active_session_per_user` on `(user_id) WHERE end_time IS NULL AND deleted_at IS NULL`.
 
 #### `public.exercise_logs`
 Exercise performance entries within a workout.
@@ -340,7 +359,8 @@ Exercise performance entries within a workout.
 | `sets` | `integer` | Yes | `null` | Completed sets |
 | `reps_total` | `integer` | Yes | `null` | Total repetitions |
 | `weight_kg` | `numeric(6,2)` | Yes | `null` | Working or top weight |
-| `duration_minutes`| `integer` | Yes | `null` | Cardio duration |
+| `duration_minutes`| `integer` | Yes | `null` | Cardio duration in minutes |
+| `duration_seconds`| `integer` | Yes | `null` | Isometric / peak hold duration in seconds (`check (duration_seconds >= 0)`; added in `20260916232300_fitness_kinetic_fields.sql`) |
 | `distance_km`| `numeric(6,2)` | Yes | `null` | Cardio distance |
 | `rpe` | `numeric(3,1)` | Yes | `null` | Rate of Perceived Exertion (`1.0` to `10.0`) |
 | `notes` | `text` | Yes | `null` | Performance notes |
@@ -425,9 +445,9 @@ Daily momentum snapshot and sync closing ledger.
 |---|---|---|---|---|
 | `id` | `uuid` | No | `gen_random_uuid()` | Primary Key |
 | `user_id` | `uuid` | No | — | Foreign Key $\rightarrow$ `auth.users(id)` |
-| `sync_date` | `string` (`date`) | No | — | IST date of sync |
-| `momentum_score` | `integer` | No | — | Finalized momentum score (0–100) |
-| `events_processed` | `integer` | No | — | Total queue events flushed in sync |
+| `sync_date` | `date` | No | — | IST date of sync |
+| `momentum_score` | `numeric` | No | `0` | Finalized momentum score (0–100) |
+| `events_processed` | `integer` | No | `0` | Total queue events flushed in sync |
 | `created_at` | `timestamptz` | No | `now()` | Closing timestamp |
 
 *Constraint:* Unique on `(user_id, sync_date)`.
@@ -436,7 +456,7 @@ Daily momentum snapshot and sync closing ledger.
 Configuration weights for Data Lab cross-domain signal score calculations.
 | Column | Type | Nullable | Default | Description |
 |---|---|---|---|---|
-| `signal_key` | `text` | No | — | Primary Key (`'mind_habits'`, `'execution_tasks'`, etc.) |
+| `signal_key` | `text` | No | — | Primary Key (`'mind-habits'`, `'mind-journal'`, `'execution-tasks'`, `'time-os'`, `'fitness-os'`, `'finance-os'`, `'learning-os'`) |
 | `display_name` | `text` | No | — | UI label (`'Mind / Habits'`, `'Execution / Tasks'`, etc.) |
 | `weight_percent` | `numeric` | No | `0` | Percentage weight in system score |
 | `weight_cap_days` | `integer` | No | `7` | Rolling cap days |
@@ -444,19 +464,106 @@ Configuration weights for Data Lab cross-domain signal score calculations.
 
 ---
 
-### 2.8 Historical Archive Table (1 Table)
+### 2.8 Winter Arc & System Extension Tables (6 Tables)
+
+#### `public.life_seasons`
+Dedicated multi-week and multi-month seasonal developmental arcs and vows (ADR-012).
+| Column | Type | Nullable | Default | Description |
+|---|---|---|---|---|
+| `id` | `uuid` | No | `gen_random_uuid()` | Primary Key |
+| `user_id` | `uuid` | No | — | Foreign Key $\rightarrow$ `auth.users(id) on delete cascade` |
+| `name` | `text` | No | — | Season name |
+| `start_date` | `date` | No | — | Season start date |
+| `end_date` | `date` | No | — | Season end date |
+| `vows` | `jsonb` | No | `'[]'::jsonb` | Array of seasonal commitments and non-negotiables |
+| `created_at` | `timestamptz` | No | `now()` | Creation timestamp |
+| `updated_at` | `timestamptz` | No | `now()` | Update timestamp |
+
+*Row-Level Security:* Enabled. Policy `auth.uid() = user_id`.
+
+#### `public.user_achievements`
+Gamified progression credentials and unlocked capability crests (ADR-016).
+| Column | Type | Nullable | Default | Description |
+|---|---|---|---|---|
+| `id` | `uuid` | No | `gen_random_uuid()` | Primary Key |
+| `user_id` | `uuid` | No | — | Foreign Key $\rightarrow$ `auth.users(id) on delete cascade` |
+| `badge_id` | `text` | No | — | Unique badge identifier (e.g. `arc_iron_initiate`) |
+| `unlocked_at` | `timestamptz` | No | `now()` | Unlock timestamp |
+| `metadata` | `jsonb` | No | `'{}'::jsonb` | Unlock context and tier payload |
+| `created_at` | `timestamptz` | No | `now()` | Record creation timestamp |
+
+*Constraint:* Unique on `(user_id, badge_id)`. RLS enabled (`auth.uid() = user_id`).
+
+#### `public.pulse_logs`
+High-frequency subjective state, readiness, and physiological check-in ledger (ADR-022).
+| Column | Type | Nullable | Default | Description |
+|---|---|---|---|---|
+| `id` | `uuid` | No | `gen_random_uuid()` | Primary Key |
+| `user_id` | `uuid` | No | — | Foreign Key $\rightarrow$ `auth.users(id) on delete cascade` |
+| `timestamp` | `timestamptz` | No | `now()` | Logged check-in timestamp |
+| `value` | `text` | No | — | Subjective score or qualitative state |
+| `metadata` | `jsonb` | No | `'{}'::jsonb` | Extended energy, mood, and sleep indicators |
+| `created_at` | `timestamptz` | No | `now()` | Record creation timestamp |
+
+*Row-Level Security:* Enabled. Policy `auth.uid() = user_id`.
+
+#### `public.knowledge_resources`
+Curated knowledge items, references, and second-brain bookmarks.
+| Column | Type | Nullable | Default | Description |
+|---|---|---|---|---|
+| `id` | `uuid` | No | `gen_random_uuid()` | Primary Key |
+| `user_id` | `uuid` | No | — | Foreign Key $\rightarrow$ `auth.users(id) on delete cascade` |
+| `title` | `text` | No | — | Resource title |
+| `url` | `text` | Yes | `null` | External documentation or article URL |
+| `metadata` | `jsonb` | No | `'{}'::jsonb` | Resource categorization, format, and notes |
+| `created_at` | `timestamptz` | No | `now()` | Creation timestamp |
+| `updated_at` | `timestamptz` | No | `now()` | Update timestamp |
+
+*Row-Level Security:* Enabled. Policy `auth.uid() = user_id`.
+
+#### `public.experiments`
+Self-directed biohacking, protocol testing, and cognitive experiments.
+| Column | Type | Nullable | Default | Description |
+|---|---|---|---|---|
+| `id` | `uuid` | No | `gen_random_uuid()` | Primary Key |
+| `user_id` | `uuid` | No | — | Foreign Key $\rightarrow$ `auth.users(id) on delete cascade` |
+| `title` | `text` | No | — | Experiment title / hypothesis |
+| `status` | `text` | No | `'Active'` | Lifecycle status (`'Active'`, `'Concluded'`, etc.) |
+| `metadata` | `jsonb` | No | `'{}'::jsonb` | Protocol parameters, variables, and outcomes |
+| `created_at` | `timestamptz` | No | `now()` | Creation timestamp |
+| `updated_at` | `timestamptz` | No | `now()` | Update timestamp |
+
+*Row-Level Security:* Enabled. Policy `auth.uid() = user_id`.
+
+#### `public.user_settings`
+User-level configuration preferences, finance settings, and display overrides.
+| Column | Type | Nullable | Default | Description |
+|---|---|---|---|---|
+| `id` | `uuid` | No | `gen_random_uuid()` | Primary Key |
+| `user_id` | `uuid` | No | — | Foreign Key $\rightarrow$ `auth.users(id) on delete cascade` |
+| `finance_preferences` | `jsonb` | No | `'{}'::jsonb` | Finance budgets, currencies, and thresholds |
+| `created_at` | `timestamptz` | No | `now()` | Creation timestamp |
+| `updated_at` | `timestamptz` | No | `now()` | Update timestamp |
+
+*Constraint:* Unique on `(user_id)`. RLS enabled (`auth.uid() = user_id`).
+
+---
+
+### 2.9 Historical Archive Table (1 Table)
 
 #### `public.progress_hub_archive`
 Preserves historical snapshots from retired Progress Hub prior to Migration `202607280001` (ADR-007).
 | Column | Type | Nullable | Default | Description |
 |---|---|---|---|---|
 | `id` | `uuid` | No | `gen_random_uuid()` | Primary Key |
-| `user_id` | `uuid` | No | — | Foreign Key $\rightarrow$ `auth.users(id)` |
-| `programming_skills` | `jsonb` | Yes | `null` | Preserved JSON snapshot |
-| `milestones` | `jsonb` | Yes | `null` | Preserved JSON snapshot |
-| `challenges` | `jsonb` | Yes | `null` | Preserved JSON snapshot |
-| `personal_skills` | `jsonb` | Yes | `null` | Preserved JSON snapshot |
+| `user_id` | `uuid` | No | — | Foreign Key $\rightarrow$ `auth.users(id) on delete cascade` |
 | `archived_at` | `timestamptz` | No | `now()` | Archive timestamp |
+| `programming_skills` | `jsonb` | No | `'[]'::jsonb` | Preserved JSON snapshot |
+| `personal_skills` | `jsonb` | No | `'[]'::jsonb` | Preserved JSON snapshot |
+| `milestones` | `jsonb` | No | `'[]'::jsonb` | Preserved JSON snapshot |
+| `challenges` | `jsonb` | No | `'[]'::jsonb` | Preserved JSON snapshot |
+
+*Constraint:* Unique on `(user_id)`.
 
 > [!NOTE]
 > `progress_hub_archive` is an intentional, dormant historical archive. It is retained to preserve user data history but is NOT queried by active runtime application code.
@@ -474,9 +581,9 @@ All views are created `WITH (security_invoker = true)` to inherit the querying u
    14-day rolling chronological daily history for EMA momentum calculation: `user_id`, `snapshot_date`, `tasks_completed_count`, `habits_completed_count`, `total_active_habits`, `journal_logged`, `workout_logged`.
 
 ### 3.2 Data Lab Analytical Views
-3. **`public.data_lab_daily_activity_90d`** (20 columns):
+3. **`public.data_lab_daily_activity_90d`** (22 columns):
    90-day multi-domain daily rollups: `user_id`, `activity_date`, `active_domains`, `active_system_count`, `active_habits`, `habits_completed`, `habit_completion_percent`, `journal_entries`, `avg_mood`, `tasks_created`, `tasks_completed`, `total_focus_minutes`, `deep_work_minutes`, `focus_sessions`, `workouts_logged`, `workout_minutes`, `finance_entries`, `total_spent`, `need_spent`, `want_spent`, `learning_sessions_logged`, `events_logged`.
-4. **`public.data_lab_weekly_system_score_12w`** (25 columns):
+4. **`public.data_lab_weekly_system_score_12w`** (26 columns):
    12-week comprehensive weighted system score across all 7 domains.
 5. **`public.data_lab_module_consistency_30d`** (6 columns):
    30-day consistency percentages per module (`'Mind / Habits'`, `'Mind / Journal'`, `'Execution / Tasks'`, `'Time OS'`, `'Fitness OS'`, `'Finance OS'`, `'Learning OS'`).
@@ -499,6 +606,33 @@ Standardized daily magnitude and active boolean streams for cross-domain intelli
 15. **`public.learning_stage_progress`** (5 columns):
     Stage-level completion percentages: `roadmap_id`, `stage_id`, `total_sessions`, `completed_sessions`, `pct_complete`.
 
+### 3.5 Planned SQL Views [PLANNED VIEWS]
+The following 4 views were specified during Winter Arc architectural planning and are scheduled to be authored in subsequent migration waves. In current production, client hooks and UI surfaces query the underlying operational tables directly:
+
+1. **`public.active_life_seasons`** [PLANNED]:
+   - **Underlying Table:** `public.life_seasons`
+   - **Target Projection:** `id`, `user_id`, `name`, `start_date`, `end_date`, `vows`, `total_days`, `elapsed_days`, `remaining_days`
+   - **Filter Logic:** `start_date <= (now() at time zone 'Asia/Kolkata')::date AND end_date >= (now() at time zone 'Asia/Kolkata')::date`
+   - **Security:** `WITH (security_invoker = true)`
+
+2. **`public.recent_achievements`** [PLANNED]:
+   - **Underlying Table:** `public.user_achievements`
+   - **Target Projection:** `id`, `user_id`, `badge_id`, `unlocked_at`, `metadata`, `days_ago`
+   - **Sort:** `unlocked_at DESC`
+   - **Security:** `WITH (security_invoker = true)`
+
+3. **`public.pulse_summary`** [PLANNED]:
+   - **Underlying Table:** `public.pulse_logs`
+   - **Target Projection:** `user_id`, `log_date`, `checkin_count`, `latest_value`, `readiness_score`, `clarity_score`, `energy_score`
+   - **Aggregation Window:** 7-day and 30-day rolling averages
+   - **Security:** `WITH (security_invoker = true)`
+
+4. **`public.knowledge_by_type`** [PLANNED]:
+   - **Underlying Table:** `public.knowledge_resources`
+   - **Target Projection:** `user_id`, `resource_type`, `total_count`, `recent_resources`
+   - **Grouping:** Grouped by `metadata->>'type'` and categorized by tag
+   - **Security:** `WITH (security_invoker = true)`
+
 ---
 
 ## 4. Material Indexes & Constraints
@@ -506,12 +640,19 @@ Standardized daily magnitude and active boolean streams for cross-domain intelli
 | Table | Index / Constraint | Purpose |
 |---|---|---|
 | `time_logs` | `idx_time_logs_single_active` (partial unique: `(user_id) WHERE end_time IS NULL`) | Enforces the single active focus timer invariant. |
+| `workouts` | `idx_workouts_single_active_session_per_user` (partial unique: `(user_id) WHERE end_time IS NULL AND deleted_at IS NULL`) | Enforces the single active workout session invariant. |
 | `habit_logs` | `UNIQUE(habit_id, log_date)` | Prevents duplicate habit logs for the same calendar date. |
+| `habit_streak_breaks` | `UNIQUE(habit_id, break_date)` | Enforces single streak break record per habit per date. |
 | `weekly_plans` | `UNIQUE(user_id, week_start_date)` | Ensures one weekly plan per user per week. |
+| `weekly_plan_items` | `UNIQUE(user_id, week_start_date, order_index)` | Enforces unique ordering per user per week. |
 | `weekly_reviews` | `UNIQUE(user_id, week_start_date)` | Ensures one weekly review per user per week. |
 | `system_metrics` | `UNIQUE(user_id, sync_date)` | Prevents duplicate Evening Sync closing records per date. |
-| `events` | `idx_events_user_ist_date` (`(user_id, event_date_ist)`) | Accelerates 90-day longitudinal queries and Data Lab views. |
-| `transactions` | Foreign key index on `(user_id, timestamp)` | Fast monthly spending rollup queries. |
+| `user_achievements` | `idx_user_achievements_unique` (`UNIQUE(user_id, badge_id)`) | Prevents duplicate achievement awards for the same user. |
+| `user_settings` | `idx_user_settings_user_id` (`UNIQUE(user_id)`) | Enforces single settings record per user. |
+| `progress_hub_archive` | `UNIQUE(user_id)` | Enforces single historical archive record per user. |
+| `events` | `idx_events_user_date_ist` (`(user_id, event_date_ist DESC)`) | Accelerates longitudinal telemetry queries. |
+| `transactions` | `idx_transactions_user_timestamp` (`(user_id, timestamp DESC)`) | Accelerates monthly and longitudinal finance aggregations. |
+| `data_lab_signal_config` | Primary Key (`signal_key`) | Global domain signal weighting configuration. |
 
 ---
 

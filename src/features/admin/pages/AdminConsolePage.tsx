@@ -18,7 +18,7 @@ export default function AdminConsolePage() {
   const fetchTableStats = async () => {
     setIsLoading(true)
     try {
-      const tables = ['life_seasons', 'user_achievements', 'telemetry_events', 'focus_sessions']
+      const tables = ['life_seasons', 'user_achievements', 'events', 'time_logs']
       const stats: Record<string, number> = {}
       
       for (const table of tables) {

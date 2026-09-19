@@ -1,3 +1,10 @@
+---
+title: "Winter Arc Verification Audit"
+status: "active"
+last_synchronized_commit: "77d1a5b"
+domain: "winter-arc"
+---
+
 # Life OS — Winter Arc & Visual Refoundation 2.0
 # Canonical Verification Audit & System Alignment Report
 
@@ -5,7 +12,7 @@
 **Author:** Senior Application Goal Verifier & Alignment Officer  
 **Date:** September 12, 2026 (Updated Post-Remediation Baseline)  
 **Status:** CANONICAL AUDIT REPORT — GREEN BASELINE VERIFIED  
-**Scope:** Full forensic codebase verification against all specifications in `docs/winter-arc/` ([VISUAL_REFOUNDATION_2.md](file:///c:/Users/gpk74/life-os/docs/winter-arc/VISUAL_REFOUNDATION_2.md), [VISUAL_REFOUNDATION_2_PAGE_BLUEPRINTS.md](file:///c:/Users/gpk74/life-os/docs/winter-arc/VISUAL_REFOUNDATION_2_PAGE_BLUEPRINTS.md), [VISUAL_REFOUNDATION_2_HOSTILE_AUDIT.md](file:///c:/Users/gpk74/life-os/docs/winter-arc/VISUAL_REFOUNDATION_2_HOSTILE_AUDIT.md), [WINTER_ARC_MASTER_PLAN.md](file:///c:/Users/gpk74/life-os/docs/winter-arc/WINTER_ARC_MASTER_PLAN.md), [WINTER_ARC_DECISIONS.md](file:///c:/Users/gpk74/life-os/docs/winter-arc/WINTER_ARC_DECISIONS.md), [PROGRESS.md](file:///c:/Users/gpk74/life-os/docs/winter-arc/PROGRESS.md)).
+**Scope:** Full forensic codebase verification against all specifications in `docs/winter-arc/` ([VISUAL_REFOUNDATION_2.md](./VISUAL_REFOUNDATION_2.md), [VISUAL_REFOUNDATION_2_PAGE_BLUEPRINTS.md](./VISUAL_REFOUNDATION_2_PAGE_BLUEPRINTS.md), [VISUAL_REFOUNDATION_2_HOSTILE_AUDIT.md](./VISUAL_REFOUNDATION_2_HOSTILE_AUDIT.md), [WINTER_ARC_MASTER_PLAN.md](./WINTER_ARC_MASTER_PLAN.md), [WINTER_ARC_DECISIONS.md](./WINTER_ARC_DECISIONS.md), [WINTER_ARC_PROGRESS.md](./WINTER_ARC_PROGRESS.md)).
 
 ---
 
@@ -55,7 +62,7 @@
 Re-verification of the 15 hostile citations documented in [VISUAL_REFOUNDATION_2_HOSTILE_AUDIT.md](file:///c:/Users/gpk74/life-os/docs/winter-arc/VISUAL_REFOUNDATION_2_HOSTILE_AUDIT.md#L245-L375):
 
 ### Citation 1: Hardcoded "Level 12" in Navigation
-- **Location:** [src/layout/Sidebar.tsx](file:///c:/Users/gpk74/life-os/src/layout/Sidebar.tsx) & [src/features/mission-control/dashboard/MissionControl.tsx](file:///c:/Users/gpk74/life-os/src/features/mission-control/dashboard/MissionControl.tsx)
+- **Location:** Historical `Sidebar.tsx` (retired and replaced by [`src/layout/AstrolabeOrbNav.tsx`](../../src/layout/AstrolabeOrbNav.tsx)) & [`src/features/mission-control/dashboard/MissionControl.tsx`](../../src/features/mission-control/dashboard/MissionControl.tsx)
 - **Status:** **RESOLVED.** "Level 12" has been completely eradicated. Replaced with dynamic "Profile & Stats" and live telemetry integration.
 
 ### Citation 2: Persistent Header Lie
@@ -79,12 +86,12 @@ Re-verification of the 15 hostile citations documented in [VISUAL_REFOUNDATION_2
 - **Status:** **RESOLVED.** Raw JSON dumps replaced with an editorial historical chronicle translating telemetry into human narratives.
 
 ### Citation 7: Missing Arc Surface
-- **Location:** [src/layout/Sidebar.tsx:114](file:///c:/Users/gpk74/life-os/src/layout/Sidebar.tsx#L114), [src/features/arc/pages/ArcPage.tsx](file:///c:/Users/gpk74/life-os/src/features/arc/pages/ArcPage.tsx)
-- **Status:** **RESOLVED.** Winter Arc (`/arc`) is an official top-level item in `Sidebar.tsx`. Dynamically loads the active season from `life_seasons` table.
+- **Location:** [`src/layout/AstrolabeOrbNav.tsx`](../../src/layout/AstrolabeOrbNav.tsx), [`src/features/arc/pages/ArcPage.tsx`](../../src/features/arc/pages/ArcPage.tsx)
+- **Status:** **RESOLVED.** Winter Arc (`/arc`) is an official top-level destination in the Astrolabe Orb Navigation shell (historical `Sidebar.tsx` retired). Dynamically loads the active season from `life_seasons` table.
 
 ### Citation 8: Orphaned Reports Surface Blanks Out
-- **Location:** [src/layout/Sidebar.tsx:120](file:///c:/Users/gpk74/life-os/src/layout/Sidebar.tsx#L120), [src/features/reports/FieldReportPage.tsx](file:///c:/Users/gpk74/life-os/src/features/reports/FieldReportPage.tsx)
-- **Status:** **RESOLVED.** Reports (`/reports`) is integrated into `Sidebar.tsx`. The broadsheet ledger synthesizes metrics (tasks, habits, focus time) even when no manual written review is submitted.
+- **Location:** [`src/layout/AstrolabeOrbNav.tsx`](../../src/layout/AstrolabeOrbNav.tsx), [`src/features/reports/FieldReportPage.tsx`](../../src/features/reports/FieldReportPage.tsx)
+- **Status:** **RESOLVED.** Reports (`/reports`) is integrated in the Astrolabe Orb Navigation shell (historical `Sidebar.tsx` retired). The broadsheet ledger synthesizes metrics (tasks, habits, focus time) even when no manual written review is submitted.
 
 ### Citation 9: Gutted Data Lab Analytics
 - **Location:** [src/features/data-lab/pages/DataLabPage.tsx](file:///c:/Users/gpk74/life-os/src/features/data-lab/pages/DataLabPage.tsx)

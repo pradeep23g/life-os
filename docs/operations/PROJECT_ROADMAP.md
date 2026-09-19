@@ -1,7 +1,14 @@
+---
+title: "Project Roadmap"
+status: "active"
+last_synchronized_commit: "77d1a5b"
+domain: "operations"
+---
+
 # LIFE OS — PROJECT ROADMAP
 
 **Status:** Authoritative Project Roadmap  
-**Last Synchronized:** September 2026 (Post-Integrity Campaign Baseline)  
+**Last Synchronized:** September 2026 (Winter Arc 2.0 Baseline — Commit `77d1a5b`)  
 **Target Repository:** `pradeep23g/life-os`
 
 ---
@@ -17,7 +24,7 @@ Life OS evolves through hardened, evidence-based engineering phases:
 
 ---
 
-## 2. COMPLETED FOUNDATION
+## 2. COMPLETED FOUNDATION & RECENT RELEASES
 
 ### ✅ Phase 0 — Repository Hardening & Hygiene (Completed August 2026)
 - **Git History & Working Tree Sanitization:** Zero secret or credential leakage across history.
@@ -34,61 +41,59 @@ Life OS evolves through hardened, evidence-based engineering phases:
 - **Evening Sync & EventBus Resilience:** Unbounded queue processing across all dates; enforced peek-and-splice persistence invariant, exponential backoff (1s–30s), 5-retry quarantine, bounded memory (200), and 24-hour TTL pruning.
 - **Learning OS Architecture:** Deployed hierarchical roadmaps, stages, sessions, and session logs; separated bounded recent feeds (`.limit(20)`) from unbounded lifetime analytics queries.
 - **Legacy Entity Cleanup:** Confirmed `progress_hub_archive` as an intentional historical archive; purged all executable references to `finance_transactions`, `workout_sets`, and `weekly_plan_items.plan_id`.
-- **End-to-End Verification Arsenal:** Established 4 comprehensive verification suites:
-  - Static Release Gate: `npm run lint` (0 errors), `npm run build` (2008 modules transformed), `npm run verify:release` (PASS).
-  - Automated Smoke Suite: `node scripts/smoke/run-smoke-validation.mjs` (29/29 PASS).
-  - Integrity Contract Suite: `npx tsx scripts/smoke/verify-integrity-contracts.mjs` (6/6 PASS).
-  - Adversarial Attack Suite: `npx tsx --env-file=.env scripts/smoke/verify-adversarial-attacks.mjs` (6/6 PASS).
-  - Real-User Browser Verification: `node scripts/smoke/run-browser-verification.mjs` (60/60 PASS in headless Google Chrome).
+
+### ✅ Phase 2 Wave 0 — Architecture & Spec Hardening (Completed September 2026)
+- Database schema realization: Migrations `202609120000_winter_arc_remediation.sql` and `20260916232300_fitness_kinetic_fields.sql` deployed to production Supabase.
+- Base tables expanded from 27 to 33 (`life_seasons`, `user_achievements`, `pulse_logs`, `knowledge_resources`, `experiments`, `user_settings`).
+- Complete ADR register unification: Monotonic gapless sequence ADR-001 through ADR-028 in `docs/decisions/ARCHITECTURE_DECISIONS.md`.
+
+### ✅ Phase 2 Wave 1 — IDENTITY & SHELL (Completed September 2026)
+- **Astrolabe Orb Navigation:** 3-ring kinetic orb shell with dynamic domain horizons, solar time mapping, and gesture launcher (ADR-023). Retired static desktop sidebar.
+- **Visual Refoundation 2.0:** Semantic OKLCH tokens in `tailwind.config.js` and `index.css`; dynamic solar themes (`dawn`, `day`, `dusk`, `midnight`, `recovery`).
+- **Typographic Grammar:** Monumental `Newsreader` serif, high-density `Geist Sans`, and tabular `JetBrains Mono`.
+- **Home (The Porch, `/`):** Asymmetric Swiss Stage layout, living solar presence, dynamic Brain Engine action trigger.
+- **Winter Arc (The Grand Hall, `/arc`):** 90-day seasonal countdown ledger, epoch milestones, dynamic `public.life_seasons` query.
+
+### ✅ Phase 2 Wave 3 — PROGRESSION & SEASONS (Completed September 2026)
+- **Season Engine:** `public.life_seasons` schema with `vows jsonb` and dynamic querying.
+- **Progression & Credentials:** `public.user_achievements` schema with `badge_id` and metadata unlocks.
+- **Profile (`/profile`):** Personal biographical chronicle, full-scale composable SVG avatar, capability crests, and season archive.
+
+### ✅ Phase 2 Wave 5 — FITNESS KINETIC LEDGER (Completed September 2026)
+- **Kinetic Ledger UI:** Rebuilt `/fitness-os` with set-by-set focus mode, Current vs Next Set preview, massive numerals, and tactile touch numpad.
+- **Architectural Movement Patterns:** Dual-mode catalog filtering (`[ PRIMARY MUSCLE ]` vs `[ MOVEMENT PATTERN ]`).
+- **Isometric Hold Tracking:** Migrated `duration_seconds` to `exercise_logs` for calisthenics holds.
+- **Automatic Time OS Sync:** Workout completion writes directly to `time_logs` under `'Fitness'`.
+
+### ✅ Phase 2 Wave 6 — FIELD REPORTING (Completed September 2026)
+- **Field Reports (`/reports`):** Broadsheet Sunday field dossier auto-synthesized from weekly plans (`weekly_plans`), commitment items (`weekly_plan_items`), and reviews (`weekly_reviews`).
+- **A4 Print Engine:** High-contrast typographic measures, pull quotes, and print-ready pagination CSS.
 
 ---
 
-## 3. CURRENT DEVELOPMENT
+## 3. FUTURE WORK — Scheduled Implementation Waves
 
-### ✅ Phase 1 Documentation Freeze & Integrity Sign-Off (Completed September 2026)
-- Synchronized all documentation (`docs/architecture/`, `docs/operations/`, `docs/decisions/`, `README.md`) with verified remote database schema, generated types, and runtime behavior.
-- Final documentation consistency audit and release gate certification.
-- Authored `LIFE_OS_FINAL_CURRENT_STATE_CONTEXT.md` as authoritative handoff document.
+### ⏳ Wave 2 — DAILY PRESENCE (Native Android Companion)
+- Native Android Kotlin + Jetpack Compose application (`docs/winter-arc/WINTER_ARC_ANDROID_SPEC.md`).
+- Supabase Kotlin SDK (`io.github.jan-tennert.supabase`) integration.
+- Lock screen widgets, Glance app widgets, native alarms via `AlarmManager`, and quick-action notification tiles.
+- High-frequency Life Pulse check-in dialogs persisting to `public.pulse_logs`.
 
-### 🟢 Phase 2 Wave 0 — Winter Arc Documentation & Architecture Preparation (Active)
-- Complete implementation-ready documentation system created under `docs/winter-arc/`.
-- 14 documentation files covering all 46 planned features across 9 implementation waves.
-- Data model gap analysis identifying ~8 new tables needed vs ~14 concepts derivable from existing schema.
-- Telemetry audit proposing ~20 new canonical events across 6 new domains.
-- 11 proposed architectural decision records (ADR-012 through ADR-022).
-- Per-wave verification plan extending the existing 4-tier test suite.
-- See: [docs/winter-arc/README.md](../winter-arc/README.md) for the complete documentation index.
+### ⏳ Wave 4 — KNOWLEDGE VAULT UI
+- Dedicated Second-Brain knowledge workspace surfacing `public.knowledge_resources`.
+- Rich URL preview, tagging taxonomy, and integration with Learning OS roadmap stages.
 
----
+### ⏳ Wave 7 — RECOVERY OS (Sanctuary & Grief Protocol)
+- Dedicated sanctuary route `/recovery` and `.theme-recovery` color palette (ADR-027).
+- Radical downscaling: The Spoons Engine (minimal daily energy allocation).
+- Compassionate grief journal prompts without productivity scoring or streak pressure.
+- Protected streak hibernation across habits and seasonal countdowns.
 
-## 4. FUTURE WORK — Winter Arc Implementation Waves
+### ⏳ Wave 8 — OPEN PLATFORM & EXTERNAL AGENTS
+- Authenticated REST API and Model Context Protocol (MCP) server for external agent integration.
+- Fine-grained capability tokens and external mutation audit trails.
 
-### ⏳ Wave 1 — IDENTITY (Next)
-Visual redesign, design system, themes, avatar foundation, personal stats, Life State, Mission Control overhaul, navigation redesign.
-
-### ⏳ Wave 2 — DAILY PRESENCE
-Android companion app, push notifications, widgets, quick actions, Life Pulse check-ins, time-of-day modes, periodic thoughts.
-
-### ⏳ Wave 3 — PROGRESSION
-XP engine, levels, achievements, avatar progression, Season Engine, streak rewards.
-
-### ⏳ Wave 4 — KNOWLEDGE
-Knowledge Vault (books, videos, media), Learning OS UI completion (milestones, projects, reflections).
-
-### ⏳ Wave 5 — FITNESS
-Fitness OS UI rework, duplicate cleanup, avatar-fitness integration, workout progression, PR achievements.
-
-### ⏳ Wave 6 — REPORTING
-Weekly/monthly/seasonal reports, multi-format export (PDF, MD, HTML, JSON, CSV), report archive.
-
-### ⏳ Wave 7 — REFLECTION
-Recovery OS, Life Experiments, Personal Pattern Engine, Life Timeline.
-
-### ⏳ Wave 8 — OPEN PLATFORM
-REST API, MCP server, integration permissions, external mutation audit trail.
-
-### ⏳ Wave 9 — AI
-AI Gateway, local AI processing, free/paid provider routing, AI-assisted reporting, natural language queries.
-
-### ⏳ Queued Schema Maintenance
-- Legacy journal reflection column removal (`went_well`, `went_wrong`, `lesson_learned` from `public.journal_entries`) after multi-release stability confirmation.
+### ⏳ Wave 9 — AI GATEWAY & STUDY PLAN INGESTION
+- AI Curriculum & Study Plan JSON Ingestion Modal inside Learning OS (ADR-028).
+- Multi-provider AI Gateway (Gemini, Claude, local models) with fallback routing.
+- Context-aware narrative synthesis for seasonal retrospectives.

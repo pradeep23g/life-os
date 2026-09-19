@@ -1,12 +1,19 @@
+---
+title: "Life OS — Architecture Decision Records (ADRs)"
+status: "canonical"
+last_synchronized_commit: "77d1a5b"
+domain: "decisions"
+---
+
 # LIFE OS — ARCHITECTURE DECISIONS (ADR)
 
 **Status:** Authoritative Architectural Decision Log  
-**Last Synchronized:** September 2026 (Winter Arc Overhaul: ADR-001 through ADR-025)
+**Last Synchronized:** September 2026 (Winter Arc Overhaul: Monotonic Sequence ADR-001 through ADR-028)
 
 ---
 
 ## ADR-001: Domain-Driven Feature Architecture
-- **Context:** Life OS tracks 8 distinct domains. Conflating features creates cognitive pollution.
+- **Context:** Life OS tracks 7 behavioral scoring domains powering the Brain Engine, with 14 client routes serving all features. Conflating features creates cognitive pollution.
 - **Decision:** All features live in `src/features/<domain>/` with isolated API hooks, components, and types.
 - **Consequences:** Clean scaling, explicit domain boundaries, immediate discoverability.
 
@@ -84,13 +91,171 @@
 
 ---
 
+## ADR-012: Season Engine Data Model (`life_seasons` & Vows Architecture)
+- **Status:** Accepted (Reconciled with PostgreSQL migration `202609120000_winter_arc_remediation.sql`)
+- **Context:** Winter Arc requires a first-class Season concept to model dedicated multi-week/multi-month developmental cycles, seasonal directives, and vows.
+- **Decision:** Implemented dedicated `public.life_seasons` table in PostgreSQL migration `202609120000_winter_arc_remediation.sql`.
+- **Database Schema:**
+  - Table: `public.life_seasons`
+  - Columns:
+    - `id uuid DEFAULT gen_random_uuid() PRIMARY KEY`
+    - `user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE`
+    - `name text NOT NULL`
+    - `start_date date NOT NULL`
+    - `end_date date NOT NULL`
+    - `vows jsonb DEFAULT '[]'::jsonb NOT NULL`
+    - `created_at timestamptz DEFAULT now() NOT NULL`
+    - `updated_at timestamptz DEFAULT now() NOT NULL`
+  - Security: Row Level Security (RLS) enabled with policy `"Users can manage their own life seasons"` (`auth.uid() = user_id`).
+- **Rejected Alternatives:**
+  - `goals` table: `goals.domain` has a CHECK constraint restricted to 5 domains with no 'season' domain; seasons are macro-temporal contexts rather than discrete goals.
+  - Code-only / localStorage: Precludes querying historical seasons across devices and multi-year trajectory analysis.
+- **Consequences:** Season statistics are derived dynamically from existing telemetry activity within the season's `[start_date, end_date]` date window (`event_date_ist`). Event rows do not store a foreign `season_id`, preserving loose coupling. Structured seasonal vows, principles, and phases are encapsulated cleanly in `vows jsonb`.
+
+---
+
+## ADR-013: Avatar Rendering Architecture
+- **Status:** Accepted
+- **Context:** The user avatar requires visual representation across both web and mobile client interfaces reflecting current seasonal status, streaks, and progression.
+- **Decision:** Composable SVG avatar architecture.
+- **Consequences:**
+  - Avatar state is stored as a single-row profile record or JSONB within user profile/settings (`user_settings`), not as a fragmented relational table.
+  - Cosmetics and visual artifacts are stored as JSONB on the avatar state, avoiding separate cosmetics tables.
+  - Design assets live as modular SVG files in the project assets directory.
+  - Home (a new entry surface that replaced Mission Control as the index route `/`; Mission Control persists at `/system`) displays partial/contextual avatar telemetry. Profile (`/profile`) displays the full hero avatar with detailed attributes, unlocked achievements, and season history. Mobile displays a compact, adaptive avatar.
+
+---
+
+## ADR-014: Mobile Technology Stack
+- **Status:** Accepted
+- **Context:** An Android application is required for low-friction tactical logging, always-available focus companions, and home screen widgets.
+- **Decision:** Native Android Kotlin + Jetpack Compose.
+- **Consequences:**
+  - Web client and Android app share the backend, Supabase Auth, and PostgreSQL data contracts, while maintaining platform-native UI code.
+  - Supabase Kotlin SDK (`io.github.jan-tennert.supabase`) provides authentication and data access.
+  - Employs Jetpack Compose, Kotlin Coroutines, WorkManager, AlarmManager, Jetpack Glance for home screen widgets, and native notification APIs.
+
+---
+
+## ADR-015: XP/Progression Storage Strategy
+- **Status:** Accepted
+- **Context:** Gamified XP and progression mechanics need reliable persistence without schema bloat or synchronization race conditions.
+- **Decision:** XP is derived deterministically from canonical Life OS events (`public.events`). No separate XP-specific relational tables are maintained initially.
+- **Consequences:**
+  - XP rules and leveling curves are deterministic and versioned in application code.
+  - Level is calculated from total accumulated XP. Each event type maps to a fixed XP value using `event_type` and payload fields.
+  - Optimized projection views (e.g. `data_lab_signal_xp`) can be introduced if profiling indicates query performance overhead.
+
+---
+
+## ADR-016: Achievement Storage Strategy (`user_achievements` & Badge Catalog)
+- **Status:** Accepted (Reconciled with PostgreSQL migration `202609120000_winter_arc_remediation.sql`)
+- **Context:** Achievement unlocks require persistent recording, fast per-user querying, and idempotent unlock operations.
+- **Decision:** Dedicated `public.user_achievements` table combined with client-side TypeScript badge catalog definitions, migrated in `202609120000_winter_arc_remediation.sql`.
+- **Database Schema:**
+  - Table: `public.user_achievements`
+  - Columns:
+    - `id uuid DEFAULT gen_random_uuid() PRIMARY KEY`
+    - `user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE`
+    - `badge_id text NOT NULL`
+    - `unlocked_at timestamptz DEFAULT now() NOT NULL`
+    - `metadata jsonb DEFAULT '{}'::jsonb NOT NULL`
+    - `created_at timestamptz DEFAULT now() NOT NULL`
+  - Constraints & Indexes: Unique index `idx_user_achievements_unique ON public.user_achievements (user_id, badge_id)`.
+  - Security: Row Level Security (RLS) enabled with policy `"Users can manage their own achievements"` (`auth.uid() = user_id`).
+- **Rejected Alternatives:**
+  - Events-only: `public.events` is append-only with no unique constraints; scanning historical event logs to compute unlocked badges is computationally prohibitive.
+  - Complex relational badge tables: Overhead of relational tables for static badge metadata is unwarranted; badge metadata and criteria belong in TypeScript constants.
+- **Consequences:** O(1) unlock verification via unique index `(user_id, badge_id)`. Audit telemetry event `progression.achievement.unlocked` can be emitted asynchronously without blocking UI unlocks. Main gallery is rendered on Profile (`/profile`).
+
+---
+
+## ADR-017: API/MCP Boundary Design
+- **Status:** Accepted
+- **Context:** External automation, Model Context Protocol (MCP) servers, and AI agents require controlled API access to Life OS data.
+- **Decision:** Supabase Edge Functions serve as the controlled external API boundary.
+- **Rejected Alternatives:**
+  - Unrestricted PostgREST: Direct anon/service role exposure lacks domain-level rate limiting, scoped permissions, and semantic validation.
+  - Dedicated standalone backend server: Adds unnecessary infrastructure cost and operational maintenance for a personal life operating system.
+- **Consequences:** REST API and MCP endpoints share the same Edge Function authorization and security scope. Operations follow least privilege, default to read-only, and require explicit authorization headers for state mutations.
+
+---
+
+## ADR-018: AI Gateway Provider Architecture
+- **Status:** Accepted
+- **Context:** Generative AI capabilities (curriculum generation, reflection coaching, summarization) require multi-provider routing without leaking secret API keys to browser clients.
+- **Decision:** Supabase Edge Function AI Gateway routing requests across local, free, and paid provider models.
+- **Rejected Alternatives:**
+  - Client-side direct LLM API calls: Insecure; exposes secret API keys in browser bundles.
+  - Dedicated standalone AI server: Excessive operational overhead.
+- **Consequences:**
+  - Centralized Edge Function enforces privacy routing rules: journal content remains LOCAL ONLY, financial data remains LOCAL ONLY (unless opt-in), and personal identifiers are never transmitted externally.
+  - AI outputs are advisory and never override deterministic Brain Engine heuristics.
+  - Provider outages degrade gracefully to raw view data.
+
+---
+
+## ADR-019: Notification Trigger Architecture
+- **Status:** Accepted
+- **Context:** Time-sensitive reminders (morning kick-off, hourly pulse, evening review) require reliable triggers across platforms.
+- **Decision:** Android-first device-local scheduling for routine reminders, reserving Firebase Cloud Messaging (FCM) exclusively for server-originated events.
+- **Rejected Alternatives:**
+  - Database pg_cron / webhook notifications for routine reminders: Overkill and battery-inefficient for simple local scheduling.
+- **Consequences:** Native Android `AlarmManager.setExactAndAllowWhileIdle()` handles time-critical alerts (morning focus, evening sync); `WorkManager.PeriodicWorkRequest` handles deferrable tasks (hourly pulse). FCM is used strictly for remote asynchronous events (e.g., cloud backup completed, remote API trigger).
+
+---
+
+## ADR-020: Report Generation Architecture
+- **Status:** Accepted
+- **Context:** Users need analytical reports and data exports across daily, weekly, and seasonal cadences.
+- **Decision:** Deterministic client-side computation on demand using canonical views.
+- **Rejected Alternatives:**
+  - Server-side cron generation: Unnecessary compute overhead and storage cost when reports are viewed infrequently on demand.
+  - Hybrid persistence: Complex cache synchronization without tangible user benefit.
+- **Consequences:** Zero background compute cost; reports compute instantly on demand using existing TanStack Query cache and PostgreSQL views. Exports supported in PDF, Markdown, HTML, JSON, and CSV.
+
+---
+
+## ADR-021: Chart/Visualization Library
+- **Status:** Accepted
+- **Context:** Data Lab and Reports require interactive charts (area, bar, radar, scatter), but web bundle size must remain constrained under 500kB.
+- **Decision:** Recharts for complex analytical visualizations, strictly lazy-loaded via `React.lazy`.
+- **Rejected Alternatives:**
+  - Chart.js: Imperative DOM manipulation, awkward React integration, larger core overhead.
+  - Visx: Too low-level, high maintenance footprint for charting primitives.
+  - Custom SVG everywhere: Impractical for multi-axis, interactive analytical charts.
+- **Consequences:** Recharts is dynamically loaded only when navigating to `/data-lab` or `/reports`. Micro-visualizations, progress rings, sparklines, and GitHub-style heatmaps continue to use lightweight zero-dependency inline SVGs.
+
+---
+
+## ADR-022: Life Pulse Data Model (`pulse_logs`)
+- **Status:** Accepted (Reconciled with PostgreSQL migration `202609120000_winter_arc_remediation.sql`)
+- **Context:** Hourly and ad-hoc subjective state check-ins (energy, mood, focus, physical readiness) need dedicated persistent storage.
+- **Decision:** Dedicated `public.pulse_logs` table in PostgreSQL, migrated in `202609120000_winter_arc_remediation.sql`.
+- **Database Schema:**
+  - Table: `public.pulse_logs`
+  - Columns:
+    - `id uuid DEFAULT gen_random_uuid() PRIMARY KEY`
+    - `user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE`
+    - `timestamp timestamptz DEFAULT now() NOT NULL`
+    - `value text NOT NULL`
+    - `metadata jsonb DEFAULT '{}'::jsonb NOT NULL`
+    - `created_at timestamptz DEFAULT now() NOT NULL`
+  - Security: Row Level Security (RLS) enabled with policy `"Users can manage their own pulse logs"` (`auth.uid() = user_id`).
+- **Rejected Alternatives:**
+  - `public.events` table: High check-in frequency (12–16 logs/day) would dilute permanent system behavioral telemetry; check-ins represent domain entities rather than telemetry events.
+  - `public.system_event_queue`: Queue is ephemeral with TTL pruning; unsuitable for persistent historical trends.
+- **Consequences:** Clean isolation of subjective state telemetry; enables continuous longitudinal trend analysis without degrading operational telemetry performance.
+
+---
+
 ## ADR-023: Kinetic Astrolabe Orb Navigation Architecture
 - **Context:** The legacy persistent sidebar consumed 64px–240px of horizontal layout space, causing content reflow and layout friction across subpage headers. An initial prototype of the orb menu suffered from overlapping text labels across satellite icons, vague orbital distances, and lacked integrated session/profile termination.
 - **Decision:** Replaced traditional navigation sidebars with an edge-anchored 3-ring Kinetic Astrolabe Orb navigation (`src/layout/AstrolabeOrbNav.tsx`).
   - Orbital radii were tightened by 20% (desktop: 96px, 147px, 198px; mobile: 75px, 119px, 163px) to ensure sharp visual grouping.
   - Peripheral hover tooltips were eliminated to avoid collision; instead, the open central avatar orb functions as the dynamic telemetry HUD, displaying the hovered module's uppercase title, signature neon branding, and ambient back-glow.
   - Integrated user profile navigation and Supabase session sign-out directly into the central Astrolabe controls via `AuthContext`.
-- **Consequences:** Clean, edge-to-edge brutalist canvas across all 8 modules; zero tooltip occlusion; unified focal point for multi-module switching on desktop and touch devices.
+- **Consequences:** Clean, edge-to-edge brutalist canvas across all active modules; zero tooltip occlusion; unified focal point for multi-module switching on desktop and touch devices.
 
 ---
 
@@ -105,10 +270,129 @@
 ---
 
 ## ADR-025: Fitness OS Kinetic Ledger, Dual Categorization & Cross-OS Focus Integration
-- **Context:** Training logs previously suffered from cluttered forms, intrusive rest timers that broke gym tempo, lack of movement-pattern categorization, and complete disconnection from Time OS focus telemetry. Additionally, remote database tables lacked a `movement_pattern` column.
+- **Context:** Training logs previously suffered from cluttered forms, intrusive rest timers that broke gym tempo, lack of movement-pattern categorization, and complete disconnection from Time OS focus telemetry. Additionally, remote database tables initially lacked schema-level columns for movement patterns and calisthenics duration holds.
 - **Decision:**
   - **Kinetic Step-by-Step Ledger (`ActiveWorkoutPanel.tsx`, `WorkoutsPage.tsx`):** Minimal terminal initialization prompt (`> INITIALIZE WORKOUT`), step-by-step active set isolation (Current Set vs Next Set preview), massive Geist Mono mass/rep numerals, a collapsible tactical touch numpad (`1-9, 0, ., CLR`), optional RPE scale, and removed rest timers.
-  - **Dual Categorization & Cybernetic Wireframes (`FitnessLibraryPage.tsx`, `AnatomyWireframe.tsx`):** Dual-mode directory filtering by Primary Muscle and Movement Pattern (Squat, Hinge, Push, Pull, Core, Carry) paired with bespoke cybernetic anatomical wireframe SVGs. Movement patterns are derived at the API transform layer, preserving schema compatibility without requiring unmigrated columns.
+  - **Dual Categorization & Cybernetic Wireframes (`FitnessLibraryPage.tsx`, `AnatomyWireframe.tsx`):** Dual-mode directory filtering by Primary Muscle and Movement Pattern (Squat, Hinge, Push, Pull, Core, Carry) paired with bespoke cybernetic anatomical wireframe SVGs.
+  - **Database Migration Reconciliation:** While initial prototypes derived movement patterns solely at the API transform layer, both `movement_pattern text` in `public.fitness_exercises` and `duration_seconds integer check (duration_seconds >= 0)` in `public.exercise_logs` were formally migrated into PostgreSQL in migration `20260916232300_fitness_kinetic_fields.sql` to support native database indexing, calisthenics hold tracking, and architectural catalog dual-categorization.
   - **Monument Trophies (`PersonalRecordsPage.tsx`):** Concentric cybernetic sigils supporting mass and isometric hold durations, accompanied by a screen flash celebration banner (`"RECORD OVERWRITTEN // PROTOCOL ASCENDANCY ESTABLISHED"`).
   - **Automatic Cross-OS Temporal Sync (`useFitness.ts`):** Invoking `endWorkoutSession` automatically inserts a matching session record into `time_logs` under the `'Fitness'` bucket and invalidates Time OS query caches in real time.
-- **Consequences:** Zero manual double-entry between workout tracking and focus tracking; low-friction tactical logging during live physical training; robust schema compatibility guaranteed.
+- **Consequences:** Zero manual double-entry between workout tracking and focus tracking; low-friction tactical logging during live physical training; robust native PostgreSQL schema storage for movement patterns and hold durations.
+
+---
+
+## ADR-026: Seasons & Achievements Admin Control Layer
+- **Status:** Accepted (Formerly Winter Arc ADR-023; renumbered to resolve duplicate ID collision with ADR-023 Astrolabe Orb Navigation)
+- **Context:** The Seasons and Achievements systems require robust administrative management without direct database modification or application source code changes.
+- **Decision:** Implement an authenticated admin/control layer (`/admin`) for managing seasons and achievements with canonical JSON schema import/export capabilities.
+- **Consequences:**
+  - The admin layer supports creating, editing, activating, archiving, and managing seasons and achievements natively through an authenticated UI.
+  - Application source code does not need to be touched to create or modify a season.
+  - A validated canonical JSON import/export format (`SeasonConfigurationPayload` and `AchievementCatalogPayload`) is provided so future agents or authorized automation can provision configuration through a controlled interface/API.
+  - `seed.sql` only provides initial development/demo data and is not the long-term source of truth.
+- **Canonical JSON Schema Contract:**
+```json
+{
+  "$schema": "https://life-os.system/schemas/v1/season-config.json",
+  "version": "1.0.0",
+  "season": {
+    "name": "Winter Arc 2026",
+    "startDate": "2026-07-30",
+    "endDate": "2026-10-27",
+    "status": "active",
+    "vows": {
+      "vow": {
+        "headline": "Silence and Execution",
+        "body": "No announcements. No half-measures. Cold focus in the dark.",
+        "attribution": "Seasonal Directive"
+      },
+      "principles": [
+        "Eliminate non-essential commitments",
+        "Kinetic discipline daily",
+        "Cognitive rigor in deep work"
+      ],
+      "phases": [
+        { "name": "Foundation", "startDay": 1, "endDay": 14 },
+        { "name": "Deep Arc", "startDay": 15, "endDay": 75 },
+        { "name": "Harvest & Transition", "startDay": 76, "endDay": 90 }
+      ]
+    }
+  },
+  "achievements": [
+    {
+      "badgeId": "arc_iron_initiate",
+      "name": "Iron Initiate",
+      "description": "Logged 10 consecutive active days during an active Arc",
+      "tier": "bronze",
+      "criteria": { "type": "consecutive_days", "count": 10 }
+    }
+  ]
+}
+```
+
+---
+
+## ADR-027: Recovery OS: Sanctuary, Grief Processing & Spoons Engine
+- **Status:** Accepted (Architecture Approved — Implementation Pending; formerly Winter Arc ADR-024)
+- **Context:** During periods of deep bereavement, traumatic loss, emotional grief, or severe physical/mental exhaustion, standard productivity expectations ("Crush your goals", "Streak counters", "Momentum scores") become adversarial and actively harmful. The user needs a dedicated sanctuary mode to safely hold grief, process loss, and honor low emotional bandwidth without guilt or failure metrics.
+- **Decision:** Introduce **Recovery OS** as a first-class operational sanctuary state and dedicated route (`/recovery` or integrated `/mind-os/recovery`).
+- **Core Pillars:**
+  1. **Radical Downscaling (The Spoons Engine):** Daily task lists are replaced with an ultra-minimal "Energy & Spoons" allocation (Rest, Nourishment, Hydration, 1 gentle somatic movement).
+  2. **Grief & Unburdening Journal:** Dedicated reflection modes with compassionate prompts ("What feels heavy today?", "What memory wants space?", "Permission to do nothing") that never calculate "productivity scores" or demand action items.
+  3. **Streak Preservation / Hibernation:** All habit streaks, Arc countdowns, and performance targets enter "Protected Hibernation" — they do not break, decay, or trigger failure notifications.
+  4. **Living Emblem State (`recovering`):** The Avatar transitions to a quiet, breathing amber orbit with reduced visual velocity, reflecting the `.theme-recovery` color palette (sage/sepia low-contrast OKLCH tokens).
+  5. **Zero Threat / Zero Pressure Vocabulary:** Complete eradication of critical alarms, red badges, or urgency-driving banners.
+- **Consequences:** Prevents psychological injury and cognitive burnout during personal crises; transforms Life OS from a rigid performance engine into an empathetic lifelong operating system.
+
+---
+
+## ADR-028: Learning OS AI Curriculum & Study Plan JSON Ingestion Protocol
+- **Status:** Accepted (Formerly Winter Arc ADR-025; renumbered to resolve duplicate ID collision with ADR-025 Fitness OS Kinetic Ledger)
+- **Context:** Creating extensive multi-stage learning roadmaps manually is high-friction. Users frequently leverage external LLMs (Claude, ChatGPT, Gemini) or future AI agents to formulate structured learning trajectories for complex domains (e.g., Systems Programming, Machine Learning, Clinical Neuroscience).
+- **Decision:** Implement a validated AI Curriculum Importer modal inside Learning OS (`/learning-os`) supporting direct copy-pasting of AI-generated JSON or API payload ingestion.
+- **Consequences:**
+  - The importer accepts a standard canonical JSON curriculum structure and performs schema validation (via client validator / Zod / schema checks).
+  - Provides an interactive preview showing Roadmap title, stages, session count, estimated hours, and project milestones before database commit.
+  - Atomic batch persistence: Single-transaction persistence into Supabase tables `learning_roadmaps`, `learning_stages`, `learning_sessions`, `learning_milestones`, and `learning_projects`.
+- **Canonical Curriculum JSON Schema Contract:**
+```json
+{
+  "$schema": "https://life-os.system/schemas/v1/curriculum.json",
+  "title": "Distributed Systems Engineering",
+  "slug": "distributed-systems-engineering",
+  "description": "Mastery of consensus, fault tolerance, replication, and distributed state machines.",
+  "startDate": "2026-10-01",
+  "targetEndDate": "2026-12-31",
+  "color": "var(--accent-primary)",
+  "stages": [
+    {
+      "orderIndex": 1,
+      "title": "Stage 1: Core Foundations & Time",
+      "subtitle": "Lamport Clocks, Vector Clocks, and Network Asynchrony",
+      "sessions": [
+        {
+          "orderIndex": 1,
+          "title": "Time, Clocks, and the Ordering of Events",
+          "estimatedMinutes": 90,
+          "tags": ["consensus", "time", "theory"]
+        },
+        {
+          "orderIndex": 2,
+          "title": "Vector Clocks in Practice",
+          "estimatedMinutes": 60,
+          "tags": ["implementation", "clocks"]
+        }
+      ]
+    }
+  ],
+  "milestones": [
+    { "title": "Implement Lamport Logical Clock simulator in Go" }
+  ],
+  "projects": [
+    {
+      "title": "Toy Raft Cluster",
+      "description": "3-node Raft consensus engine with leader election and log replication."
+    }
+  ]
+}
+```

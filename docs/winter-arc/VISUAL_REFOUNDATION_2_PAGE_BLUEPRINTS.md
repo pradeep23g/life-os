@@ -1,3 +1,10 @@
+---
+title: "Winter Arc — Page Blueprints & Layout Specs"
+status: "active"
+last_synchronized_commit: "77d1a5b"
+domain: "winter-arc"
+---
+
 # Life OS — Winter Arc: Visual Refoundation 2.0
 # Document 3: Canonical Page-by-Page Blueprints
 
