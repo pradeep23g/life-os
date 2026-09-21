@@ -1,3 +1,9 @@
+---
+status: "historical"
+frozen_commit: "ad488a2"
+domain: "historical"
+---
+
 # LIFE OS — FINAL CURRENT STATE CONTEXT (HISTORICAL SNAPSHOT)
 
 > [!WARNING]
@@ -220,7 +226,7 @@ Database Tables
 ### 5.3 Retired / Phantom Entities (DO NOT REINTRODUCE)
 - **`finance_transactions`**: **PHANTOM**. The actual base table is `transactions`.
 - **`workout_sets`**: **PHANTOM**. The actual base table is `exercise_logs`.
-- **`weekly_plan_items.plan_id`**: **PHANTOM**. The foreign key column is `weekly_plan_id`.
+- **`weekly_plan_items.plan_id`**: **PHANTOM**. `weekly_plan_items` has no `plan_id` or `weekly_plan_id` column; it binds directly to `(user_id, week_start_date)`.
 - **`budgets`**: **NON-EXISTENT**. Life OS has no dedicated budget management table. Budget utilization in `current_day_snapshot` is nullable.
 - **`programming_skills`, `challenges`, `milestones`, `personal_skills`**: **RETIRED**. Migrated into `progress_hub_archive` under ADR-007 and replaced by Learning OS.
 

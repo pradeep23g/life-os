@@ -78,7 +78,39 @@ Hosted PostgreSQL 15+ (Supabase Cloud Instance)
 - **Learning Progress (2):** `learning_roadmap_progress`, `learning_stage_progress`
 - **Planned Views (4):** `active_life_seasons`, `recent_achievements`, `pulse_summary`, `knowledge_by_type` (scheduled for future migration waves)
 
-### 3.3 Quick Schema Reference — Winter Arc Extension Tables
+### 3.3 Quick Schema Reference — Core Tables (27 Tables)
+
+| Domain | Table | Primary Key | Key Columns / Constraints | Notes |
+|---|---|---|---|---|
+| **Mind** | `habits` | `id` | `user_id`, `title`, `habit_type`, `target_value`, `deleted_at` | Active: `deleted_at IS NULL` |
+| | `habit_logs` | `id` | `habit_id`, `log_date`, `value` | `UNIQUE(habit_id, log_date)` |
+| | `habit_streak_breaks` | `id` | `habit_id`, `break_date`, `reason`, `healed_at` | `UNIQUE(habit_id, break_date)` |
+| | `habit_streak_heals` | `id` | `habit_id`, `break_id`, `heal_date` | Max 5 heals/month |
+| | `journal_entries` | `id` | `user_id`, `entry_date`, `content`, `mood` (1–5) | Clinical mood scale |
+| **Productivity** | `tasks` | `id` | `user_id`, `title`, `deadline_type`, `deadline_date`, `is_completed` | Active: `deleted_at IS NULL` |
+| | `goals` | `id` | `user_id`, `title`, `domain`, `status`, `target_date` | Domains: 5 functional targets |
+| | `weekly_plans` | `id` | `user_id`, `week_start_date`, `focus_text` | App-level upsert uniqueness |
+| | `weekly_plan_items` | `id` | `user_id`, `week_start_date`, `title`, `priority`, `status`, `goal_id` | `UNIQUE(user_id, week_start, order)` |
+| | `weekly_reviews` | `id` | `user_id`, `week_start_date`, `wins`, `blockers` | `UNIQUE(user_id, week_start_date)` |
+| **Learning** | `learning_roadmaps` | `id` | `user_id`, `title`, `status`, `current_stage_id` | Skill roadmap hierarchy |
+| | `learning_stages` | `id` | `roadmap_id`, `title`, `order_index`, `status` | Stage sequence |
+| | `learning_sessions` | `id` | `stage_id`, `title`, `duration_minutes`, `completed` | Study curriculum unit |
+| | `learning_session_logs`| `id` | `user_id`, `session_id`, `time_log_id`, `duration_minutes`| Links to Time OS |
+| | `learning_milestones` | `id` | `roadmap_id`, `title`, `target_date`, `achieved_at` | Achievement milestones |
+| | `learning_projects` | `id` | `roadmap_id`, `title`, `repo_url`, `status` | Capstone projects |
+| | `learning_reflections` | `id` | `roadmap_id`, `content`, `reflection_date` | Qualitative review |
+| **Fitness** | `fitness_exercises` | `id` | `user_id`, `name`, `category`, `movement_pattern` | Dual-mode catalog |
+| | `workouts` | `id` | `user_id`, `title`, `workout_type`, `start_time`, `end_time` | Partial unique on active session |
+| | `exercise_logs` | `id` | `workout_id`, `exercise_id`, `sets`, `reps`, `weight_kg`, `duration_seconds` | Kinetic sets & duration |
+| **Time** | `time_logs` | `id` | `user_id`, `task_id`, `start_time`, `end_time`, `duration_seconds` | `idx_time_logs_single_active_per_user` |
+| **Finance** | `transactions` | `id` | `user_id`, `amount`, `category`, `type` ('income'\|'expense'), `is_need` | Canonical spend ledger |
+| **System** | `events` | `id` | `user_id`, `event_type`, `payload` (jsonb), `event_date_ist` | Immutable longitudinal audit |
+| | `system_event_queue` | `id` | `user_id`, `event_type`, `payload` (jsonb), `retry_count`, `status` | Transient buffer for offline |
+| | `system_metrics` | `id` | `user_id`, `sync_date`, `total_focus_minutes`, `completed_tasks` | `UNIQUE(user_id, sync_date)` |
+| | `data_lab_signal_config`| `signal_key` | `domain`, `weight`, `target_daily_events` | PK: `signal_key` (text) |
+| **Archive** | `progress_hub_archive` | `id` | `user_id` (UNIQUE), `archive_data` (jsonb) | Dormant archive (DO NOT DROP) |
+
+### 3.4 Quick Schema Reference — Winter Arc Extension Tables (6 Tables)
 
 | Table | Key Columns | Notes |
 |---|---|---|

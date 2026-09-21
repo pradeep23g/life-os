@@ -47,7 +47,7 @@ When code and documentation conflict, investigate forensic reality. When documen
 
 ---
 
-## 5. Module Ownership Map (14 Client Modules)
+## 5. Module Ownership Map (14 Client Routes + System Overlay)
 
 | Module | Route | Directory | Responsibility |
 |---|---|---|---|

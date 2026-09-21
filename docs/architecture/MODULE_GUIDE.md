@@ -183,7 +183,7 @@ The central intelligence engine that computes real-time momentum, evaluates mult
 ### Key Modules & Components
 - `systemEngine.ts`: Master engine coordinator mapping snapshot inputs to momentum, directives, and issues.
 - `useSystemStatus.ts`: React Query hook querying `public.current_day_snapshot` (14-column projection including `budget_utilization_percentage` and `recent_want_expenses_count`) and `current_day_snapshot_history_14d`.
-- `domainSignals.ts`: Evaluates behavioral rules across all 7 domains (Mind, Execution, Fitness, Time, Learning, Finance).
+- `domainSignals.ts`: Evaluates behavioral rules across all 7 canonical domains (Mind, Productivity, Learning, Fitness, Time, Finance, System).
 - `analyzeMomentum.ts`: Computes Exponential Moving Average (EMA, $\alpha = 0.6$) momentum, symmetric trend deltas, intra-day deep work bonuses (+4 points for > 120 min), and low-momentum acceleration.
 - `generateDirectives.ts`: Calculates domain urgency scores and selects the top actionable directive.
 - `useEveningSync.ts`: Processes all pending events in `public.system_event_queue` across all dates in batches of 50, updates `public.system_metrics`, flushes the queue, and invalidates query caches.

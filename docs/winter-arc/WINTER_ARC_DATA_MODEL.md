@@ -16,7 +16,7 @@ domain: "winter-arc"
 - [Winter Arc Architecture](WINTER_ARC_ARCHITECTURE.md)
 
 ## Existing Database Context
-The current system contains 27 tables and 15 views across various domains (Mind OS, Productivity, Learning OS, Fitness, Time, Finance, System, Data Lab). The goal is to leverage these existing structures (especially `events`, `tasks`, `goals`, `journal_entries`) wherever possible to avoid unnecessary database bloat.
+The system contains 33 PostgreSQL tables and analytical views across the 7 canonical scoring domains (Mind, Productivity, Learning, Fitness, Time, Finance, System). The goal is to leverage these existing structures (especially `events`, `tasks`, `goals`, `journal_entries`) wherever possible to avoid unnecessary database bloat.
 
 ---
 

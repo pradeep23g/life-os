@@ -303,7 +303,7 @@ Data Lab (`src/features/data-lab/`) is a read-only analytical workbench powered 
 - **Overview Tab:** 12-week system score, GitHub-style 90-day contribution calendar, multi-domain activity histogram.
 - **Behavior Tab:** 30-day module consistency percentages, habit streak rivers, behavioral drift metrics, and cross-domain correlation matrices.
 - **Telemetry Tab:** Real-time event stream from `events`, 30-day event type coverage breakdown, and silent event detection.
-- **Complete 7-Domain Brain Engine Coverage:** Integrates Mind/Habits, Mind/Journal, Productivity/Tasks, Fitness OS, Time OS, Finance OS, and Learning OS.
+- **Complete 7-Domain Brain Engine Coverage:** Integrates all 7 canonical scoring domains: Mind, Productivity, Learning, Fitness, Time, Finance, and System.
 - **Normalized Key Matching:** Lookup functions use whitespace-agnostic key normalization (`normalizeKey()`) to ensure seamless matching between database view identifiers (`'Mind / Habits'`) and UI components.
 
 ---

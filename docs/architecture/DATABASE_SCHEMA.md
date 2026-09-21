@@ -144,7 +144,7 @@ Weekly focus themes and timeframes.
 | `focus_text` | `text` | No | — | Main theme/focus for the week |
 | `created_at` | `timestamptz` | No | `now()` | Creation timestamp |
 
-*Constraint:* Unique on `(user_id, week_start_date)`.
+*Constraint:* Application-level uniqueness on `(user_id, week_start_date)` enforced via upsert (no DB-level UNIQUE constraint).
 
 #### `public.weekly_plan_items`
 Structured backlog and commitment items for a given week.
@@ -643,7 +643,7 @@ The following 4 views were specified during Winter Arc architectural planning an
 | `workouts` | `idx_workouts_single_active_session_per_user` (partial unique: `(user_id) WHERE end_time IS NULL AND deleted_at IS NULL`) | Enforces the single active workout session invariant. |
 | `habit_logs` | `UNIQUE(habit_id, log_date)` | Prevents duplicate habit logs for the same calendar date. |
 | `habit_streak_breaks` | `UNIQUE(habit_id, break_date)` | Enforces single streak break record per habit per date. |
-| `weekly_plans` | `UNIQUE(user_id, week_start_date)` | Ensures one weekly plan per user per week. |
+| `weekly_plans` | Application-level upsert on `(user_id, week_start_date)` | Ensures one weekly plan per user per week in UI/API workflows. |
 | `weekly_plan_items` | `UNIQUE(user_id, week_start_date, order_index)` | Enforces unique ordering per user per week. |
 | `weekly_reviews` | `UNIQUE(user_id, week_start_date)` | Ensures one weekly review per user per week. |
 | `system_metrics` | `UNIQUE(user_id, sync_date)` | Prevents duplicate Evening Sync closing records per date. |

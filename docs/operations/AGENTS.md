@@ -145,37 +145,58 @@ Presenting execution pressure (overdue tasks, impending deadlines, backlog count
 
 ## 7. New Module Creation Protocol
 
-When creating a new feature module, complete every step in order:
+When creating a new feature module, complete every step in sequential order:
 
-### Scaffolding
-- [ ] Create `src/features/<name>/` directory
-- [ ] Create `pages/<Name>Page.tsx` (or `<Name>Layout.tsx` for multi-view modules)
-- [ ] Create `api/use<Name>.ts` for TanStack React Query hooks
-- [ ] Create `components/` directory for module-specific components
+### 1. Scaffolding
+- [ ] Create `src/features/<name>/` directory structure:
+  - `pages/<Name>Page.tsx` (or `<Name>Layout.tsx` for multi-view modules)
+  - `api/use<Name>.ts` for TanStack React Query hooks
+  - `components/` directory for module-specific UI components
+  - `__tests__/` directory for unit tests
 
-### Integration
-- [ ] Add `<Route>` in `src/App.tsx` (lazy-load with `React.lazy()`)
-- [ ] Add orbital node in `src/layout/AstrolabeOrbNav.tsx` (coordinate with ring/angle geometry)
-- [ ] Choose module signature color (OKLCH format, add to UI_SYSTEM.md)
+### 2. Database & Schema (if adding persistent entities)
+- [ ] Create sequential additive migration: `supabase/migrations/<YYYYMMDDNNNN>_<description>.sql`
+- [ ] Enable RLS on every created table: `ALTER TABLE public.<table_name> ENABLE ROW LEVEL SECURITY;`
+- [ ] Add tenant isolation policy: `CREATE POLICY "Users can manage own <entity>" ON public.<table_name> FOR ALL TO authenticated USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);`
+- [ ] Regenerate TypeScript contracts: `npx supabase gen types typescript --linked > src/types/database.types.ts`
 
-### Database (if needed)
-- [ ] Create migration: `supabase/migrations/<YYYYMMDDHHMMSS>_<description>.sql`
-- [ ] Enable RLS: `ALTER TABLE ... ENABLE ROW LEVEL SECURITY`
-- [ ] Add policy: `CREATE POLICY ... USING (auth.uid() = user_id)`
-- [ ] Regenerate types: `supabase gen types typescript --project-id <id> > src/types/database.types.ts`
+### 3. Telemetry & Event Taxonomy
+- [ ] Register canonical dot-notation event constants in `src/lib/eventTaxonomy.ts`
+- [ ] Map mutations to `logEventSafe()` using canonical event constants and India Date Keys (`toIndiaDateKey`)
 
-### Documentation (MANDATORY — not optional)
-- [ ] Update `docs/architecture/DATABASE_SCHEMA.md` with new tables/columns
-- [ ] Update `docs/architecture/MODULE_GUIDE.md` with new module section
-- [ ] Update `docs/AGENT_QUICKSTART.md` route table
-- [ ] Update `docs/architecture/SYSTEM_ARCHITECTURE.md` route table
-- [ ] Log session in Agent Session Ledger (see Section 8)
+### 4. Theme & Shell Configuration
+- [ ] Register module signature color in `src/lib/useModuleColors.ts` (`DEFAULT_MODULE_COLORS`) and document in `docs/architecture/UI_SYSTEM.md`
+- [ ] Register route title resolution in `src/layout/shellTitle.ts` (`getShellTitle`)
 
-### Verification
-- [ ] `npx tsc -b` passes
-- [ ] `npx eslint src` passes
-- [ ] `npm run build` succeeds
-- [ ] `npm run verify:docs` passes
+### 5. Navigation & Route Registration
+- [ ] Register orbital navigation node in `src/layout/AstrolabeOrbNav.tsx` (coordinate ring `radius`, angle trigonometry, and canonical domain assignment)
+- [ ] Add route in `src/App.tsx` lazy-loaded with `React.lazy()` and wrapped in `<ProtectedRoute>`:
+  ```tsx
+  <Route
+    path="/<module-path>/*"
+    element={
+      <ProtectedRoute>
+        <<ModuleName>Page />
+      </ProtectedRoute>
+    }
+  />
+  ```
+
+### 6. Automated Testing
+- [ ] Write component tests verifying render states, loading states, and error handling
+- [ ] Verify query hooks handle auth session state gracefully
+
+### 7. Documentation (MANDATORY — not optional)
+- [ ] Update `docs/architecture/DATABASE_SCHEMA.md` with new tables, columns, RLS policies, and indexes
+- [ ] Update `docs/architecture/MODULE_GUIDE.md` with new module section, components, and responsibilities
+- [ ] Update route tables in `docs/AGENT_QUICKSTART.md` and `docs/architecture/SYSTEM_ARCHITECTURE.md`
+- [ ] Record session in Agent Session Ledger (`docs/agent-ledger/SESSION_LOG.md` and `HANDOFF.md`)
+
+### 8. Verification & Quality Gates
+- [ ] TypeScript check: `npx tsc -b` passes with 0 errors
+- [ ] Linter check: `npx eslint src` passes with 0 warnings/errors
+- [ ] Application build: `npm run build` succeeds
+- [ ] Documentation drift gate: `powershell -ExecutionPolicy Bypass -File scripts/verify-doc-drift.ps1` passes (5/5)
 
 ---
 

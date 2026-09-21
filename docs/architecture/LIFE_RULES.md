@@ -56,16 +56,21 @@ Life OS is architected to preserve multi-year longitudinal personal data safely.
 ---
 
 ## Rule 8 — Growth Is Multi-Dimensional
-Human development spans multiple interconnected dimensions operating in synchrony:
-- **Discipline & Daily Habits:** Mind OS (`habits`, `habit_logs`)
-- **Execution & Objectives:** Productivity Hub (`tasks`, `goals`, `weekly_plans`)
-- **Skill Acquisition & Mastery:** Learning OS (`learning_roadmaps`, `learning_stages`)
-- **Kinetic Discipline & Physical Exertion:** Fitness OS (`workouts`, `exercise_logs`)
-- **Focus & Temporal Density:** Time OS (`time_logs`, Chronos engine)
-- **Financial Discipline & Capital Awareness:** Finance OS (`transactions`)
-- **Cognitive Reflection & Unburdening:** Mind OS Journal (`journal_entries`)
-- **Seasonal Cycles & Vows:** Winter Arc (`life_seasons`, chapter epochs)
-- **Long-Term Progression & Crests:** Profile (`user_achievements`, avatar)
-- **Longitudinal Observability:** Data Lab (cross-domain correlation)
-- **Synthesis & Field Dossiers:** Field Reports (Sunday broadsheet retrospectives)
+Human development spans 7 canonical scoring domains operating in synchrony within the Brain Engine, synthesized across composite surfaces:
+
+### Canonical Scoring Domains
+- **Mind:** Discipline, daily habits, and cognitive reflection (`habits`, `habit_logs`, `journal_entries`)
+- **Productivity:** Execution, goals, and weekly planning (`tasks`, `goals`, `weekly_plans`, `weekly_plan_items`)
+- **Learning:** Skill acquisition & curriculum mastery (`learning_roadmaps`, `learning_stages`, `learning_sessions`)
+- **Fitness:** Kinetic discipline & physical exertion (`workouts`, `exercise_logs`, `fitness_exercises`)
+- **Time:** Focus tracking & temporal density (`time_logs`, Chronos engine)
+- **Finance:** Capital awareness & transaction velocity (`transactions`)
+- **System:** Operational health, telemetry queue, and evening sync (`system_metrics`, `system_event_queue`, `events`)
+
+### Composite Synthesis Surfaces
+- **Winter Arc:** Seasonal cycles, chapter epochs, and vows (`life_seasons`)
+- **Profile:** Long-term progression, avatar manifestation, and crests (`user_achievements`, `user_settings`)
+- **Data Lab:** Longitudinal observability and cross-domain correlation
+- **Field Reports:** Sunday broadsheet retrospectives and weekly synthesis
+
 

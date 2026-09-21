@@ -17,7 +17,7 @@ domain: "governance"
 | Document | Path | Domain | Status | Est. Tokens | Primary Invariant |
 |---|---|---|---|:---:|---|
 | **Agent Quickstart** | [`AGENT_QUICKSTART.md`](./AGENT_QUICKSTART.md) | `governance` | Active | ~1,200 | Machine entrypoint, 33-table / 14-route summary |
-| **Documentation Index** | [`INDEX.md`](./INDEX.md) | `governance` | Active | ~600 | Token budget index & document taxonomy |
+| **Documentation Index** | `INDEX.md` *(current page)* | `governance` | Active | ~600 | Token budget index & document taxonomy |
 | **AI Constitution** | [`decisions/AI_ENGINEERING_CONSTITUTION.md`](./decisions/AI_ENGINEERING_CONSTITUTION.md) | `governance` | Active | ~1,100 | Core invariants, source-of-truth hierarchy |
 | **ADR Register** | [`decisions/ARCHITECTURE_DECISIONS.md`](./decisions/ARCHITECTURE_DECISIONS.md) | `architecture` | Active | ~8,500 | Gapless ADR-001 through ADR-028 |
 
