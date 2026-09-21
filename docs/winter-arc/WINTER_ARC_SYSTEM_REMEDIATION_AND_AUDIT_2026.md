@@ -12,6 +12,10 @@ domain: "winter-arc"
 > **Status:** Executed & Verified  
 > **Pre-requisite For:** Deep-Dive Debugging & Quality Hardening Session  
 
+> [!IMPORTANT]
+> **Historical Artifact Notice (`Sidebar.tsx` Deprecation):**  
+> Sections of this document (such as Section 3.3) discuss historical optimizations applied to `src/layout/Sidebar.tsx`. Note that `Sidebar.tsx` was subsequently **permanently deleted** in commit `77d1a5b` / PR #1 under ADR-023. Global navigation is 100% powered by the Kinetic Astrolabe Orb (`src/layout/AstrolabeOrbNav.tsx`). `Sidebar.tsx` must never be restored or imported.
+
 ---
 
 ## 1. Executive Summary
@@ -99,6 +103,8 @@ The dead directories (`components`, `hooks`, `metrics`, `store`, `transforms`, `
   - **Phases:** 13 fully articulated weekly phases mapping to Foundation (Weeks 1–2), Deep Arc (Weeks 3–10), and Harvest & Transition (Weeks 11–13).
 
 ### 3.3 Elimination of Query Waterfall in `Sidebar.tsx`
+> *Historical Deprecation Notice: `src/layout/Sidebar.tsx` was subsequently retired and permanently deleted in PR #1 / commit `77d1a5b` under ADR-023. Global navigation is handled by the Kinetic Astrolabe Orb (`src/layout/AstrolabeOrbNav.tsx`).*
+
 - **Root Cause:** `src/layout/Sidebar.tsx` imported `useMissionControlSnapshot()`. To calculate a single avatar status indicator, `Sidebar.tsx` triggered 10 distinct queries (habits, tasks, journals, roadmaps, events analytics, fitness, time analytics, transactions, system status, pending events) on **every route change** across the entire application.
 - **Remediation:**
   Replaced `useMissionControlSnapshot()` with `useSystemStatus()`. Now `Sidebar.tsx` reads only the cached `current_day_snapshot` view from React Query:

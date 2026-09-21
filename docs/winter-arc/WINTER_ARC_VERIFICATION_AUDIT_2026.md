@@ -59,30 +59,30 @@ domain: "winter-arc"
 
 ## 2. Line-Level Forensic Audit (The 15 Hostile Audit Citations)
 
-Re-verification of the 15 hostile citations documented in [VISUAL_REFOUNDATION_2_HOSTILE_AUDIT.md](file:///c:/Users/gpk74/life-os/docs/winter-arc/VISUAL_REFOUNDATION_2_HOSTILE_AUDIT.md#L245-L375):
+Re-verification of the 15 hostile citations documented in [VISUAL_REFOUNDATION_2_HOSTILE_AUDIT.md](./VISUAL_REFOUNDATION_2_HOSTILE_AUDIT.md#L245-L375):
 
 ### Citation 1: Hardcoded "Level 12" in Navigation
 - **Location:** Historical `Sidebar.tsx` (retired and replaced by [`src/layout/AstrolabeOrbNav.tsx`](../../src/layout/AstrolabeOrbNav.tsx)) & [`src/features/mission-control/dashboard/MissionControl.tsx`](../../src/features/mission-control/dashboard/MissionControl.tsx)
 - **Status:** **RESOLVED.** "Level 12" has been completely eradicated. Replaced with dynamic "Profile & Stats" and live telemetry integration.
 
 ### Citation 2: Persistent Header Lie
-- **Location:** [src/layout/shellTitle.ts:2-8](file:///c:/Users/gpk74/life-os/src/layout/shellTitle.ts#L2-L8)
+- **Location:** [src/layout/shellTitle.ts:2-8](../../src/layout/shellTitle.ts#L2-L8)
 - **Status:** **RESOLVED.** Canonical mapping returns "Home" for `/` and "Winter Arc" for `/arc`.
 
 ### Citation 3: Hardcoded "Pending Actions: 3" on Home
-- **Location:** [src/features/home/hooks/useHomeTelemetry.ts:77-82](file:///c:/Users/gpk74/life-os/src/features/home/hooks/useHomeTelemetry.ts#L77-L82)
+- **Location:** [src/features/home/hooks/useHomeTelemetry.ts:77-82](../../src/features/home/hooks/useHomeTelemetry.ts#L77-L82)
 - **Status:** **RESOLVED.** Dynamically calculated from pending tasks (`useTasks`) and uncompleted habits (`useHabitWorkspace`).
 
 ### Citation 4: Dead CTA Button on Home
-- **Location:** [src/features/home/components/HomePrimaryAction.tsx:40-75](file:///c:/Users/gpk74/life-os/src/features/home/components/HomePrimaryAction.tsx#L40-L75)
+- **Location:** [src/features/home/components/HomePrimaryAction.tsx:40-71](../../src/features/home/components/HomePrimaryAction.tsx#L40-L71)
 - **Status:** **RESOLVED.** Fully interactive action trigger invoking `useStartTimer`, navigating to `/time-os`, or resuming active focus sessions.
 
 ### Citation 5: Avatar Component is a 2-Circle Wireframe Placeholder
-- **Location:** [src/components/Avatar.tsx](file:///c:/Users/gpk74/life-os/src/components/Avatar.tsx)
+- **Location:** [src/components/Avatar.tsx](../../src/components/Avatar.tsx)
 - **Status:** **RESOLVED.** Rebuilt into a composable generative SVG living emblem with outer momentum orbit, inner lattice diamond, solar core, and recovery/overload indicators. Wrapped in `oklch(...)` to fix CSS variable color parsing in local builds.
 
 ### Citation 6: Raw JSON Dump in Profile Dossier
-- **Location:** [src/features/profile/components/HistoricalChronicle.tsx](file:///c:/Users/gpk74/life-os/src/features/profile/components/HistoricalChronicle.tsx)
+- **Location:** [src/features/profile/components/HistoricalChronicle.tsx](../../src/features/profile/components/HistoricalChronicle.tsx)
 - **Status:** **RESOLVED.** Raw JSON dumps replaced with an editorial historical chronicle translating telemetry into human narratives.
 
 ### Citation 7: Missing Arc Surface
@@ -94,38 +94,38 @@ Re-verification of the 15 hostile citations documented in [VISUAL_REFOUNDATION_2
 - **Status:** **RESOLVED.** Reports (`/reports`) is integrated in the Astrolabe Orb Navigation shell (historical `Sidebar.tsx` retired). The broadsheet ledger synthesizes metrics (tasks, habits, focus time) even when no manual written review is submitted.
 
 ### Citation 9: Gutted Data Lab Analytics
-- **Location:** [src/features/data-lab/pages/DataLabPage.tsx](file:///c:/Users/gpk74/life-os/src/features/data-lab/pages/DataLabPage.tsx)
+- **Location:** [src/features/data-lab/pages/DataLabPage.tsx](../../src/features/data-lab/pages/DataLabPage.tsx)
 - **Status:** **RESOLVED.** Replaced the 159-line dot stub with a 30-day spatial horizontal timeline canvas rendering multi-track activity (Deep Work, Focus, Tasks, Habits, Workouts) from `useDataLabDailyActivity()`.
 
 ### Citation 10: Rampant Rogue Hex in Sub-Navigation
-- **Location:** [src/layout/ModuleHeader.tsx](file:///c:/Users/gpk74/life-os/src/layout/ModuleHeader.tsx)
+- **Location:** [src/layout/ModuleHeader.tsx](../../src/layout/ModuleHeader.tsx)
 - **Status:** **RESOLVED.** Purged `#222222`, `#111111`, and `text-slate-*`. Now uses semantic tokens (`bg-elevated`, `text-text-primary`, `text-text-secondary`, `hover:bg-surface`).
 
 ### Citation 11: Subsystem Header Card-Box Enclosure
-- **Location:** [src/layout/ModuleHeader.tsx:22](file:///c:/Users/gpk74/life-os/src/layout/ModuleHeader.tsx#L22)
+- **Location:** [src/layout/ModuleHeader.tsx:22](../../src/layout/ModuleHeader.tsx#L22)
 - **Status:** **RESOLVED.** Removed the rounded card box. Replaced with an editorial Newsreader serif title and hairline border (`border-b border-border-subtle`).
 
 ### Citation 12: Military Threat Language in Mission Control
-- **Location:** [src/features/system/components/BrainEngineHero.tsx:148](file:///c:/Users/gpk74/life-os/src/features/system/components/BrainEngineHero.tsx#L148)
+- **Location:** [src/features/system/components/BrainEngineHero.tsx:148](../../src/features/system/components/BrainEngineHero.tsx#L148)
 - **Status:** **PARTIALLY RESOLVED.** Replaced military rose borders with theme variables. The label "System Threats" remains scheduled for conversion to "System Friction / Attention Areas".
 
 ### Citation 13: 4-Card KPI Grid in Finance OS
-- **Location:** [src/features/finance-os/pages/FinanceDashboard.tsx:116](file:///c:/Users/gpk74/life-os/src/features/finance-os/pages/FinanceDashboard.tsx#L116)
+- **Location:** [src/features/finance-os/pages/FinanceDashboard.tsx:116](../../src/features/finance-os/pages/FinanceDashboard.tsx#L116)
 - **Status:** **PENDING REFACTOR.** Retains 4-card metric summary. Scheduled for transition to an editorial resource circulation ledger.
 
 ### Citation 14: Neon Status Glow Dots
-- **Location:** [src/features/mission-control/dashboard/MissionControl.tsx:98-108](file:///c:/Users/gpk74/life-os/src/features/mission-control/dashboard/MissionControl.tsx#L98-L108)
+- **Location:** [src/features/mission-control/dashboard/MissionControl.tsx:98-108](../../src/features/mission-control/dashboard/MissionControl.tsx#L98-L108)
 - **Status:** **RESOLVED.** Neon box shadows (`shadow-[0_0_8px...]`) purged. Replaced with crisp semantic indicator dots (`bg-threat-healthy`, `bg-threat-warning`, `bg-threat-critical`).
 
 ### Citation 15: Bottom-Right Floating Action Button (FAB) Clutter
-- **Location:** [src/features/finance-os/pages/FinanceDashboard.tsx](file:///c:/Users/gpk74/life-os/src/features/finance-os/pages/FinanceDashboard.tsx), [src/features/time-os/pages/TimeOSPage.tsx](file:///c:/Users/gpk74/life-os/src/features/time-os/pages/TimeOSPage.tsx)
+- **Location:** [src/features/finance-os/pages/FinanceDashboard.tsx](../../src/features/finance-os/pages/FinanceDashboard.tsx), [src/features/time-os/pages/TimeOSPage.tsx](../../src/features/time-os/pages/TimeOSPage.tsx)
 - **Status:** **PENDING REFACTOR.** Fixed action buttons scheduled for conversion into contextual inline trigger bars.
 
 ---
 
 ## 3. Systematic Anti-Pattern Blacklist Audit
 
-Tracking compliance with [VISUAL_REFOUNDATION_2.md Section 9](file:///c:/Users/gpk74/life-os/docs/winter-arc/VISUAL_REFOUNDATION_2.md#L337-L358):
+Tracking compliance with [VISUAL_REFOUNDATION_2.md Section 9](./VISUAL_REFOUNDATION_2.md#L337-L358):
 
 1. **AI Eyebrow Crutch (`tracking-[0.2em]`):**
    - Eliminated across core navigation, Home, Arc, Profile, and Data Lab.
@@ -160,7 +160,7 @@ All typographic defects recorded in the initial audit are **completely fixed**:
 ## 5. Architectural & Database Status vs Specifications
 
 ### 5.1 Supabase Schema Realization
-The database requirements defined in [WINTER_ARC_DATA_MODEL.md](file:///c:/Users/gpk74/life-os/docs/winter-arc/WINTER_ARC_DATA_MODEL.md) and [WINTER_ARC_DECISIONS.md](file:///c:/Users/gpk74/life-os/docs/winter-arc/WINTER_ARC_DECISIONS.md) are now fully realized in code and deployed to production:
+The database requirements defined in [WINTER_ARC_DATA_MODEL.md](./WINTER_ARC_DATA_MODEL.md) and [WINTER_ARC_DECISIONS.md](./WINTER_ARC_DECISIONS.md) are now fully realized in code and deployed to production:
 
 | Table Name | Governing ADR | Status on Remote DB | RLS & Policy Status | TypeScript Typings |
 |---|---|---|---|---|

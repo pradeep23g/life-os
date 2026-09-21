@@ -153,7 +153,7 @@ graph TD
 ```
 
 ## Cross-References
-- [Winter Arc Master Plan](file:///C:/Users/gpk74/life-os/docs/winter-arc/WINTER_ARC_MASTER_PLAN.md)
-- [Winter Arc Data Model](file:///C:/Users/gpk74/life-os/docs/winter-arc/WINTER_ARC_DATA_MODEL.md)
-- [Winter Arc Telemetry](file:///C:/Users/gpk74/life-os/docs/winter-arc/WINTER_ARC_TELEMETRY.md)
-- [System Architecture](file:///C:/Users/gpk74/life-os/docs/architecture/SYSTEM_ARCHITECTURE.md)
+- [Winter Arc Master Plan](./WINTER_ARC_MASTER_PLAN.md)
+- [Winter Arc Data Model](./WINTER_ARC_DATA_MODEL.md)
+- [Winter Arc Telemetry](./WINTER_ARC_TELEMETRY.md)
+- [System Architecture](../architecture/SYSTEM_ARCHITECTURE.md)

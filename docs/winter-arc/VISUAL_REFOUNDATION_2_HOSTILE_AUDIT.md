@@ -14,6 +14,10 @@ domain: "winter-arc"
 **Status:** HUMAN TASTE OVERRIDE TRIGGERED — CANONICAL HOSTILE AUDIT COMPLETE  
 **Target:** Implementation Handoff for Visual Refoundation 2.0 (Agent 2)  
 
+> [!IMPORTANT]
+> **Historical Audit Notice (`Sidebar.tsx` Deprecation):**  
+> This hostile audit critiques the legacy layout which historically included `src/layout/Sidebar.tsx`. Note that `Sidebar.tsx` has since been **permanently deleted** in commit `77d1a5b` / PR #1 and replaced by the 3-ring Kinetic Astrolabe Orb navigation (`src/layout/AstrolabeOrbNav.tsx`, ADR-023). Any references to `Sidebar.tsx` in this document are retained strictly for historical critique and audit context.
+
 ---
 
 ## 1. Executive Archaeologist Verdict: The Core Question
@@ -245,14 +249,14 @@ The application has relied on isolated stylistic tricks (Newsreader serif here, 
 | **Reports** (`/reports`) | `src/features/reports/FieldReportPage.tsx` | Newsreader serif + Geist Mono | Editorial header, 3-column win/ledger layout | Zero cards; newspaper column layout | `border-b`, `border-l` dividing rules | Printed Field Dossier | 2/10 | **EDITORIAL** | **High visual quality but orphaned.** Unlinked from Sidebar. Shows empty blank screen if manual review is unwritten instead of synthesizing tracked data. |
 | **Time OS** (`/time-os`) | `src/features/time-os/pages/TimeOSPage.tsx` | Geist Sans + Slate | Timer readout, session list, FAB button | 4 card boxes (`rounded-xl border bg-surface`) | `#111111`, `#222222`, slate text | Toggl / Harvest Clone | 9/10 | **UTILITY** | **Standard time tracking dashboard.** Active session card with "Pop Out" and "Stop Timer", list of recent sessions, floating `+` button. |
 | **Finance OS** (`/finance-os`) | `src/features/finance-os/pages/FinanceDashboard.tsx` | Geist Sans + Slate | Spend ratio bar, 4-column KPI cards, calendar grid | 5 card boxes, monthly calendar grid, FAB button | Gradient progress bar, green/red border tints | Mint / YNAB Clone | 9/10 | **UTILITY** | **Pure personal finance SaaS.** Total Available, Total Spent, Wallet Balance, Spend Ratio progress bar, calendar grid with colored day boxes. |
-| **Global Shell** | `src/App.tsx`, `src/layout/Sidebar.tsx` | Geist Sans + Slate | Collapsible sidebar, sticky topbar, global timer | Sidebar is a rounded box inside a fixed aside | `border border-border bg-surface`, `bg-background/80` | Generic SaaS App Shell | 8/10 | **UTILITY** | **Collapsible admin sidebar.** 9 icons, level 12 badge, sign out button. Persistent header displays "Mission Control" when on Home. Mobile has drawer. |
+| **Global Shell** | `src/App.tsx`, `src/layout/Sidebar.tsx` (Retired/Deleted) | Geist Sans + Slate | Collapsible sidebar, sticky topbar, global timer | Sidebar is a rounded box inside a fixed aside | `border border-border bg-surface`, `bg-background/80` | Generic SaaS App Shell | 8/10 | **UTILITY** | **Collapsible admin sidebar.** 9 icons, level 12 badge, sign out button. Persistent header displays "Mission Control" when on Home. Mobile has drawer. |
 
 ---
 
 ## 10. Repository Crime Sheet (Line-Level Forensics)
 
 ### Citation 1: Hardcoded Fake Progression Data in Global Navigation
-* **File:** `src/layout/Sidebar.tsx`
+* **File:** `src/layout/Sidebar.tsx` (Historical artifact: permanently deleted in PR #1 / commit `77d1a5b`; replaced by `src/layout/AstrolabeOrbNav.tsx` under ADR-023)
 * **Line:** 199
 * **Code:**
   ```tsx
@@ -331,7 +335,7 @@ The application has relied on isolated stylistic tricks (Newsreader serif here, 
 * **Finding:** Phase D was recorded in documentation as "COMPLETED". In reality, there is no Arc route in `App.tsx` and no Arc component in `src/features/`. The central seasonal concept of Winter Arc was never actually built.
 
 ### Citation 8: Orphaned Reports Surface
-* **File:** `src/layout/Sidebar.tsx` vs `src/features/reports/FieldReportPage.tsx`
+* **File:** `src/layout/Sidebar.tsx` (Historical artifact: retired and deleted in PR #1; replaced by `src/layout/AstrolabeOrbNav.tsx`) vs `src/features/reports/FieldReportPage.tsx`
 * **Finding:** `FieldReportPage.tsx` exists at `/reports`, but is completely absent from `Sidebar.tsx`. Users cannot navigate to it without guessing the URL. Furthermore, it renders a blank "Data unavailable" screen if the user hasn't typed a manual review, ignoring all logged workouts and tasks.
 
 ### Citation 9: Gutted Data Lab Analytics

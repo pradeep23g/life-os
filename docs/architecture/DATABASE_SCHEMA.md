@@ -389,7 +389,7 @@ Focus and deep work time sessions.
 
 *Single Active Timer Constraint:* PostgreSQL partial unique index:
 ```sql
-CREATE UNIQUE INDEX idx_time_logs_single_active ON public.time_logs(user_id) WHERE end_time IS NULL;
+CREATE UNIQUE INDEX idx_time_logs_single_active_per_user ON public.time_logs(user_id) WHERE end_time IS NULL;
 ```
 
 ---
@@ -639,7 +639,7 @@ The following 4 views were specified during Winter Arc architectural planning an
 
 | Table | Index / Constraint | Purpose |
 |---|---|---|
-| `time_logs` | `idx_time_logs_single_active` (partial unique: `(user_id) WHERE end_time IS NULL`) | Enforces the single active focus timer invariant. |
+| `time_logs` | `idx_time_logs_single_active_per_user` (partial unique: `(user_id) WHERE end_time IS NULL`) | Enforces the single active focus timer invariant. |
 | `workouts` | `idx_workouts_single_active_session_per_user` (partial unique: `(user_id) WHERE end_time IS NULL AND deleted_at IS NULL`) | Enforces the single active workout session invariant. |
 | `habit_logs` | `UNIQUE(habit_id, log_date)` | Prevents duplicate habit logs for the same calendar date. |
 | `habit_streak_breaks` | `UNIQUE(habit_id, break_date)` | Enforces single streak break record per habit per date. |

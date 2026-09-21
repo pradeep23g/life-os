@@ -65,7 +65,7 @@ Hosted PostgreSQL 15+ (Supabase Cloud Instance)
 - **Productivity Hub (5):** `tasks`, `goals`, `weekly_plans`, `weekly_plan_items`, `weekly_reviews`
 - **Learning OS (7):** `learning_roadmaps`, `learning_stages`, `learning_sessions`, `learning_session_logs`, `learning_milestones`, `learning_projects`, `learning_reflections`
 - **Fitness OS (3):** `fitness_exercises` (with `movement_pattern`), `workouts`, `exercise_logs` (with `duration_seconds`)
-- **Time OS (1):** `time_logs` (partial unique index `idx_time_logs_single_active` WHERE end_time IS NULL)
+- **Time OS (1):** `time_logs` (partial unique index `idx_time_logs_single_active_per_user` WHERE end_time IS NULL)
 - **Finance OS (1):** `transactions` (sole canonical finance ledger)
 - **Telemetry & Infrastructure (4):** `events` (durable audit), `system_event_queue` (transient buffer), `system_metrics` (closing ledger), `data_lab_signal_config`
 - **Winter Arc & Extensions (6):** `life_seasons`, `user_achievements`, `pulse_logs`, `knowledge_resources`, `experiments`, `user_settings`

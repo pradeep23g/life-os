@@ -95,6 +95,7 @@ Presenting execution pressure (overdue tasks, impending deadlines, backlog count
 | **Finance OS** | `src/features/finance-os/` | Owns behavioral spending in `transactions`. Measures Need vs Want discretionary spending. |
 | **Data Lab** | `src/features/data-lab/` | Read-only analytical workbench querying SQL views. Uses normalized key matching (`normalizeKey()`). |
 | **System Engine** | `src/features/system/` | Owns Brain Engine scoring, directives, and Evening Sync queue flushing. |
+| **Auth** | `src/features/auth/` | Authentication & Session Gateway: `AuthPage.tsx`, session management, login/sign-up flows, and Supabase auth redirects (`auth.uid()`). |
 | **Shell & Navigation** | `src/layout/` | Owns `AstrolabeOrbNav.tsx`, `ModuleHeader.tsx`, and shell layout wrappers. (Sidebar retired in 2.0). |
 | **Event Store** | `src/store/useEventBus.ts` | Owns operational queue, retry backoff, peek-and-splice persistence invariant, and bounded capacity. |
 | **Database Types** | `src/types/database.types.ts` | **STRICTLY PROTECTED FILE.** Never hand-edit. Generated via Supabase CLI. |

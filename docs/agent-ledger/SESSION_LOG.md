@@ -91,7 +91,7 @@ Each entry follows this exact structure:
 - Fix 5: Added Common Agent Mistakes DO NOT table after Trust Hierarchy in `AGENTS.md`.
 - Fix 6: Added Section 15 Auth module to `MODULE_GUIDE.md`.
 - Fix 7: Clarified Recovery OS status in ADR-027 and added planned module note to `SYSTEM_ARCHITECTURE.md`.
-- Fix 8: Corrected index name to `idx_time_logs_single_active` in `DATABASE_SCHEMA.md`.
+- Fix 8: Corrected index name to `idx_time_logs_single_active_per_user` in `DATABASE_SCHEMA.md`.
 - Fix 9: Fixed phantom column wording for `weekly_plan_items.plan_id` in `SYSTEM_ARCHITECTURE.md`.
 - Fix 10: Cleaned "no ADR needed" historical correction in `WINTER_ARC_DECISIONS.md`.
 - Fix 11: Clarified Home vs Mission Control evolution in ADR-013 (`ARCHITECTURE_DECISIONS.md`).
@@ -146,3 +146,34 @@ Each entry follows this exact structure:
 
 **Handoff notes for next agent:**
 > Phase 1 remediation successfully completed. Proceed with Phase 2 (P2.1 URI portability cleanup, P2.2 index name standardization, P2.3 auth module addition to AGENTS.md, P2.4 Sidebar.tsx deprecation banners).
+
+---
+
+### Session 2026-09-21-002 — Forensic Audit Remediation Phase 2 Execution
+- **Agent:** Antigravity (Gemini 3.8 Flash)
+- **Date:** 2026-09-21T21:05:00+05:30
+- **Duration:** 20m
+- **Task:** Carry out Phase 2 of remediation plan (`FORENSIC_AUDIT_REPORT.md` P2.1, P2.2, P2.3, P2.4)
+- **Scope:** `docs/architecture/`, `docs/historical/`, `docs/winter-arc/`, `docs/operations/`, `docs/agent-ledger/`, `docs/AGENT_QUICKSTART.md`
+
+**What was done:**
+- P2.1: Converted all 29 machine-specific `file:///C:/Users/gpk74/...` URIs to repo-relative paths across 5 markdown documents (`EVENT_TAXONOMY.md`, `SYSTEM_ARCHITECTURE.md`, `PHASE1_BASELINE_SNAPSHOT_ad488a2.md`, `WINTER_ARC_PROGRESSION.md`, and `WINTER_ARC_VERIFICATION_AUDIT_2026.md`). Also corrected line reference in `HomePrimaryAction.tsx#L40-L71`.
+- P2.2: Standardized partial unique index name to authoritative migration ground truth `idx_time_logs_single_active_per_user` across `DATABASE_SCHEMA.md` (lines 392, 642), `AGENT_QUICKSTART.md` (line 68), `SYSTEM_ARCHITECTURE.md` (line 330), and historical session log reference.
+- P2.3: Added missing subsystem `src/features/auth/` (`AuthPage.tsx`, session management, Supabase auth redirects) as row 15 in `docs/operations/AGENTS.md` Section 4 File Ownership & Subsystem Boundaries table.
+- P2.4: Added prominent historical deprecation notices and citation context banners clarifying `src/layout/Sidebar.tsx` permanent deletion in commit `77d1a5b` / PR #1 and Astrolabe Orb navigation replacement in `WINTER_ARC_SYSTEM_REMEDIATION_AND_AUDIT_2026.md` and `VISUAL_REFOUNDATION_2_HOSTILE_AUDIT.md`.
+
+**What was NOT done (and why):**
+- Phases 3 and 4 deferred per remediation plan scope (Phase 2 completed).
+
+**Findings logged:** None new.
+**Mistakes logged:** None.
+
+**Verification:**
+- [x] Documentation drift verification gate (`scripts/verify-doc-drift.ps1`) executed: 5/5 checks passed with 0 errors.
+- [x] Repository-wide regex audit confirms 0 machine-specific `file:///` URIs remain in `docs/`.
+- [x] Index name `idx_time_logs_single_active_per_user` verified against `supabase/migrations/10_time_os.sql`.
+- [x] All 15 feature subsystems accounted for in `AGENTS.md`.
+
+**Handoff notes for next agent:**
+> Phase 2 remediation successfully completed. Proceed with Phase 3 (P3.1 Decouple `useHabits` in `PlanningPage.tsx` and relocate `date.ts` to `src/lib/`, P3.2 Upgrade `verify-doc-drift.mjs` Gate 4 to validate heading anchors and reject `file:///`).
+

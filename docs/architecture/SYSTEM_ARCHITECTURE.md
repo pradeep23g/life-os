@@ -109,7 +109,7 @@ Presenting execution pressure (e.g. overdue tasks, urgent deadlines, backlog cou
 
 ## 6. Routing & Navigation Architecture
 
-Life OS features 14 active client routes declared in [src/App.tsx](file:///C:/Users/gpk74/life-os/src/App.tsx) with route-level code splitting via `React.lazy()` and `<Suspense>` fallbacks (`PageLoadingFallback`). The primary user interface is anchored by the 3-ring Kinetic Astrolabe Orb navigation shell (ADR-023).
+Life OS features 14 active client routes declared in [src/App.tsx](../../src/App.tsx) with route-level code splitting via `React.lazy()` and `<Suspense>` fallbacks (`PageLoadingFallback`). The primary user interface is anchored by the 3-ring Kinetic Astrolabe Orb navigation shell (ADR-023).
 
 ### 6.1 Client Route Tree & Layout Hierarchy
 
@@ -327,7 +327,7 @@ Learning OS (`src/features/learning-os/`) provides structured skill curriculum m
 2. **Security Invoker Views:** All 15 SQL views specify `WITH (security_invoker = true)` to execute under the caller's RLS security context.
 3. **Single Active Timer Constraint:** Enforced by PostgreSQL partial unique index:
    ```sql
-   CREATE UNIQUE INDEX idx_time_logs_single_active 
+   CREATE UNIQUE INDEX idx_time_logs_single_active_per_user 
    ON public.time_logs(user_id) 
    WHERE end_time IS NULL;
    ```

@@ -228,7 +228,7 @@ Database Tables
 
 ## 6. Telemetry & Canonical Event Taxonomy
 
-The event taxonomy is defined in [`src/lib/eventTaxonomy.ts`](file:///C:/Users/gpk74/life-os/src/lib/eventTaxonomy.ts). Exactly **45 canonical dot-notation event constants** exist.
+The event taxonomy is defined in [`src/lib/eventTaxonomy.ts`](../../src/lib/eventTaxonomy.ts). Exactly **45 canonical dot-notation event constants** exist.
 
 ### 6.1 Canonical Event Constants Inventory (45 Total)
 
@@ -295,7 +295,7 @@ SYSTEM & OPERATIONAL (5)
 
 ### 6.2 Telemetry Invariants & Historical Status
 - **Active Emitters:** Exactly **zero legacy snake_case event constants remain in active emitter code**.
-- **Read-Side Fallback:** Legacy strings (`'WORKOUT_COMPLETED'`, `'DEEP_WORK_COMPLETED'`, `'WANT_EXPENSE_ADDED'`) are retained strictly as backward-compatible read filters in [`useEveningSync.ts`](file:///C:/Users/gpk74/life-os/src/features/system/api/useEveningSync.ts) and [`analyzeMomentum.ts`](file:///C:/Users/gpk74/life-os/src/features/system/engine/analyzeMomentum.ts) to prevent dropping un-synced historical events.
+- **Read-Side Fallback:** Legacy strings (`'WORKOUT_COMPLETED'`, `'DEEP_WORK_COMPLETED'`, `'WANT_EXPENSE_ADDED'`) are retained strictly as backward-compatible read filters in [`useEveningSync.ts`](../../src/features/system/api/useEveningSync.ts) and [`analyzeMomentum.ts`](../../src/features/system/engine/analyzeMomentum.ts) to prevent dropping un-synced historical events.
 
 ---
 
@@ -319,7 +319,7 @@ SYSTEM & OPERATIONAL (5)
 
 ## 8. Brain Engine Intelligence Specification
 
-The Brain Engine is implemented entirely in TypeScript under [`src/features/system/engine/`](file:///C:/Users/gpk74/life-os/src/features/system/engine/).
+The Brain Engine is implemented entirely in TypeScript under [`src/features/system/engine/`](../../src/features/system/engine/).
 
 ### 8.1 Inputs Consumed
 Consumes all 14 columns of `current_day_snapshot` and all 7 columns of `current_day_snapshot_history_14d`.
@@ -401,7 +401,7 @@ Learning OS replaced the retired Progress Hub under ADR-007.
 
 ## 11. Mission Control Ground Truth
 
-Every visual element in [`MissionControl.tsx`](file:///C:/Users/gpk74/life-os/src/features/mission-control/dashboard/MissionControl.tsx) has been verified as live or deterministic:
+Every visual element in [`MissionControl.tsx`](../../src/features/mission-control/dashboard/MissionControl.tsx) has been verified as live or deterministic:
 
 | UI Element | Source Type | Underlying Data Source | Fallback on Cold Start |
 |---|---|---|---|

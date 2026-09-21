@@ -18,7 +18,7 @@ domain: "architecture"
 Life OS maintains two separate, complementary event mechanisms:
 
 ### 1. Durable Analytics Events — `public.events`
-Written via `logEventSafe()` in [src/lib/events.ts](file:///C:/Users/gpk74/life-os/src/lib/events.ts).
+Written via `logEventSafe()` in [src/lib/events.ts](../../src/lib/events.ts).
 
 - **Nature:** Permanent, append-only, immutable audit log of behavioral actions.
 - **Consumers:** PostgreSQL aggregation views (`data_lab_daily_activity_90d`, `data_lab_event_coverage_30d`, `data_lab_weekly_system_score_12w`), Data Lab behavioral intelligence, and long-term longitudinal studies.
@@ -26,7 +26,7 @@ Written via `logEventSafe()` in [src/lib/events.ts](file:///C:/Users/gpk74/life-
 - **Date Partition:** Stored with `event_date_ist` (`YYYY-MM-DD` in `Asia/Kolkata` timezone).
 
 ### 2. Transient Operational Signals — `public.system_event_queue`
-Written via `useEventBus.getState().emitEvent()` in [src/store/useEventBus.ts](file:///C:/Users/gpk74/life-os/src/store/useEventBus.ts).
+Written via `useEventBus.getState().emitEvent()` in [src/store/useEventBus.ts](../../src/store/useEventBus.ts).
 
 - **Nature:** Ephemeral operational queue and in-memory ring buffer.
 - **Consumers:** Immediate Brain Engine reactivity, UI feedback toasts, and Evening Sync daily delta aggregation.
