@@ -2,7 +2,7 @@ import { useState, type KeyboardEvent } from 'react'
 import { useAddTransaction, useDeleteTransaction, useTransactions } from '../api/useFinance'
 import { FinanceIcon } from '../../../components/icons'
 import { LoadingView } from '../../../components/LoadingView'
-import { formatIndiaDateTime } from '../../mind-os/utils/date'
+import { formatIndiaDateTime } from '../../../lib/date'
 import { Terminal, Trash2 } from 'lucide-react'
 
 function formatCurrency(amount: number) {

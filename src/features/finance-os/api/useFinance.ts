@@ -4,7 +4,7 @@ import { logEventSafe } from '../../../lib/events'
 import { FINANCE_TRANSACTION_DELETED, FINANCE_TRANSACTION_CREATED } from '../../../lib/eventTaxonomy'
 import { supabase } from '../../../lib/supabase'
 import { useEventBus } from '../../../store/useEventBus'
-import { getIndiaMonthKey } from '../../mind-os/utils/date'
+import { getIndiaMonthKey } from '../../../lib/date'
 
 export const financeTransactionsQueryKey = ['finance-os', 'transactions', 'monthly'] as const
 const TRANSACTION_TABLE_CANDIDATES = ['transactions'] as const

@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import type { Task } from '../../api/useTasks'
 import type { TimeLog } from '../../../time-os/api/useTimeLogs'
-import { toIndiaDateKey } from '../../../mind-os/utils/date'
+import { toIndiaDateKey } from '../../../../lib/date'
 
 interface ExecutionLedgerProps {
   tasks: Task[]

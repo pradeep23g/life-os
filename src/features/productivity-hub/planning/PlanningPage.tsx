@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 
-import { useHabits } from '../../mind-os/api/useHabits'
+import { useHabitAnchors } from '../api/useHabitAnchors'
 import {
   type GoalDomain,
   type GoalStatus,
@@ -174,7 +174,7 @@ function PlanningPage() {
   const { data: weeklyItems = [], isLoading: isItemsLoading, isError: itemsError, error: itemsQueryError } = useWeeklyPlanItems(currentWeekStart)
   const { data: weeklyReview, isError: reviewError, error: reviewQueryError } = useWeeklyReview(currentWeekStart)
   const { data: tasks = [] } = useTasks()
-  const { data: habits = [] } = useHabits()
+  const { data: habits = [] } = useHabitAnchors()
 
   const { mutate: createPlan, isPending: isCreatingPlan, error: createPlanError } = useCreateWeeklyPlan()
   const { mutate: updatePlan, isPending: isUpdatingPlan, error: updatePlanError } = useUpdateWeeklyPlan()

@@ -19,7 +19,7 @@ import {
   getMonthLabel,
   shiftMonth,
   toIndiaDateKey,
-} from '../../mind-os/utils/date'
+} from '../../../lib/date'
 import { DeleteButton } from '../../../components/DeleteButton'
 
 const weekdayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const

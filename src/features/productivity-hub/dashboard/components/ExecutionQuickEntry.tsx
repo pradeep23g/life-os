@@ -1,7 +1,7 @@
 import { forwardRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import type { TaskDeadlineType } from '../../api/useTasks'
-import { toIndiaDateKey } from '../../../mind-os/utils/date'
+import { toIndiaDateKey } from '../../../../lib/date'
 
 interface ExecutionQuickEntryProps {
   onCreateTask: (params: {

@@ -13,7 +13,7 @@ import { useModuleColors } from '../lib/useModuleColors'
 
 const ORBIT_1 = [
   { path: '/', label: 'Home', icon: HomeIcon, domain: 'Mind' },
-  { path: '/productivity-hub', label: 'Productivity', icon: ProductivityIcon, domain: 'Mind' },
+  { path: '/productivity-hub', label: 'Productivity', icon: ProductivityIcon, domain: 'Productivity' },
   { path: '/time-os', label: 'Time OS', icon: TimeOsIcon, domain: 'Time' },
   { path: '/mind-os', label: 'Mind OS', icon: MindOsIcon, domain: 'Mind' }
 ]

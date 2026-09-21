@@ -177,3 +177,42 @@ Each entry follows this exact structure:
 **Handoff notes for next agent:**
 > Phase 2 remediation successfully completed. Proceed with Phase 3 (P3.1 Decouple `useHabits` in `PlanningPage.tsx` and relocate `date.ts` to `src/lib/`, P3.2 Upgrade `verify-doc-drift.mjs` Gate 4 to validate heading anchors and reject `file:///`).
 
+---
+
+### Session 2026-09-21-003 — Forensic Audit Remediation Phase 3 Execution
+- **Agent:** Antigravity (Gemini 3.8 Flash)
+- **Date:** 2026-09-21T21:20:00+05:30
+- **Duration:** 20m
+- **Task:** Carry out Phase 3 of remediation plan (`FORENSIC_AUDIT_REPORT.md` P3.1, P3.2)
+- **Scope:** `src/lib/date.ts`, `src/features/mind-os/utils/date.ts`, `src/features/productivity-hub/`, `src/features/finance-os/`, `src/layout/AstrolabeOrbNav.tsx`, `scripts/verify-doc-drift.mjs`, `scripts/verify-doc-drift.ps1`, `docs/winter-arc/WINTER_ARC_VERIFICATION_AUDIT_2026.md`
+
+**What was done:**
+- P3.1: Decoupled Cognitive Boundary across Mind OS, Productivity Hub, and Finance OS:
+  - Created shared date and timezone utility module [`src/lib/date.ts`](../../src/lib/date.ts) containing all canonical India timezone converters, streak calculators, and calendar grid generators.
+  - Refactored [`src/features/mind-os/utils/date.ts`](../../src/features/mind-os/utils/date.ts) to re-export shared utilities from `src/lib/date.ts` while isolating mind-specific mood and habit consistency logic.
+  - Relocated cross-domain imports in 6 files (`TasksPage.tsx`, `ProductivityHubDashboard.tsx`, `ExecutionQuickEntry.tsx`, `ExecutionLedger.tsx`, `FinanceDashboard.tsx`, `useFinance.ts`) from `mind-os/utils/date` directly to `src/lib/date`.
+  - Created dedicated hook [`src/features/productivity-hub/api/useHabitAnchors.ts`](../../src/features/productivity-hub/api/useHabitAnchors.ts) querying active habits directly without depending on Mind OS internals.
+  - Decoupled [`PlanningPage.tsx`](../../src/features/productivity-hub/planning/PlanningPage.tsx) from `useHabits` by switching to `useHabitAnchors`.
+  - Corrected Productivity Hub domain classification in [`src/layout/AstrolabeOrbNav.tsx`](../../src/layout/AstrolabeOrbNav.tsx) from `domain: 'Mind'` to `domain: 'Productivity'`.
+- P3.2: Upgraded Gate 4 Drift Verification Harness:
+  - Upgraded both [`scripts/verify-doc-drift.ps1`](../../scripts/verify-doc-drift.ps1) and [`scripts/verify-doc-drift.mjs`](../../scripts/verify-doc-drift.mjs) Gate 4 to:
+    1. Reject machine-specific `file:///` URIs as repository portability violations.
+    2. Extract and validate GitHub Flavored Markdown (GFM) heading anchor slugs (`#anchor`) for intra-document and cross-document markdown targets.
+    3. Expanded scanning scope to cover all markdown files across `docs/`, `tasks/`, and repository root.
+  - Converted line references in [`docs/winter-arc/WINTER_ARC_VERIFICATION_AUDIT_2026.md`](../../docs/winter-arc/WINTER_ARC_VERIFICATION_AUDIT_2026.md) to canonical GFM slugs (`#10-repository-crime-sheet-line-level-forensics` and `#9-anti-pattern-blacklist`).
+
+**What was NOT done (and why):**
+- Phase 4 deferred per remediation plan scope (Phase 3 completed).
+
+**Findings logged:** None new.
+**Mistakes logged:** None.
+
+**Verification:**
+- [x] Documentation drift verification gate (`scripts/verify-doc-drift.ps1`) executed: 5/5 checks passed with 0 errors across 54 markdown files (27 anchors verified, 0 file:/// URIs).
+- [x] Zero cross-domain imports of `mind-os` found in `productivity-hub` or `finance-os`.
+- [x] `useHabitAnchors` successfully created and wired into `PlanningPage.tsx`.
+
+**Handoff notes for next agent:**
+- Phase 3 remediation successfully completed. Proceed with Phase 4 (P4.1 Expand `AGENTS.md` Section 7 New Module Creation Protocol with 8-step checklist and align domain listings across `MODULE_GUIDE.md`, `LIFE_RULES.md`, `SYSTEM_ARCHITECTURE.md`, and `WINTER_ARC_DATA_MODEL.md`).
+
+

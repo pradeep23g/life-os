@@ -149,10 +149,61 @@ if (-not (Test-Path $adrPath)) {
 # CHECK 4: Markdown Link Integrity across docs/
 # -------------------------------------------------------------
 Write-Host ""
-Write-Host "[4/5] Checking Internal Markdown Link Integrity across docs/..."
+Write-Host "[4/5] Checking Internal Markdown Link & Anchor Integrity..."
 $docsDir = Join-Path $ROOT "docs"
-$mdFiles = Get-ChildItem -Path $docsDir -Filter *.md -Recurse
+$tasksDir = Join-Path $ROOT "tasks"
+$mdFiles = @(Get-ChildItem -Path $docsDir -Filter *.md -Recurse)
+if (Test-Path $tasksDir) {
+    $mdFiles += @(Get-ChildItem -Path $tasksDir -Filter *.md -Recurse)
+}
+$mdFiles += @(Get-ChildItem -Path $ROOT -Filter *.md)
+
+function Get-GfmSlug($text) {
+    $clean = $text -replace '^#+\s*', ''
+    $clean = $clean -replace '<[^>]+>', ''
+    $clean = $clean -replace '\[([^\]]+)\]\([^)]+\)', '$1'
+    $clean = $clean -replace '`([^`]+)`', '$1'
+    $clean = $clean.ToLower().Trim()
+    $clean = $clean -replace '[^\w\s-]', ''
+    $clean = $clean -replace '\s+', '-'
+    return $clean
+}
+
+function Get-FileSlugs($filePath) {
+    $lines = [System.IO.File]::ReadAllLines($filePath)
+    $slugCounts = @{}
+    $validSlugs = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+    
+    foreach ($line in $lines) {
+        if ($line -match '^#{1,6}\s+(.+)$') {
+            $raw = $Matches[1]
+            $baseSlug = Get-GfmSlug $raw
+            if (-not $baseSlug) { continue }
+            
+            if ($slugCounts.ContainsKey($baseSlug)) {
+                $count = $slugCounts[$baseSlug] + 1
+                $slugCounts[$baseSlug] = $count
+                $slug = "$baseSlug-$count"
+            } else {
+                $slugCounts[$baseSlug] = 0
+                $slug = $baseSlug
+            }
+            [void]$validSlugs.Add($slug)
+        }
+    }
+    return $validSlugs
+}
+
+$fileSlugCache = @{}
+function Get-CachedSlugs($filePath) {
+    if (-not $fileSlugCache.ContainsKey($filePath)) {
+        $fileSlugCache[$filePath] = Get-FileSlugs $filePath
+    }
+    return $fileSlugCache[$filePath]
+}
+
 $brokenLinks = @()
+$checkedAnchors = 0
 
 foreach ($f in $mdFiles) {
     $content = [System.IO.File]::ReadAllText($f.FullName)
@@ -163,20 +214,32 @@ foreach ($f in $mdFiles) {
         $target = $m.Groups[2].Value.Trim()
 
         if ($target.StartsWith('http://') -or $target.StartsWith('https://') -or
-            $target.StartsWith('mailto:') -or $target.StartsWith('#') -or
-            $target.StartsWith('conversation://')) {
+            $target.StartsWith('mailto:') -or $target.StartsWith('conversation://')) {
             continue
         }
 
-        $pathPart = ($target -split '#')[0]
-        if (-not $pathPart) { continue }
-
-        $cleanPath = $pathPart
-        if ($cleanPath.StartsWith('file:///')) {
-            $cleanPath = $cleanPath.Substring(8)
+        # Reject machine-specific file:/// URIs
+        if ($target.StartsWith('file:///')) {
+            $brokenLinks += "$($f.FullName) -> $target (Portability violation: machine-specific file:/// URI forbidden)"
+            continue
         }
 
-        $decodedPath = [System.Uri]::UnescapeDataString($cleanPath)
+        # Check anchor only
+        if ($target.StartsWith('#')) {
+            $anchor = $target.Substring(1)
+            $checkedAnchors++
+            $slugs = Get-CachedSlugs $f.FullName
+            if (-not $slugs.Contains($anchor)) {
+                $brokenLinks += "$($f.FullName) -> $target (Anchor #$anchor not found in self)"
+            }
+            continue
+        }
+
+        $parts = $target -split '#', 2
+        $pathPart = $parts[0]
+        $anchorPart = if ($parts.Count -gt 1) { $parts[1] } else { $null }
+
+        $decodedPath = [System.Uri]::UnescapeDataString($pathPart)
         $resolvedTarget = if ([System.IO.Path]::IsPathRooted($decodedPath)) {
             $decodedPath
         } else {
@@ -185,12 +248,22 @@ foreach ($f in $mdFiles) {
 
         if (-not (Test-Path $resolvedTarget)) {
             $brokenLinks += "$($f.FullName) -> $target (resolved: $resolvedTarget)"
+            continue
+        }
+
+        # If anchor specified on a markdown file, validate heading exists
+        if ($anchorPart -and ($resolvedTarget.EndsWith('.md') -or $resolvedTarget.EndsWith('.markdown'))) {
+            $checkedAnchors++
+            $slugs = Get-CachedSlugs $resolvedTarget
+            if (-not $slugs.Contains($anchorPart)) {
+                $brokenLinks += "$($f.FullName) -> $target (Anchor #$anchorPart not found in $resolvedTarget)"
+            }
         }
     }
 }
 
 if ($brokenLinks.Count -eq 0) {
-    Report-Pass -name "Markdown Link Integrity" -details "All internal links in $($mdFiles.Count) documentation files resolve on disk"
+    Report-Pass -name "Markdown Link Integrity" -details "All internal links & anchors in $($mdFiles.Count) markdown files resolve on disk ($checkedAnchors anchors verified, 0 file:/// URIs)"
 } else {
     $sample = ($brokenLinks | Select-Object -First 10) -join "`n      "
     Report-Fail -name "Markdown Link Integrity" -errorMsg "$($brokenLinks.Count) broken links found:`n      $sample"

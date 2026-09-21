@@ -59,7 +59,7 @@ domain: "winter-arc"
 
 ## 2. Line-Level Forensic Audit (The 15 Hostile Audit Citations)
 
-Re-verification of the 15 hostile citations documented in [VISUAL_REFOUNDATION_2_HOSTILE_AUDIT.md](./VISUAL_REFOUNDATION_2_HOSTILE_AUDIT.md#L245-L375):
+Re-verification of the 15 hostile citations documented in [VISUAL_REFOUNDATION_2_HOSTILE_AUDIT.md](./VISUAL_REFOUNDATION_2_HOSTILE_AUDIT.md#10-repository-crime-sheet-line-level-forensics):
 
 ### Citation 1: Hardcoded "Level 12" in Navigation
 - **Location:** Historical `Sidebar.tsx` (retired and replaced by [`src/layout/AstrolabeOrbNav.tsx`](../../src/layout/AstrolabeOrbNav.tsx)) & [`src/features/mission-control/dashboard/MissionControl.tsx`](../../src/features/mission-control/dashboard/MissionControl.tsx)
@@ -125,7 +125,7 @@ Re-verification of the 15 hostile citations documented in [VISUAL_REFOUNDATION_2
 
 ## 3. Systematic Anti-Pattern Blacklist Audit
 
-Tracking compliance with [VISUAL_REFOUNDATION_2.md Section 9](./VISUAL_REFOUNDATION_2.md#L337-L358):
+Tracking compliance with [VISUAL_REFOUNDATION_2.md Section 9](./VISUAL_REFOUNDATION_2.md#9-anti-pattern-blacklist):
 
 1. **AI Eyebrow Crutch (`tracking-[0.2em]`):**
    - Eliminated across core navigation, Home, Arc, Profile, and Data Lab.

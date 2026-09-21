@@ -3,8 +3,8 @@ title: Agent Handoff — Active Context
 status: ACTIVE
 purpose: Current state summary for the next agent session
 last_updated_by: Antigravity (Gemini 3.8 Flash)
-last_updated: 2026-09-21T21:05:00+05:30
-last_session: Session 2026-09-21-002
+last_updated: 2026-09-21T21:20:00+05:30
+last_session: Session 2026-09-21-003
 ---
 
 # Active Handoff Context
@@ -13,9 +13,9 @@ last_session: Session 2026-09-21-002
 > of the last agent that worked on it. It is OVERWRITTEN (not appended) each session.
 
 ## Current Project State
-- **Git HEAD:** `4afeb78` (`main` branch)
-- **Last Task:** Forensic Audit Remediation Plan — Phase 2 (P2.1, P2.2, P2.3, P2.4)
-- **Build & Drift Status:** PASSING (5/5 checks passed on `scripts/verify-doc-drift.ps1`)
+- **Git HEAD:** `65c86c6` (`main` branch)
+- **Last Task:** Forensic Audit Remediation Plan — Phase 3 (P3.1, P3.2)
+- **Build & Drift Status:** PASSING (5/5 checks passed on `scripts/verify-doc-drift.ps1` across 54 markdown files, 27 anchors verified)
 - **Open Findings:** 0 Open in `FINDINGS.md` ([F-001], [F-002], [F-003] all FIXED)
 - **Remediation Progress:**
   - [x] **Phase 1 Complete:**
@@ -27,43 +27,52 @@ last_session: Session 2026-09-21-002
     - [x] `P2.2`: Standardized index name `idx_time_logs_single_active_per_user` across `DATABASE_SCHEMA.md`, `AGENT_QUICKSTART.md`, and `SYSTEM_ARCHITECTURE.md`.
     - [x] `P2.3`: Added `src/features/auth/` as row 15 in `docs/operations/AGENTS.md` Section 4 File Ownership table.
     - [x] `P2.4`: Added historical status deprecation banners for `Sidebar.tsx` in `WINTER_ARC_SYSTEM_REMEDIATION_AND_AUDIT_2026.md` and `VISUAL_REFOUNDATION_2_HOSTILE_AUDIT.md`.
-  - [ ] **Phase 3 (Pending):**
-    - [ ] `P3.1`: Decouple `useHabits` in `PlanningPage.tsx` and relocate `date.ts` to `src/lib/`.
-    - [ ] `P3.2`: Upgrade `verify-doc-drift.mjs` Gate 4 to validate heading anchors and reject `file:///`.
+  - [x] **Phase 3 Complete:**
+    - [x] `P3.1`: Decoupled Cognitive Boundary: created `src/lib/date.ts`, re-exported in `src/features/mind-os/utils/date.ts`, updated 6 cross-domain import sites, created `src/features/productivity-hub/api/useHabitAnchors.ts`, decoupled `PlanningPage.tsx`, and updated `AstrolabeOrbNav.tsx` domain.
+    - [x] `P3.2`: Upgraded Gate 4 in `verify-doc-drift.ps1` and `verify-doc-drift.mjs` to validate heading anchors, reject machine-specific `file:///` URIs, and scan across docs, tasks, and root markdown files (54 files, 27 anchors verified, 0 errors).
   - [ ] **Phase 4 (Pending):**
-    - [ ] `P4.1`: Expand `AGENTS.md` Section 7 and align domain listings.
+    - [ ] `P4.1`: Expand `AGENTS.md` Section 7 and align domain listings across `MODULE_GUIDE.md`, `LIFE_RULES.md`, `SYSTEM_ARCHITECTURE.md`, and `WINTER_ARC_DATA_MODEL.md`.
 
 ## What Was Just Done
-Executed Phase 2 of Forensic Audit Remediation:
-1. Converted all 29 machine-specific `file:///C:/Users/gpk74/...` URIs to repo-relative paths (`EVENT_TAXONOMY.md`, `SYSTEM_ARCHITECTURE.md`, `PHASE1_BASELINE_SNAPSHOT_ad488a2.md`, `WINTER_ARC_PROGRESSION.md`, and `WINTER_ARC_VERIFICATION_AUDIT_2026.md`). Fixed out-of-bounds line reference in `HomePrimaryAction.tsx#L40-L71`.
-2. Standardized `idx_time_logs_single_active_per_user` across `DATABASE_SCHEMA.md`, `AGENT_QUICKSTART.md`, `SYSTEM_ARCHITECTURE.md`, and ledgers.
-3. Added `src/features/auth/` to `AGENTS.md` File Ownership table.
-4. Added prominent historical status deprecation banners to `Sidebar.tsx` references in both active Winter Arc audit documents.
-5. Ran verification gate `scripts/verify-doc-drift.ps1` (5/5 passed).
+Executed Phase 3 of Forensic Audit Remediation:
+1. Created `src/lib/date.ts` with all shared India timezone and date formatting utilities.
+2. Refactored `src/features/mind-os/utils/date.ts` to re-export shared date utilities while keeping mind-specific mood/consistency logic.
+3. Decoupled 6 cross-domain import sites (`TasksPage.tsx`, `ProductivityHubDashboard.tsx`, `ExecutionQuickEntry.tsx`, `ExecutionLedger.tsx`, `FinanceDashboard.tsx`, `useFinance.ts`) to import from `src/lib/date`.
+4. Created `src/features/productivity-hub/api/useHabitAnchors.ts` and decoupled `PlanningPage.tsx` from `useHabits`.
+5. Updated `src/layout/AstrolabeOrbNav.tsx` line 16 to set Productivity Hub domain to `Productivity`.
+6. Upgraded Gate 4 in `verify-doc-drift.ps1` and `verify-doc-drift.mjs` to validate markdown heading anchor integrity, reject machine-specific `file:///` URIs, and expand scan scope to include `tasks/` and root `.md` files.
+7. Fixed line-reference anchors in `WINTER_ARC_VERIFICATION_AUDIT_2026.md` to canonical GFM slugs (`#10-repository-crime-sheet-line-level-forensics` and `#9-anti-pattern-blacklist`).
+8. Ran verification gate `scripts/verify-doc-drift.ps1` (5/5 passed across 54 markdown files with 27 anchors verified).
 
 ## What Needs Attention Next
-Next agent should execute **Phase 3** of `.agents/orchestrator_3/FORENSIC_AUDIT_REPORT.md`:
-1. Decouple `useHabits` in `PlanningPage.tsx` and relocate `date.ts` to `src/lib/` (`P3.1`).
-2. Upgrade `verify-doc-drift.mjs` Gate 4 to validate heading anchors and reject `file:///` URIs (`P3.2`).
+Next agent should execute **Phase 4** of `.agents/orchestrator_3/FORENSIC_AUDIT_REPORT.md`:
+- Expand `AGENTS.md` Section 7 New Module Creation Protocol with 8-step checklist and align domain listings across `MODULE_GUIDE.md`, `LIFE_RULES.md`, `SYSTEM_ARCHITECTURE.md`, and `WINTER_ARC_DATA_MODEL.md` (`P4.1`).
 
 ## Known Issues / Blockers
-- None. All Phase 1 and Phase 2 items are verified and passing.
+- None. All Phase 1, Phase 2, and Phase 3 items are verified and passing.
 
 ## Files Recently Modified
-- `docs/architecture/EVENT_TAXONOMY.md`
-- `docs/architecture/SYSTEM_ARCHITECTURE.md`
-- `docs/historical/PHASE1_BASELINE_SNAPSHOT_ad488a2.md`
-- `docs/winter-arc/WINTER_ARC_PROGRESSION.md`
+- `src/lib/date.ts` (created)
+- `src/features/productivity-hub/api/useHabitAnchors.ts` (created)
+- `src/features/mind-os/utils/date.ts`
+- `src/features/productivity-hub/planning/PlanningPage.tsx`
+- `src/features/productivity-hub/tasks/TasksPage.tsx`
+- `src/features/productivity-hub/dashboard/ProductivityHubDashboard.tsx`
+- `src/features/productivity-hub/dashboard/components/ExecutionQuickEntry.tsx`
+- `src/features/productivity-hub/dashboard/components/ExecutionLedger.tsx`
+- `src/features/finance-os/pages/FinanceDashboard.tsx`
+- `src/features/finance-os/api/useFinance.ts`
+- `src/layout/AstrolabeOrbNav.tsx`
 - `docs/winter-arc/WINTER_ARC_VERIFICATION_AUDIT_2026.md`
-- `docs/architecture/DATABASE_SCHEMA.md`
-- `docs/AGENT_QUICKSTART.md`
-- `docs/operations/AGENTS.md`
-- `docs/winter-arc/WINTER_ARC_SYSTEM_REMEDIATION_AND_AUDIT_2026.md`
-- `docs/winter-arc/VISUAL_REFOUNDATION_2_HOSTILE_AUDIT.md`
+- `scripts/verify-doc-drift.ps1`
+- `scripts/verify-doc-drift.mjs`
 - `docs/agent-ledger/SESSION_LOG.md`
 - `docs/agent-ledger/HANDOFF.md`
 
 ## Context the Next Agent MUST Know
 > 1. Navigation is 100% Kinetic Astrolabe Orb (`src/layout/AstrolabeOrbNav.tsx`). Never create or reintroduce sidebars.
-> 2. `tasks/todo.md` tasks were all completed and archived in PR #1.
-> 3. Always run `scripts/verify-doc-drift.ps1` and log your session in `docs/agent-ledger/SESSION_LOG.md` before handing off.
+> 2. Shared date utilities live in `src/lib/date.ts`. Never import `mind-os/utils/date` into other domains.
+> 3. Habit linking in Productivity Hub uses `useHabitAnchors` in `src/features/productivity-hub/api/useHabitAnchors.ts`.
+> 4. Gate 4 now enforces anchor validity and rejects `file:///` URIs across all 54 markdown files.
+> 5. Always run `scripts/verify-doc-drift.ps1` and log your session in `docs/agent-ledger/SESSION_LOG.md` before handing off.
+

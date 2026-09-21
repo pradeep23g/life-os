@@ -192,9 +192,57 @@ function getAllMarkdownFiles(dir) {
   return results
 }
 
+function getGfmSlug(text) {
+  let clean = text.replace(/^#+\s*/, '')
+  clean = clean.replace(/<[^>]+>/g, '')
+  clean = clean.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+  clean = clean.replace(/`([^`]+)`/g, '$1')
+  clean = clean.toLowerCase().trim()
+  clean = clean.replace(/[^\w\s-]/g, '')
+  clean = clean.replace(/\s+/g, '-')
+  return clean
+}
+
+const fileSlugCache = new Map()
+function getCachedSlugs(filePath) {
+  if (fileSlugCache.has(filePath)) return fileSlugCache.get(filePath)
+  const lines = fs.readFileSync(filePath, 'utf8').split('\n')
+  const slugCounts = new Map()
+  const validSlugs = new Set()
+  for (const line of lines) {
+    const match = line.match(/^#{1,6}\s+(.+)$/)
+    if (match) {
+      const baseSlug = getGfmSlug(match[1])
+      if (!baseSlug) continue
+      let slug = baseSlug
+      if (slugCounts.has(baseSlug)) {
+        const count = slugCounts.get(baseSlug) + 1
+        slugCounts.set(baseSlug, count)
+        slug = `${baseSlug}-${count}`
+      } else {
+        slugCounts.set(baseSlug, 0)
+      }
+      validSlugs.add(slug)
+    }
+  }
+  fileSlugCache.set(filePath, validSlugs)
+  return validSlugs
+}
+
 const docsDir = path.join(ROOT, 'docs')
-const mdFiles = getAllMarkdownFiles(docsDir)
+const tasksDir = path.join(ROOT, 'tasks')
+let mdFiles = getAllMarkdownFiles(docsDir)
+if (fs.existsSync(tasksDir)) {
+  mdFiles = mdFiles.concat(getAllMarkdownFiles(tasksDir))
+}
+for (const entry of fs.readdirSync(ROOT)) {
+  if (entry.endsWith('.md')) {
+    mdFiles.push(path.join(ROOT, entry))
+  }
+}
+
 let brokenLinks = []
+let checkedAnchors = 0
 
 for (const file of mdFiles) {
   const content = fs.readFileSync(file, 'utf8')
@@ -205,28 +253,46 @@ for (const file of mdFiles) {
   while ((match = linkRegex.exec(content)) !== null) {
     let target = match[2].trim()
 
-    // Skip external URLs, anchors, mailto, conversation links
+    // Skip external URLs, mailto, conversation links
     if (
       target.startsWith('http://') ||
       target.startsWith('https://') ||
       target.startsWith('mailto:') ||
-      target.startsWith('#') ||
       target.startsWith('conversation://')
     ) {
       continue
     }
 
-    // Strip anchor fragment if present
-    const [pathPart] = target.split('#')
-    if (!pathPart) continue
-
-    // Handle file:/// URL format
-    let cleanPath = pathPart
-    if (cleanPath.startsWith('file:///')) {
-      cleanPath = cleanPath.replace('file:///', '')
+    // Reject machine-specific file:/// URIs
+    if (target.startsWith('file:///')) {
+      brokenLinks.push({
+        file: path.relative(ROOT, file),
+        target,
+        resolvedTarget: 'Portability violation: machine-specific file:/// URI forbidden'
+      })
+      continue
     }
 
-    const decodedPath = decodeURIComponent(cleanPath)
+    // Check anchor in self
+    if (target.startsWith('#')) {
+      const anchor = target.slice(1)
+      checkedAnchors++
+      const slugs = getCachedSlugs(file)
+      if (!slugs.has(anchor)) {
+        brokenLinks.push({
+          file: path.relative(ROOT, file),
+          target,
+          resolvedTarget: `Anchor #${anchor} not found in self`
+        })
+      }
+      continue
+    }
+
+    // Split target and anchor
+    const [pathPart, anchorPart] = target.split('#')
+    if (!pathPart) continue
+
+    const decodedPath = decodeURIComponent(pathPart)
     const resolvedTarget = path.isAbsolute(decodedPath)
       ? decodedPath
       : path.resolve(dir, decodedPath)
@@ -237,12 +303,26 @@ for (const file of mdFiles) {
         target,
         resolvedTarget: path.relative(ROOT, resolvedTarget)
       })
+      continue
+    }
+
+    // Validate anchor on destination markdown file
+    if (anchorPart && (resolvedTarget.endsWith('.md') || resolvedTarget.endsWith('.markdown'))) {
+      checkedAnchors++
+      const slugs = getCachedSlugs(resolvedTarget)
+      if (!slugs.has(anchorPart)) {
+        brokenLinks.push({
+          file: path.relative(ROOT, file),
+          target,
+          resolvedTarget: `Anchor #${anchorPart} not found in destination markdown`
+        })
+      }
     }
   }
 }
 
 if (brokenLinks.length === 0) {
-  pass('Markdown Link Integrity', `All internal links in ${mdFiles.length} documentation files resolve on disk`)
+  pass('Markdown Link Integrity', `All internal links & anchors in ${mdFiles.length} markdown files resolve on disk (${checkedAnchors} anchors verified, 0 file:/// URIs)`)
 } else {
   fail('Markdown Link Integrity', `${brokenLinks.length} broken links found:\n` +
     brokenLinks.slice(0, 10).map(b => `      ${b.file} -> ${b.target} (not found: ${b.resolvedTarget})`).join('\n')

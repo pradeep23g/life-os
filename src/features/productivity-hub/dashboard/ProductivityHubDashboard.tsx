@@ -17,7 +17,7 @@ import {
   useStartTimer,
   useStopTimer,
 } from '../../time-os/api/useTimeLogs'
-import { toIndiaDateKey } from '../../mind-os/utils/date'
+import { toIndiaDateKey } from '../../../lib/date'
 import { ExecutionHeader } from './components/ExecutionHeader'
 import { ExecutionQuickEntry } from './components/ExecutionQuickEntry'
 import { ExecutionLedger } from './components/ExecutionLedger'
