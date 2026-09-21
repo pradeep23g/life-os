@@ -65,7 +65,7 @@ Each entry follows this exact structure:
 **What was NOT done (and why):**
 - Implementation was deferred to subsequent remediation session
 
-**Findings logged:** [F-001](FINDINGS.md#f-001-adminconsolepage-queried-non-existent-tables), [F-002](FINDINGS.md#f-002-dead-code-sidebartsx-persisted-after-navigation-overhaul), [F-003](FINDINGS.md#f-003-ghost-task-trap-in-taskstodofd)
+**Findings logged:** [F-001](FINDINGS.md#f-001-adminconsolepage-queried-non-existent-tables), [F-002](FINDINGS.md#f-002-dead-code-sidebartsx-persisted-after-navigation-overhaul), [F-003](FINDINGS.md#f-003-ghost-task-trap-in-taskstodomd)
 **Mistakes logged:** [M-001](MISTAKES.md#m-001-schema-hallucination-from-outdated-adr), [M-002](MISTAKES.md#m-002-table-name-hallucination-in-adminconsolepage)
 
 **Verification:**
@@ -104,7 +104,7 @@ Each entry follows this exact structure:
 **What was NOT done (and why):**
 - N/A — all 15 plan items and protocol deliverables fully completed.
 
-**Findings logged:** [F-001](FINDINGS.md#f-001-adminconsolepage-queried-non-existent-tables), [F-002](FINDINGS.md#f-002-dead-code-sidebartsx-persisted-after-navigation-overhaul), [F-003](FINDINGS.md#f-003-ghost-task-trap-in-taskstodofd)
+**Findings logged:** [F-001](FINDINGS.md#f-001-adminconsolepage-queried-non-existent-tables), [F-002](FINDINGS.md#f-002-dead-code-sidebartsx-persisted-after-navigation-overhaul), [F-003](FINDINGS.md#f-003-ghost-task-trap-in-taskstodomd)
 **Mistakes logged:** [M-001](MISTAKES.md#m-001-schema-hallucination-from-outdated-adr), [M-002](MISTAKES.md#m-002-table-name-hallucination-in-adminconsolepage)
 
 **Verification:**
@@ -113,3 +113,36 @@ Each entry follows this exact structure:
 
 **Handoff notes for next agent:**
 > All 15 audit findings resolved. Documentation parity is 100%. When performing new work, follow the protocol in AGENTS.md Section 8 and update HANDOFF.md.
+
+---
+
+### Session 2026-09-21-001 — Forensic Audit Remediation Phase 1 Execution
+- **Agent:** Antigravity (Gemini 3.8 Flash)
+- **Date:** 2026-09-21T20:40:00+05:30
+- **Duration:** 20m
+- **Task:** Carry out Phase 1 of remediation plan (`FORENSIC_AUDIT_REPORT.md` P1.1, P1.2, P1.3)
+- **Scope:** `src/types/database.types.ts`, `docs/agent-ledger/SESSION_LOG.md`, `docs/winter-arc/VISUAL_REFOUNDATION_2_PAGE_BLUEPRINTS.md`, `docs/winter-arc/WINTER_ARC_DECISIONS.md`, `docs/agent-ledger/FINDINGS.md`
+
+**What was done:**
+- P1.1: Patched `src/types/database.types.ts` with missing kinetic fields:
+  - Added `duration_seconds: number | null` (and optional in Insert/Update) to `exercise_logs`.
+  - Added `movement_pattern: string | null` (and optional in Insert/Update) to `fitness_exercises`.
+- P1.2: Fixed 8 broken heading anchors across documentation & ledgers:
+  - Corrected `FINDINGS.md#f-003-ghost-task-trap-in-taskstodofd` -> `#f-003-ghost-task-trap-in-taskstodomd` in `SESSION_LOG.md` (lines 68, 107).
+  - Fixed double hyphen in `#global-overlays-command-horizon--action-sheets` -> `#global-overlays-command-horizon-action-sheets` in `VISUAL_REFOUNDATION_2_PAGE_BLUEPRINTS.md` (line 33).
+  - Fixed 5 double-hyphen ADR anchor slugs in `WINTER_ARC_DECISIONS.md` (ADR-012, ADR-016, ADR-026, ADR-027, ADR-028) matching canonical GFM slug targets in `ARCHITECTURE_DECISIONS.md`.
+- P1.3: Added missing `**Evidence:**` blocks to findings `[F-002]` and `[F-003]` in `docs/agent-ledger/FINDINGS.md`.
+
+**What was NOT done (and why):**
+- Phases 2, 3, and 4 deferred per remediation plan scope (only Phase 1 requested).
+
+**Findings logged:** None new.
+**Mistakes logged:** None.
+
+**Verification:**
+- [x] Documentation drift verification gate (`scripts/verify-doc-drift.ps1`) executed: 5/5 checks passed with 0 errors.
+- [x] All 8 heading anchors manually and programmatically verified against canonical GFM slugs.
+- [x] TypeScript database contracts verified against PostgreSQL migration `20260916232300_fitness_kinetic_fields.sql`.
+
+**Handoff notes for next agent:**
+> Phase 1 remediation successfully completed. Proceed with Phase 2 (P2.1 URI portability cleanup, P2.2 index name standardization, P2.3 auth module addition to AGENTS.md, P2.4 Sidebar.tsx deprecation banners).

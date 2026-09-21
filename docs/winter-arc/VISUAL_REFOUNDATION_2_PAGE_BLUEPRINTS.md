@@ -30,7 +30,7 @@ domain: "winter-arc"
 11. [ROOM 10: SYSTEM [The Machine Room]](#room-10-system-the-machine-room)
 12. [ROOM 11: TIME OS [Temporal Allocation & Flow]](#room-11-time-os-temporal-allocation--flow)
 13. [ROOM 12: FINANCE OS [Resource Circulation Ledger]](#room-12-finance-os-resource-circulation-ledger)
-14. [GLOBAL OVERLAYS: Command Horizon & Action Sheets](#global-overlays-command-horizon--action-sheets)
+14. [GLOBAL OVERLAYS: Command Horizon & Action Sheets](#global-overlays-command-horizon-action-sheets)
 
 ---
 

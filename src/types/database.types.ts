@@ -1,4 +1,4 @@
-﻿export type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -80,6 +80,7 @@ export type Database = {
           deleted_at: string | null
           distance_km: number | null
           duration_minutes: number | null
+          duration_seconds: number | null
           exercise_id: string
           id: string
           notes: string | null
@@ -97,6 +98,7 @@ export type Database = {
           deleted_at?: string | null
           distance_km?: number | null
           duration_minutes?: number | null
+          duration_seconds?: number | null
           exercise_id: string
           id?: string
           notes?: string | null
@@ -114,6 +116,7 @@ export type Database = {
           deleted_at?: string | null
           distance_km?: number | null
           duration_minutes?: number | null
+          duration_seconds?: number | null
           exercise_id?: string
           id?: string
           notes?: string | null
@@ -181,6 +184,7 @@ export type Database = {
           deleted_at: string | null
           equipment: string[] | null
           id: string
+          movement_pattern: string | null
           name: string
           notes: string | null
           target_muscles: string[] | null
@@ -194,6 +198,7 @@ export type Database = {
           deleted_at?: string | null
           equipment?: string[] | null
           id?: string
+          movement_pattern?: string | null
           name: string
           notes?: string | null
           target_muscles?: string[] | null
@@ -207,6 +212,7 @@ export type Database = {
           deleted_at?: string | null
           equipment?: string[] | null
           id?: string
+          movement_pattern?: string | null
           name?: string
           notes?: string | null
           target_muscles?: string[] | null

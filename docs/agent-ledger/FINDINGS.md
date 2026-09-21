@@ -68,6 +68,10 @@ Table names corrected to `events` and `time_logs` in remediation Phase 1.
 `src/layout/Sidebar.tsx` (182 lines) remained in codebase after ADR-023 replaced sidebar
 with Astrolabe Orb. Zero imports anywhere. Referenced in AGENTS.md file ownership section.
 
+**Evidence:**
+- `src/layout/Sidebar.tsx` (182 lines, unreferenced by any module imports)
+- `docs/operations/AGENTS.md` Section 4 table
+
 **Resolution:**
 File deleted (`git rm`), all references removed from documentation.
 
@@ -83,6 +87,9 @@ File deleted (`git rm`), all references removed from documentation.
 **Description:**
 17 tasks in `tasks/todo.md` were marked `[ ]` (unchecked) despite all being implemented
 and merged in PR #1. An agent picking up work would re-implement production code.
+
+**Evidence:**
+- `tasks/todo.md` lines 1–45 (17 unchecked items `[ ]` despite PR #1 completion)
 
 **Resolution:**
 All items marked `[x]`, completion banner added, completion record appended.

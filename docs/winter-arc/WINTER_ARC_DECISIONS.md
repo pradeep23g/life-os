@@ -18,7 +18,7 @@ Historical archive of architectural decisions. For all active implementation, sc
 ## ARCHIVED DECISION RECORDS
 
 ### ADR-012: Season Engine Data Model
-**Status:** Promoted to Canonical [`ADR-012`](../decisions/ARCHITECTURE_DECISIONS.md#adr-012-season-engine-data-model-life_seasons--vows-architecture) (Reconciled with migration `202609120000_winter_arc_remediation.sql`)
+**Status:** Promoted to Canonical [`ADR-012`](../decisions/ARCHITECTURE_DECISIONS.md#adr-012-season-engine-data-model-life_seasons-vows-architecture) (Reconciled with migration `202609120000_winter_arc_remediation.sql`)
 **Context:** Winter Arc needs a Season concept.
 **Decision:** Dedicated `public.life_seasons` table (originally proposed as `seasons`, formally migrated as `life_seasons` with `vows jsonb`).
 **Rejected Alternatives:**
@@ -49,7 +49,7 @@ Historical archive of architectural decisions. For all active implementation, sc
 **Implementation Constraints:** Only introduce an optimized persistence/projection layer (e.g., `data_lab_signal_xp` SQL view following existing signal view pattern) if real performance evidence requires it. 
 
 ### ADR-016: Achievement Storage Strategy
-**Status:** Promoted to Canonical [`ADR-016`](../decisions/ARCHITECTURE_DECISIONS.md#adr-016-achievement-storage-strategy-user_achievements--badge-catalog) (Reconciled with migration `202609120000_winter_arc_remediation.sql`)
+**Status:** Promoted to Canonical [`ADR-016`](../decisions/ARCHITECTURE_DECISIONS.md#adr-016-achievement-storage-strategy-user_achievements-badge-catalog) (Reconciled with migration `202609120000_winter_arc_remediation.sql`)
 **Context:** Achievement unlocks need recording.
 **Decision:** Dedicated `public.user_achievements` table + TypeScript definitions.
 **Rejected Alternatives:**
@@ -119,7 +119,7 @@ Historical archive of architectural decisions. For all active implementation, sc
 **Implementation Constraints:** Actual migrated schema (`202609120000_winter_arc_remediation.sql`): `(id, user_id, timestamp timestamptz, value text, metadata jsonb, created_at)`. Standard RLS enabled.
 
 ### ADR-026: Seasons & Achievements Admin Control Layer (formerly proposed as ADR-023)
-**Status:** Promoted to Canonical [`ADR-026`](../decisions/ARCHITECTURE_DECISIONS.md#adr-026-seasons--achievements-admin-control-layer) (Renumbered to resolve duplicate ID collision with canonical ADR-023 Kinetic Astrolabe Orb Navigation)
+**Status:** Promoted to Canonical [`ADR-026`](../decisions/ARCHITECTURE_DECISIONS.md#adr-026-seasons-achievements-admin-control-layer) (Renumbered to resolve duplicate ID collision with canonical ADR-023 Kinetic Astrolabe Orb Navigation)
 **Context:** The Seasons and Achievements systems require robust management without direct database modification or application source code changes.
 **Decision:** Implement a lightweight, authenticated admin/control layer (`/admin`) for managing seasons and achievements with canonical JSON schema import/export capabilities.
 **Consequences:** 
@@ -168,7 +168,7 @@ Historical archive of architectural decisions. For all active implementation, sc
 ```
 
 ### ADR-027: Recovery OS — Sanctuary & Grief Protocol Architecture (formerly proposed as ADR-024)
-**Status:** Promoted to Canonical [`ADR-027`](../decisions/ARCHITECTURE_DECISIONS.md#adr-027-recovery-os-sanctuary-grief-processing--spoons-engine) (Renumbered to resolve duplicate ID collision with canonical ADR-024 Chronos Time OS)
+**Status:** Promoted to Canonical [`ADR-027`](../decisions/ARCHITECTURE_DECISIONS.md#adr-027-recovery-os-sanctuary-grief-processing-spoons-engine) (Renumbered to resolve duplicate ID collision with canonical ADR-024 Chronos Time OS)
 **Context:** During periods of deep bereavement, traumatic loss, emotional grief, or severe physical/mental exhaustion, standard productivity expectations ("Crush your goals", "Streak counters", "Momentum scores") become adversarial and actively harmful. The user needs a dedicated sanctuary mode to safely hold grief, process loss, and honor low emotional bandwidth without guilt or failure metrics.
 **Decision:** Introduce **Recovery OS** as a first-class operational sanctuary state and dedicated route (`/recovery` or integrated `/mind-os/recovery`).
 **Core Pillars:**
@@ -179,7 +179,7 @@ Historical archive of architectural decisions. For all active implementation, sc
 5. **Zero Threat / Zero Pressure Vocabulary:** Complete eradication of critical alarms, red badges, or urgency-driving banners.
 
 ### ADR-028: Learning OS — AI Curriculum & Study Plan JSON Ingestion Protocol (formerly proposed as ADR-025)
-**Status:** Promoted to Canonical [`ADR-028`](../decisions/ARCHITECTURE_DECISIONS.md#adr-028-learning-os-ai-curriculum--study-plan-json-ingestion-protocol) (Renumbered to resolve duplicate ID collision with canonical ADR-025 Fitness OS Kinetic Ledger)
+**Status:** Promoted to Canonical [`ADR-028`](../decisions/ARCHITECTURE_DECISIONS.md#adr-028-learning-os-ai-curriculum-study-plan-json-ingestion-protocol) (Renumbered to resolve duplicate ID collision with canonical ADR-025 Fitness OS Kinetic Ledger)
 **Context:** Creating extensive multi-stage learning roadmaps manually is high-friction. Users frequently leverage external LLMs (Claude, ChatGPT, Gemini) or future AI agents to formulate structured learning trajectories for complex domains (e.g., Systems Programming, Machine Learning, Clinical Neuroscience).
 **Decision:** Implement a validated AI Curriculum Importer modal inside Learning OS (`/learning-os`) supporting direct copy-pasting of AI-generated JSON or API payload ingestion.
 **Consequences:**
