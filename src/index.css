@@ -130,3 +130,34 @@
 ::-webkit-scrollbar-thumb:hover {
   background: oklch(var(--text-tertiary));
 }
+
+/* Organic Orb Nav Floating Drift Keyframes */
+@keyframes orb-float-1 {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(3px, -4px); }
+}
+@keyframes orb-float-2 {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-4px, 3px); }
+}
+@keyframes orb-float-3 {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(3px, 4px); }
+}
+@keyframes orb-float-4 {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-3px, -4px); }
+}
+
+.animate-orb-float-1 {
+  animation: orb-float-1 4.2s ease-in-out infinite;
+}
+.animate-orb-float-2 {
+  animation: orb-float-2 5.5s ease-in-out infinite;
+}
+.animate-orb-float-3 {
+  animation: orb-float-3 4.8s ease-in-out infinite;
+}
+.animate-orb-float-4 {
+  animation: orb-float-4 6.1s ease-in-out infinite;
+}

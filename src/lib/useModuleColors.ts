@@ -12,6 +12,7 @@ export const DEFAULT_MODULE_COLORS: Record<string, string> = {
   'Data Lab': '#6366f1',
   'Reports': '#f43f5e',
   'Mission Control': '#ec4899',
+  'Profile': '#e2e8f0',
   'Admin': '#8b5cf6'
 }
 

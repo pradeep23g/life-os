@@ -19,6 +19,11 @@ type ParsedCommand =
  label: string
  }
  | {
+ kind: 'navigate'
+ path: string
+ label: string
+ }
+ | {
  kind: 'invalid'
  reason: string
  }
@@ -30,6 +35,14 @@ function parseCommand(rawInput: string): ParsedCommand {
  const input = rawInput.trim()
  if (!input) {
  return { kind: 'empty' }
+ }
+
+ if (input === '/admin' || input.toLowerCase() === '/admin' || input.toLowerCase() === 'admin' || /^\/(?:goto|go|nav)\s+admin$/i.test(input)) {
+ return {
+ kind: 'navigate',
+ path: '/admin',
+ label: 'Open System Admin Console (/admin)',
+ }
  }
 
  const financeMatch = input.match(/^\/f\s+(\d+(?:\.\d{1,2})?)\s+(want|need)\s*(.*)$/i)
@@ -68,7 +81,7 @@ function parseCommand(rawInput: string): ParsedCommand {
 
  return {
  kind: 'invalid',
- reason: 'Use /f [amount] [want|need] [note] or /t [title].',
+ reason: 'Use /f [amount] [want|need] [note], /t [title], or /admin.',
  }
 }
 
@@ -116,6 +129,16 @@ function CommandPalette() {
  }
 
  const runCommand = () => {
+ if (parsed.kind === 'navigate') {
+ emitSystemFeedback({
+ title: 'Command complete',
+ description: parsed.label,
+ })
+ navigate(parsed.path)
+ closePalette()
+ return
+ }
+
  if (parsed.kind === 'finance') {
  addTransaction.mutate(
  {
@@ -178,19 +201,19 @@ function CommandPalette() {
  return
  }
 
- if (event.key === 'Enter' && !isSubmitting && (parsed.kind === 'finance' || parsed.kind === 'task')) {
+ if (event.key === 'Enter' && !isSubmitting && (parsed.kind === 'finance' || parsed.kind === 'task' || parsed.kind === 'navigate')) {
  event.preventDefault()
  runCommand()
  }
  }}
- placeholder="Type /f 600 want movie or /t Ship auth fix"
+ placeholder="Type /f 600 want movie, /t Ship auth fix, or /admin"
  className="w-full rounded-lg border border-border bg-background px-4 py-4 text-lg text-text-primary outline-none placeholder:text-text-tertiary focus:border-accent-primary"
  />
 
  <div className="mt-3 rounded-lg border border-border bg-background p-3">
  {parsed.kind === 'empty' ? <p className="text-sm text-text-secondary">Type a slash command to run one action instantly.</p> : null}
  {parsed.kind === 'invalid' ? <p className="text-sm text-red-400">{parsed.reason}</p> : null}
- {parsed.kind === 'finance' || parsed.kind === 'task' ? (
+ {parsed.kind === 'finance' || parsed.kind === 'task' || parsed.kind === 'navigate' ? (
  <div className="flex items-center justify-between gap-3">
  <p className="text-sm text-text-primary">
  <span className="mr-2 rounded-lg border border-green-900 bg-green-950/20 px-2 py-1 text-xs text-green-400">Enter</span>
