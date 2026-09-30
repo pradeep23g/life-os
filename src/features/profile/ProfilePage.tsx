@@ -3,6 +3,7 @@ import { ProfileHero } from './components/ProfileHero'
 import { CoreAttributeHorizon } from './components/CoreAttributeHorizon'
 import { CapabilityCrests } from './components/CapabilityCrests'
 import { HistoricalChronicle } from './components/HistoricalChronicle'
+import { ProfileSystemOperations } from './components/ProfileSystemOperations'
 
 export default function ProfilePage() {
   const {
@@ -66,7 +67,11 @@ export default function ProfilePage() {
           chronicle={chronicle}
           totalChronicleCount={totalChronicleCount}
         />
+
+        {/* Room Section 5: Administration & Session Governance */}
+        <ProfileSystemOperations />
       </div>
     </main>
   )
 }
+
