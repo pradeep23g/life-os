@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useRoadmaps, useRoadmapProgress } from '../api/useLearningOS'
 import { CreateRoadmapModal } from '../components/CreateRoadmapModal'
+import { ImportCurriculumModal } from '../components/ImportCurriculumModal'
 import { LogSessionModal } from '../components/LogSessionModal'
 import { FocusStudySessionBar } from '../components/FocusStudySessionBar'
 import { StudyShelf } from '../components/StudyShelf'
@@ -12,6 +13,7 @@ export default function RoadmapDashboard() {
   const { data: progressList = [] } = useRoadmapProgress()
   
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false)
   const [isLogModalOpen, setIsLogModalOpen] = useState(false)
   const [activeLogTarget, setActiveLogTarget] = useState<{
     roadmapId: string
@@ -123,6 +125,7 @@ export default function RoadmapDashboard() {
         roadmaps={roadmaps}
         progressList={progressList}
         onOpenCreateModal={() => setIsCreateModalOpen(true)}
+        onOpenImportModal={() => setIsImportModalOpen(true)}
         onOpenLogModal={(rId) => handleOpenLogModal(rId)}
       />
 
@@ -141,6 +144,15 @@ export default function RoadmapDashboard() {
       <CreateRoadmapModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
+        onOpenImportModal={() => {
+          setIsCreateModalOpen(false)
+          setIsImportModalOpen(true)
+        }}
+      />
+
+      <ImportCurriculumModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
       />
 
       {activeLogTarget && (

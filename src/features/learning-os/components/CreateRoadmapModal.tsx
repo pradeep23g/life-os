@@ -1,12 +1,13 @@
 import { useState, useEffect, useCallback } from 'react'
 import type { FormEvent } from 'react'
-import { X, BookOpen, AlertCircle, Loader2 } from 'lucide-react'
+import { X, BookOpen, AlertCircle, Loader2, Sparkles } from 'lucide-react'
 import { useCreateRoadmap } from '../api/useLearningOS'
 
 export interface CreateRoadmapModalProps {
   isOpen: boolean
   onClose: () => void
   onSuccess?: () => void
+  onOpenImportModal?: () => void
 }
 
 const COLOR_PRESETS = [
@@ -31,7 +32,7 @@ function getErrorMessage(error: unknown): string {
   return 'Failed to chart roadmap trajectory. Please try again.'
 }
 
-export function CreateRoadmapModal({ isOpen, onClose, onSuccess }: CreateRoadmapModalProps) {
+export function CreateRoadmapModal({ isOpen, onClose, onSuccess, onOpenImportModal }: CreateRoadmapModalProps) {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [startDate, setStartDate] = useState(() => new Date().toISOString().slice(0, 10))
@@ -246,30 +247,45 @@ export function CreateRoadmapModal({ isOpen, onClose, onSuccess }: CreateRoadmap
           )}
 
           {/* Action Buttons */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-border-subtle mt-6">
-            <button
-              type="button"
-              onClick={handleClose}
-              disabled={isPending}
-              className="rounded border border-border bg-transparent px-4 py-2 text-sm font-mono uppercase tracking-wider text-text-secondary hover:bg-elevated hover:text-text-primary transition-colors disabled:opacity-50"
-            >
-              Cancel
-            </button>
-
-            <button
-              type="submit"
-              disabled={isPending || !title.trim()}
-              className="flex items-center justify-center gap-2 rounded bg-accent-primary px-5 py-2 text-sm font-mono uppercase tracking-wider text-background font-medium hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
-            >
-              {isPending ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Inscribing...
-                </>
-              ) : (
-                'Chart Trajectory'
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-border-subtle mt-6">
+            <div>
+              {onOpenImportModal && (
+                <button
+                  type="button"
+                  onClick={onOpenImportModal}
+                  className="inline-flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider text-accent-primary hover:text-accent-primary/80 transition-colors"
+                >
+                  <Sparkles className="h-3.5 w-3.5" />
+                  Import AI Curriculum (JSON)
+                </button>
               )}
-            </button>
+            </div>
+
+            <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+              <button
+                type="button"
+                onClick={handleClose}
+                disabled={isPending}
+                className="rounded border border-border bg-transparent px-4 py-2 text-sm font-mono uppercase tracking-wider text-text-secondary hover:bg-elevated hover:text-text-primary transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="submit"
+                disabled={isPending || !title.trim()}
+                className="flex items-center justify-center gap-2 rounded bg-accent-primary px-5 py-2 text-sm font-mono uppercase tracking-wider text-background font-medium hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
+              >
+                {isPending ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Inscribing...
+                  </>
+                ) : (
+                  'Chart Trajectory'
+                )}
+              </button>
+            </div>
           </div>
         </form>
       </article>

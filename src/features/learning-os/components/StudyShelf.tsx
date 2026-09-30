@@ -1,11 +1,12 @@
 import { Link } from 'react-router-dom'
-import { ArrowUpRight, Compass, Plus, Clock, BookOpen } from 'lucide-react'
+import { ArrowUpRight, Compass, Plus, Clock, BookOpen, Sparkles } from 'lucide-react'
 import type { LearningRoadmap, RoadmapProgress } from '../types/types'
 
 interface StudyShelfProps {
  roadmaps: LearningRoadmap[]
  progressList: RoadmapProgress[]
  onOpenCreateModal: () => void
+ onOpenImportModal?: () => void
  onOpenLogModal: (roadmapId: string) => void
 }
 
@@ -13,6 +14,7 @@ export function StudyShelf({
  roadmaps,
  progressList,
  onOpenCreateModal,
+ onOpenImportModal,
  onOpenLogModal,
 }: StudyShelfProps) {
  const progressMap = new Map(progressList.map((p) => [p.roadmap_id, p]))
@@ -35,10 +37,20 @@ export function StudyShelf({
  </p>
  </div>
 
- <div className="flex items-center gap-4">
+ <div className="flex flex-wrap items-center gap-4">
  <span className="text-xs font-mono tabular-nums text-text-tertiary">
  {activeRoadmaps.length} active • {completedRoadmaps.length} completed
  </span>
+ {onOpenImportModal && (
+ <button
+ type="button"
+ onClick={onOpenImportModal}
+ className="inline-flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider text-text-secondary hover:text-accent-primary transition-colors"
+ >
+ <Sparkles size={12} className="text-accent-primary" />
+ Import AI Curriculum
+ </button>
+ )}
  <button
  type="button"
  onClick={onOpenCreateModal}
@@ -68,6 +80,16 @@ export function StudyShelf({
  <Plus size={14} />
  Chart Custom Trajectory
  </button>
+ {onOpenImportModal && (
+ <button
+ type="button"
+ onClick={onOpenImportModal}
+ className="inline-flex items-center gap-2 rounded border border-accent-primary/30 bg-accent-primary/5 px-4 py-2 text-xs font-mono uppercase tracking-wider text-accent-primary hover:bg-accent-primary/10 transition-colors"
+ >
+ <Sparkles size={14} />
+ Import AI Curriculum
+ </button>
+ )}
  <Link
  to="/learning-os/explore"
  className="inline-flex items-center gap-2 rounded border border-border px-4 py-2 text-xs font-mono uppercase tracking-wider text-text-secondary hover:text-text-primary hover:bg-elevated transition-colors"

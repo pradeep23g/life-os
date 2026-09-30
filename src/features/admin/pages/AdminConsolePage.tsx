@@ -1,10 +1,66 @@
 import { useState, useEffect } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../../../lib/supabase'
+import { useAuth } from '../../../lib/AuthContext'
+import type { Database } from '../../../types/database.types'
 import { 
   Activity, Download, Upload, 
-  RefreshCw, CheckCircle2, AlertCircle, ShieldAlert, Palette 
+  RefreshCw, CheckCircle2, AlertCircle, ShieldAlert, Palette, Copy, Check, FileJson
 } from 'lucide-react'
 import { useModuleColors, DEFAULT_MODULE_COLORS } from '../../../lib/useModuleColors'
+import { parseAndValidateAdminPayload } from '../../../lib/schemas/seasonConfigSchema'
+
+const SEASON_PROMPT_TEMPLATE_TEXT = `You are a Tactical Life Architect and Systems Strategist.
+Formulate a seasonal campaign directive and achievement catalog for the following cycle:
+<SEASON_NAME_E.G._WINTER_ARC_2026>
+
+Start Date: <YYYY-MM-DD>
+End Date: <YYYY-MM-DD>
+Primary Focus Domains: <E.G._SYSTEMS_PROGRAMMING_AND_PHYSICAL_ENDURANCE>
+Seasonal Directive / Theme: <E.G._SILENCE_AND_EXECUTION>
+
+Output MUST be strictly valid JSON conforming to the Life OS Season Ingestion Protocol (ADR-026).
+Do not include conversational preamble or postscript outside of the JSON or markdown code fence.
+
+### JSON Schema Contract
+
+{
+  "$schema": "https://life-os.system/schemas/v1/season-config.json",
+  "version": "1.0.0",
+  "season": {
+    "name": "<Season Name>",
+    "startDate": "YYYY-MM-DD",
+    "endDate": "YYYY-MM-DD",
+    "status": "active",
+    "vows": {
+      "vow": {
+        "headline": "<Monumental Directive Headline>",
+        "body": "<Operational philosophy and behavioral imperative>",
+        "attribution": "Seasonal Directive"
+      },
+      "principles": [
+        "<Principle 1>",
+        "<Principle 2>",
+        "<Principle 3>"
+      ],
+      "phases": [
+        { "name": "Foundation", "startDay": 1, "endDay": 14 },
+        { "name": "Deep Arc", "startDay": 15, "endDay": 75 },
+        { "name": "Harvest & Transition", "startDay": 76, "endDay": 90 }
+      ]
+    }
+  },
+  "achievements": [
+    {
+      "badgeId": "<unique_snake_case_badge_id>",
+      "name": "<Badge Name>",
+      "description": "<Clear verifiable unlocking condition>",
+      "tier": "bronze",
+      "criteria": { "type": "consecutive_days", "count": 10 }
+    }
+  ]
+}
+`
 
 export default function AdminConsolePage() {
   const [activeTab, setActiveTab] = useState<'control' | 'telemetry' | 'health' | 'aesthetics'>('control')
@@ -12,18 +68,21 @@ export default function AdminConsolePage() {
   const [importStatus, setImportStatus] = useState<{ type: 'success' | 'error' | null, message: string }>({ type: null, message: '' })
   const [tableStats, setTableStats] = useState<Record<string, number>>({})
   const [isLoading, setIsLoading] = useState(false)
+  const [isPromptCopied, setIsPromptCopied] = useState(false)
   
+  const { user } = useAuth()
+  const queryClient = useQueryClient()
   const { colors, updateColor } = useModuleColors()
 
   const fetchTableStats = async () => {
     setIsLoading(true)
     try {
-      const tables = ['life_seasons', 'user_achievements', 'events', 'time_logs']
+      const tables = ['life_seasons', 'user_achievements', 'events', 'time_logs', 'learning_roadmaps']
       const stats: Record<string, number> = {}
       
       for (const table of tables) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { count, error } = await (supabase.from as any)(table)
+        const { count, error } = await supabase
+          .from(table as keyof Database['public']['Tables'])
           .select('*', { count: 'exact', head: true })
         if (!error) {
           stats[table] = count || 0
@@ -43,6 +102,84 @@ export default function AdminConsolePage() {
     }
   }, [activeTab])
 
+  const handleCopyPrompt = async () => {
+    try {
+      await navigator.clipboard.writeText(SEASON_PROMPT_TEMPLATE_TEXT)
+      setIsPromptCopied(true)
+      setTimeout(() => setIsPromptCopied(false), 2500)
+    } catch {
+      // Fallback
+    }
+  }
+
+  const handleExportCanonical = async () => {
+    setIsLoading(true)
+    try {
+      if (!user?.id) throw new Error('User authentication required to export data.')
+
+      const [seasonRes, achRes] = await Promise.all([
+        supabase
+          .from('life_seasons')
+          .select('*')
+          .order('start_date', { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+        supabase
+          .from('user_achievements')
+          .select('*')
+      ])
+
+      if (seasonRes.error) throw seasonRes.error
+      if (achRes.error) throw achRes.error
+
+      const season = seasonRes.data
+      const achievements = achRes.data || []
+
+      const canonicalPayload = {
+        $schema: 'https://life-os.system/schemas/v1/season-config.json',
+        version: '1.0.0',
+        season: season ? {
+          name: season.name,
+          startDate: season.start_date,
+          endDate: season.end_date,
+          status: 'active',
+          vows: season.vows || {}
+        } : {
+          name: 'Winter Arc 2026',
+          startDate: '2026-07-30',
+          endDate: '2026-10-27',
+          status: 'active',
+          vows: {}
+        },
+        achievements: achievements.map((a) => {
+          const meta = (a.metadata && typeof a.metadata === 'object') ? a.metadata as Record<string, unknown> : {}
+          return {
+            badgeId: a.badge_id,
+            name: (meta.name as string) || (meta.title as string) || a.badge_id,
+            description: (meta.description as string) || '',
+            tier: (meta.tier as string) || 'bronze',
+            criteria: (meta.criteria as Record<string, unknown>) || {},
+            unlockedAt: a.unlocked_at
+          }
+        })
+      }
+
+      const blob = new Blob([JSON.stringify(canonicalPayload, null, 2)], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `canonical_season_config_${new Date().toISOString().split('T')[0]}.json`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } catch (e: unknown) {
+      setImportStatus({ type: 'error', message: e instanceof Error ? e.message : 'Export failed' })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   const handleExport = async (entity: 'life_seasons' | 'user_achievements' | 'learning_roadmaps') => {
     setIsLoading(true)
     try {
@@ -52,8 +189,9 @@ export default function AdminConsolePage() {
         learning_roadmaps: 'learning_roadmaps'
       }
       
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data, error } = await (supabase.from as any)(tableMap[entity]).select('*')
+      const { data, error } = await supabase
+        .from(tableMap[entity] as keyof Database['public']['Tables'])
+        .select('*')
       if (error) throw error
 
       const blob = new Blob([JSON.stringify({ entity, data }, null, 2)], { type: 'application/json' })
@@ -76,38 +214,161 @@ export default function AdminConsolePage() {
     setIsLoading(true)
     setImportStatus({ type: null, message: '' })
     try {
-      if (!importData.trim()) throw new Error('Please provide JSON payload.')
-      const payload = JSON.parse(importData)
-      
-      if (!payload.entity || !payload.data || !Array.isArray(payload.data)) {
-        throw new Error('Invalid schema. Expected { entity: string, data: array }')
+      if (!user?.id) {
+        throw new Error('User authentication required. Please sign in to administer configurations.')
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error } = await (supabase.from as any)(payload.entity)
-        .upsert(payload.data)
+      if (!importData.trim()) {
+        throw new Error('Please provide a valid JSON payload.')
+      }
 
-      if (error) throw error
+      const validation = parseAndValidateAdminPayload(importData)
+      if (!validation.success || !validation.payload) {
+        const errorDetails = validation.errors?.join('\n') || 'Invalid payload schema.'
+        throw new Error(`Validation failed:\n${errorDetails}`)
+      }
 
-      setImportStatus({ type: 'success', message: `Successfully imported ${payload.data.length} records into ${payload.entity}.` })
-      setImportData('')
+      const { payload } = validation
+
+      if (payload.kind === 'canonical') {
+        const { season, achievements } = payload.data
+
+        // 1. Ingest Season with authenticated user_id
+        // Look up existing season for this user by name to prevent duplicate records
+        const { data: existingSeason } = await supabase
+          .from('life_seasons')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('name', season.name)
+          .maybeSingle()
+
+        const seasonRecord = {
+          ...(existingSeason?.id ? { id: existingSeason.id } : {}),
+          user_id: user.id,
+          name: season.name,
+          start_date: season.startDate,
+          end_date: season.endDate,
+          vows: season.vows as unknown as Database['public']['Tables']['life_seasons']['Insert']['vows'],
+          updated_at: new Date().toISOString()
+        }
+
+        const { error: seasonErr } = await supabase
+          .from('life_seasons')
+          .upsert([seasonRecord])
+
+        if (seasonErr) {
+          throw new Error(`Failed to upsert season: ${seasonErr.message}`)
+        }
+
+        // 2. Ingest Achievements if defined
+        let achievementsIngested = 0
+        if (achievements && achievements.length > 0) {
+          const achRecords = achievements.map((ach) => ({
+            user_id: user.id,
+            badge_id: ach.badgeId,
+            unlocked_at: ach.unlockedAt || new Date().toISOString(),
+            metadata: {
+              name: ach.name,
+              description: ach.description,
+              tier: ach.tier,
+              criteria: ach.criteria,
+            } as unknown as Database['public']['Tables']['user_achievements']['Insert']['metadata'],
+          }))
+
+          const { error: achErr } = await supabase
+            .from('user_achievements')
+            .upsert(achRecords, { onConflict: 'user_id,badge_id' })
+
+          if (achErr) {
+            throw new Error(`Season saved, but failed to upsert achievements: ${achErr.message}`)
+          }
+          achievementsIngested = achievements.length
+        }
+
+        // Invalidate active-season and user-achievements queries for real-time reflection
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ['active-season'] }),
+          queryClient.invalidateQueries({ queryKey: ['user-achievements'] }),
+          queryClient.invalidateQueries({ queryKey: ['user-achievements', user.id] })
+        ])
+
+        setImportStatus({
+          type: 'success',
+          message: `Canonical Season "${season.name}" ingested successfully with ${achievementsIngested} achievements.`
+        })
+        setImportData('')
+        return
+      }
+
+      // Raw Table Entity Ingestion
+      if (payload.kind === 'raw') {
+        const { entity, data: rawRecords } = payload.data
+
+        // Normalize camelCase to snake_case and inject user_id for RLS and not-null compliance
+        const normalizedData = rawRecords.map((item) => {
+          const mapped: Record<string, unknown> = {}
+          for (const [key, val] of Object.entries(item)) {
+            let snakeKey = key
+            if (key === 'startDate') snakeKey = 'start_date'
+            else if (key === 'endDate') snakeKey = 'end_date'
+            else if (key === 'targetEndDate') snakeKey = 'target_end_date'
+            else if (key === 'badgeId') snakeKey = 'badge_id'
+            else if (key === 'unlockedAt') snakeKey = 'unlocked_at'
+            else if (key === 'orderIndex') snakeKey = 'order_index'
+            else if (key === 'estimatedMinutes') snakeKey = 'estimated_minutes'
+            else if (key === 'targetDate') snakeKey = 'target_date'
+            else if (key === 'createdAt') snakeKey = 'created_at'
+            else if (key === 'updatedAt') snakeKey = 'updated_at'
+            mapped[snakeKey] = val
+          }
+          if (!mapped.user_id) {
+            mapped.user_id = user.id
+          }
+          return mapped
+        })
+
+        const { error } = await supabase
+          .from(entity as keyof Database['public']['Tables'])
+          .upsert(normalizedData as never)
+
+        if (error) throw error
+
+        // Invalidate appropriate caches based on affected entity
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ['active-season'] }),
+          queryClient.invalidateQueries({ queryKey: ['user-achievements'] }),
+          queryClient.invalidateQueries({ queryKey: ['user-achievements', user.id] }),
+          queryClient.invalidateQueries({ queryKey: ['learning-roadmaps'] }),
+          queryClient.invalidateQueries({ queryKey: ['events'] }),
+          queryClient.invalidateQueries({ queryKey: ['time-logs'] })
+        ])
+
+        setImportStatus({
+          type: 'success',
+          message: `Successfully upserted ${normalizedData.length} records into ${entity}.`
+        })
+        setImportData('')
+      }
     } catch (e: unknown) {
-      setImportStatus({ type: 'error', message: e instanceof Error ? e.message : 'Import failed. Check JSON format.' })
+      setImportStatus({ type: 'error', message: e instanceof Error ? e.message : 'Import failed.' })
     } finally {
       setIsLoading(false)
     }
   }
 
   return (
-    <div className="space-y-8 animate-fade-in pb-24">
+    <div className="space-y-8 animate-fade-in pb-24 font-sans">
       <header className="space-y-2">
         <div className="flex items-center gap-3">
           <ShieldAlert className="h-8 w-8 text-primary" />
           <h1 className="font-serif text-3xl sm:text-4xl font-light text-text-primary tracking-tight">
             System Admin
           </h1>
+          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 uppercase tracking-wider">
+            ADR-026 Control Plane
+          </span>
         </div>
-        <p className="text-text-secondary">Control plane, telemetry, and aesthetic configuration.</p>
+        <p className="text-text-secondary">Control plane, telemetry, season orchestration, and aesthetic configuration.</p>
       </header>
 
       {/* Tabs */}
@@ -149,31 +410,43 @@ export default function AdminConsolePage() {
                   <h2 className="font-semibold text-lg">Export Configurations</h2>
                 </div>
                 <p className="text-sm text-text-secondary">
-                  Download a canonical JSON snapshot of major life configuration systems.
+                  Download canonical ADR-026 JSON or raw database table snapshots.
                 </p>
                 <div className="flex flex-col gap-3 pt-2">
                   <button 
+                    onClick={handleExportCanonical}
+                    disabled={isLoading}
+                    className="flex justify-between items-center px-4 py-2.5 bg-primary/10 border border-primary/30 rounded-lg hover:border-primary text-text-primary transition-colors text-left"
+                  >
+                    <div className="flex items-center gap-2">
+                      <FileJson className="h-4 w-4 text-primary" />
+                      <span className="font-medium text-sm">Canonical Season Config (ADR-026 JSON)</span>
+                    </div>
+                    <Download className="h-4 w-4 text-primary" />
+                  </button>
+
+                  <button 
                     onClick={() => handleExport('life_seasons')}
                     disabled={isLoading}
-                    className="flex justify-between items-center px-4 py-2 bg-elevated border border-border rounded-lg hover:border-primary transition-colors text-left"
+                    className="flex justify-between items-center px-4 py-2 bg-elevated border border-border rounded-lg hover:border-primary transition-colors text-left text-sm"
                   >
-                    <span>Life Seasons (Vows & Phases)</span>
+                    <span>Life Seasons Table (`life_seasons`)</span>
                     <Download className="h-4 w-4 text-text-tertiary" />
                   </button>
                   <button 
                     onClick={() => handleExport('user_achievements')}
                     disabled={isLoading}
-                    className="flex justify-between items-center px-4 py-2 bg-elevated border border-border rounded-lg hover:border-primary transition-colors text-left"
+                    className="flex justify-between items-center px-4 py-2 bg-elevated border border-border rounded-lg hover:border-primary transition-colors text-left text-sm"
                   >
-                    <span>User Achievements (Metadata)</span>
+                    <span>User Achievements Table (`user_achievements`)</span>
                     <Download className="h-4 w-4 text-text-tertiary" />
                   </button>
                   <button 
                     onClick={() => handleExport('learning_roadmaps')}
                     disabled={isLoading}
-                    className="flex justify-between items-center px-4 py-2 bg-elevated border border-border rounded-lg hover:border-primary transition-colors text-left"
+                    className="flex justify-between items-center px-4 py-2 bg-elevated border border-border rounded-lg hover:border-primary transition-colors text-left text-sm"
                   >
-                    <span>Learning OS (Roadmaps)</span>
+                    <span>Learning OS Roadmaps (`learning_roadmaps`)</span>
                     <Download className="h-4 w-4 text-text-tertiary" />
                   </button>
                 </div>
@@ -181,30 +454,52 @@ export default function AdminConsolePage() {
 
               {/* Importer */}
               <div className="rounded-xl border border-border bg-surface p-6 space-y-4">
-                <div className="flex items-center gap-2 text-text-primary">
-                  <Upload className="h-5 w-5" />
-                  <h2 className="font-semibold text-lg">Import Payload</h2>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-text-primary">
+                    <Upload className="h-5 w-5" />
+                    <h2 className="font-semibold text-lg">Import Payload</h2>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleCopyPrompt}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-mono uppercase tracking-wider rounded border border-border bg-elevated hover:bg-surface text-text-secondary hover:text-text-primary transition-colors"
+                  >
+                    {isPromptCopied ? (
+                      <>
+                        <Check className="h-3 w-3 text-green-400" />
+                        <span className="text-green-400">Copied</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-3 w-3" />
+                        <span>Copy Prompt</span>
+                      </>
+                    )}
+                  </button>
                 </div>
+
                 <p className="text-sm text-text-secondary">
-                  Paste a canonical JSON array matching the exact Supabase schema to upsert records.
+                  Paste canonical ADR-026 JSON ({`{"season": {...}, "achievements": [...]}`}) or raw entity array ({`{"entity": "...", "data": [...]}`}).
                 </p>
+
                 <textarea
                   value={importData}
                   onChange={(e) => setImportData(e.target.value)}
-                  className="w-full h-32 bg-background border border-border rounded-lg p-3 font-mono text-xs text-text-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                  placeholder='{"entity": "life_seasons", "data": [{...}]}'
+                  className="w-full h-36 bg-background border border-border rounded-lg p-3 font-mono text-xs text-text-primary focus:outline-none focus:ring-1 focus:ring-primary leading-relaxed"
+                  placeholder='{"season": {"name": "Winter Arc 2026", "startDate": "2026-07-30", "endDate": "2026-10-27", "vows": {...}}, "achievements": [...]}'
                 />
+
                 <button
                   onClick={handleImport}
                   disabled={isLoading || !importData.trim()}
-                  className="w-full py-2 bg-primary text-primary-foreground font-semibold rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
+                  className="w-full py-2.5 bg-primary text-primary-foreground font-semibold rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors text-sm"
                 >
-                  {isLoading ? 'Processing...' : 'Execute Upsert'}
+                  {isLoading ? 'Processing Ingestion...' : 'Execute Ingestion & Upsert'}
                 </button>
                 
                 {importStatus.type && (
-                  <div className={`p-3 rounded-lg flex gap-2 items-start text-sm ${importStatus.type === 'success' ? 'bg-green-500/10 text-green-500 border border-green-500/20' : 'bg-threat-critical/10 text-threat-critical border border-threat-critical/20'}`}>
-                    {importStatus.type === 'success' ? <CheckCircle2 className="h-5 w-5 shrink-0" /> : <AlertCircle className="h-5 w-5 shrink-0" />}
+                  <div className={`p-3 rounded-lg flex gap-2 items-start text-xs font-mono whitespace-pre-wrap ${importStatus.type === 'success' ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-threat-critical/10 text-threat-critical border border-threat-critical/20'}`}>
+                    {importStatus.type === 'success' ? <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" /> : <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />}
                     <span>{importStatus.message}</span>
                   </div>
                 )}
@@ -247,10 +542,10 @@ export default function AdminConsolePage() {
           <section className="rounded-xl border border-border bg-surface p-6 flex flex-col items-center justify-center min-h-[300px] space-y-4">
              <Activity className="h-10 w-10 text-text-tertiary mb-2" />
              <h2 className="text-xl font-medium text-text-secondary">Telemetry Queue Monitor</h2>
-             <p className="text-text-tertiary text-center max-w-md">
+             <p className="text-text-tertiary text-center max-w-md text-sm">
                Live event streaming is currently stable. Queue is drained optimally every 15s. No manual flush required.
              </p>
-             <button disabled className="px-6 py-2 bg-elevated border border-border rounded-lg text-text-tertiary opacity-50 cursor-not-allowed">
+             <button disabled className="px-6 py-2 bg-elevated border border-border rounded-lg text-text-tertiary opacity-50 cursor-not-allowed text-xs font-mono">
                 Force Queue Drain
              </button>
           </section>
