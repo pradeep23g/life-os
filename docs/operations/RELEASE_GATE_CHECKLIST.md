@@ -117,7 +117,7 @@ node scripts/smoke/run-browser-verification.mjs
 
 **Scope & 60 Validated Checks:**
 - [x] Server initialization: Spin up Vite local server on ephemeral port and wait for readiness.
-- [x] Auth flow: Log in via Playwright form submission and wait for `/mission-control` redirection.
+- [x] Auth flow: Log in via Playwright form submission and wait for `/system` redirection.
 - [x] Mission Control: Verify Brain Engine hero, real momentum score, metric cards, and Evening Sync trigger.
 - [x] Mind OS: Render habits list, toggle habit done, verify React Query optimistic update.
 - [x] Productivity Hub: Verify tasks list, view planning modal, toggle task completion.
@@ -133,7 +133,7 @@ node scripts/smoke/run-browser-verification.mjs
 
 ## 5. Manual Core Journey Verification
 
-### 5.1 Mission Control (`/mission-control`)
+### 5.1 Mission Control (`/system`)
 - [ ] Brain Engine hero renders live momentum score, trend, and directive CTA.
 - [ ] Metric cards show real aggregates (Mood, Pending Tasks, Fitness volume, Habit streak).
 - [ ] Evening Sync card successfully processes pending signals.

@@ -44,10 +44,10 @@ src/features/
 ```text
 Browser Client (React 19 + TypeScript 5.9 + Vite 7 SPA)
   ├── React Router v7 (14 active client routes with route-level lazy loading)
-  ├── Astrolabe Orb Navigation (3-ring kinetic orb shell with touch launcher)
+  ├── Astrolabe Orb Navigation (2-ring kinetic orb shell with secondary bloom fanouts)
   ├── Tailwind CSS v3 (True-black design system + OKLCH Solar Themes)
-  ├── TanStack React Query v5 (Exclusive server state management)
-  ├── Zustand v5 (Operational event bus for immediate UI reactivity)
+  ├── TanStack React Query v5 (Server state management & optimistic UI updates)
+  ├── Zustand v5 (Asynchronous telemetry outbox / staging buffer for public.system_event_queue)
   └── Supabase Client (PostgreSQL 15+ with Row Level Security)
         ↓
 PostgreSQL Aggregation Layer (33 Base Tables, 15 Active Views, security_invoker = true)

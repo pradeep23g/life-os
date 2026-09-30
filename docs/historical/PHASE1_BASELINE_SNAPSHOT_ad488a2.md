@@ -4,7 +4,7 @@ frozen_commit: "ad488a2"
 domain: "historical"
 ---
 
-# LIFE OS — FINAL CURRENT STATE CONTEXT (HISTORICAL SNAPSHOT)
+# LIFE OS — PHASE 1 HISTORICAL BASELINE (Frozen at commit ad488a2, Sept 5 2026)
 
 > [!WARNING]
 > **HISTORICAL ARCHIVE NOTICE (FROZEN BASELINE):**  
@@ -573,7 +573,7 @@ For the upcoming **Phase 2 (Winter Arc UI Redesign)**:
 
 ---
 
-## 19. CHATGPT CONTEXT — READ THIS FIRST
+## 19. Historical ChatGPT Context (OUTDATED — DO NOT USE)
 
 > [!IMPORTANT]
 > **ChatGPT Quick Reference Mental Model:**
@@ -587,4 +587,4 @@ For the upcoming **Phase 2 (Winter Arc UI Redesign)**:
 
 ---
 
-# END OF AUTHORITATIVE CURRENT STATE CONTEXT
+# END OF LIFE OS — PHASE 1 HISTORICAL BASELINE (Frozen at commit ad488a2, Sept 5 2026)

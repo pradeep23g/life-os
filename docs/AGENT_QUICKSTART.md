@@ -18,7 +18,7 @@ domain: "governance"
 ```text
 React 19 + TypeScript 5.9 + Vite 7 + Tailwind CSS v3
 ├── React Router v7 (14 client routes, route-level lazy loading)
-├── Astrolabe Orb Navigation (3-ring kinetic orb shell, ADR-023)
+├── Astrolabe Orb Navigation (2-ring kinetic orb shell with secondary bloom fanouts, ADR-023)
 ├── TanStack React Query v5 (Exclusive server state manager)
 ├── Zustand v5 (Operational event queue / transient event bus)
 └── Supabase JS v2 Client (@supabase/supabase-js)
@@ -76,9 +76,9 @@ Hosted PostgreSQL 15+ (Supabase Cloud Instance)
 - **Data Lab (4):** `data_lab_daily_activity_90d`, `data_lab_weekly_system_score_12w`, `data_lab_module_consistency_30d`, `data_lab_event_coverage_30d`
 - **Domain Signals (7):** `data_lab_signal_mind_habits`, `data_lab_signal_mind_journal`, `data_lab_signal_execution_tasks`, `data_lab_signal_time_os`, `data_lab_signal_fitness_os`, `data_lab_signal_finance_os`, `data_lab_signal_learning_os`
 - **Learning Progress (2):** `learning_roadmap_progress`, `learning_stage_progress`
-- **Planned Views (4):** `active_life_seasons`, `recent_achievements`, `pulse_summary`, `knowledge_by_type` (scheduled for future migration waves)
+- **Planned Views (4):** `active_life_seasons`, `recent_achievements`, `pulse_summary`, `knowledge_by_type` (scheduled for future migration waves; WARNING: No SQL views exist yet in PostgreSQL — do NOT query at runtime to prevent 42P01 `undefined_table` errors)
 
-### 3.3 Quick Schema Reference — Core Tables (27 Tables)
+### 3.3 Quick Schema Reference — Core Tables (27 of 33 Total)
 
 | Domain | Table | Primary Key | Key Columns / Constraints | Notes |
 |---|---|---|---|---|
@@ -86,7 +86,7 @@ Hosted PostgreSQL 15+ (Supabase Cloud Instance)
 | | `habit_logs` | `id` | `habit_id`, `log_date`, `value` | `UNIQUE(habit_id, log_date)` |
 | | `habit_streak_breaks` | `id` | `habit_id`, `break_date`, `reason`, `healed_at` | `UNIQUE(habit_id, break_date)` |
 | | `habit_streak_heals` | `id` | `habit_id`, `break_id`, `heal_date` | Max 5 heals/month |
-| | `journal_entries` | `id` | `user_id`, `entry_date`, `content`, `mood` (1–5) | Clinical mood scale |
+| | `journal_entries` | `id` | `user_id`, `mood` (1–5), `what_went_good`, `what_you_learned`, `brief_about_day` | Clinical mood scale & reflection |
 | **Productivity** | `tasks` | `id` | `user_id`, `title`, `deadline_type`, `deadline_date`, `is_completed` | Active: `deleted_at IS NULL` |
 | | `goals` | `id` | `user_id`, `title`, `domain`, `status`, `target_date` | Domains: 5 functional targets |
 | | `weekly_plans` | `id` | `user_id`, `week_start_date`, `focus_text` | App-level upsert uniqueness |

@@ -2,7 +2,7 @@
 title: Agent Findings Registry
 status: ACTIVE
 purpose: Centralized registry of all discoveries made by agents during sessions
-last_updated: 2026-09-19
+last_updated: 2026-09-22
 ---
 
 # Findings Registry
@@ -93,3 +93,23 @@ and merged in PR #1. An agent picking up work would re-implement production code
 
 **Resolution:**
 All items marked `[x]`, completion banner added, completion record appended.
+
+---
+
+### [F-004] Finance config.ts still uses hardcoded budget fallback
+- **Severity:** LOW
+- **Found by:** Remediation Worker M1, Session 2026-09-22-001
+- **Date:** 2026-09-22
+- **Category:** TECH-DEBT
+- **Status:** OPEN
+
+**Description:**
+`src/features/finance-os/config.ts` still relies on a static fallback (`DEFAULT_MONTHLY_BUDGET = 2000`) and the `VITE_FINANCE_OS_MONTHLY_BUDGET` environment variable instead of querying dynamic user preferences from the database. A persistent preferences storage column (`user_settings.finance_preferences` JSONB) already exists in remote PostgreSQL from migration `20260916212500_winter_arc_extensions.sql`, but client-side budget resolution has not yet been migrated to read from it.
+
+**Evidence:**
+- `src/features/finance-os/config.ts` lines 1–9 (`DEFAULT_MONTHLY_BUDGET = 2000`)
+- `supabase/migrations/20260916212500_winter_arc_extensions.sql` lines 86–90 (`finance_preferences jsonb default '{}'::jsonb`)
+- `src/types/database.types.ts` (`user_settings.Row.finance_preferences`)
+
+**Resolution:**
+Update `src/features/finance-os/config.ts` TODO comment to cite finding F-004 and note the existing `user_settings.finance_preferences` schema. In a subsequent release wave, implement a hook to read and persist monthly budget targets in `user_settings`.

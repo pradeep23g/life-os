@@ -1,13 +1,13 @@
 ---
 title: "Documentation Index & Token Ledger"
 status: "active"
-last_synchronized_commit: "77d1a5b"
+last_synchronized_commit: "b798dc7"
 domain: "governance"
 ---
 
 # LIFE OS — DOCUMENTATION INDEX & TOKEN LEDGER
 
-**Repository HEAD:** `pradeep23g/life-os` (Commit `77d1a5b`)  
+**Repository HEAD:** `pradeep23g/life-os` (Commit `b798dc7`)  
 **Scope:** Canonical documentation directory index with token budgets and domain categorization.
 
 ---
@@ -16,7 +16,7 @@ domain: "governance"
 
 | Document | Path | Domain | Status | Est. Tokens | Primary Invariant |
 |---|---|---|---|:---:|---|
-| **Agent Quickstart** | [`AGENT_QUICKSTART.md`](./AGENT_QUICKSTART.md) | `governance` | Active | ~1,200 | Machine entrypoint, 33-table / 14-route summary |
+| **Agent Quickstart** | [`AGENT_QUICKSTART.md`](./AGENT_QUICKSTART.md) | `governance` | Active | ~3,100 | Machine entrypoint, 33-table / 14-route summary |
 | **Documentation Index** | `INDEX.md` *(current page)* | `governance` | Active | ~600 | Token budget index & document taxonomy |
 | **AI Constitution** | [`decisions/AI_ENGINEERING_CONSTITUTION.md`](./decisions/AI_ENGINEERING_CONSTITUTION.md) | `governance` | Active | ~1,100 | Core invariants, source-of-truth hierarchy |
 | **ADR Register** | [`decisions/ARCHITECTURE_DECISIONS.md`](./decisions/ARCHITECTURE_DECISIONS.md) | `architecture` | Active | ~8,500 | Gapless ADR-001 through ADR-028 |
@@ -52,11 +52,11 @@ domain: "governance"
 
 | Document | Path | Domain | Status | Est. Tokens | Primary Content |
 |---|---|---|---|:---:|---|
-| **Winter Arc Master Plan**| [`winter-arc/WINTER_ARC_MASTER_PLAN.md`](./winter-arc/WINTER_ARC_MASTER_PLAN.md) | `winter-arc` | Active | ~9,500 | 46 features, 9 implementation waves |
-| **Winter Arc Progress** | [`winter-arc/WINTER_ARC_PROGRESS.md`](./winter-arc/WINTER_ARC_PROGRESS.md) | `winter-arc` | Active | ~2,600 | Milestones 1–5, completed phase matrix |
-| **Verification Audit** | [`winter-arc/WINTER_ARC_VERIFICATION_AUDIT_2026.md`](./winter-arc/WINTER_ARC_VERIFICATION_AUDIT_2026.md) | `winter-arc` | Active | ~3,800 | 15 hostile audit citations resolved |
-| **Visual Refoundation** | [`winter-arc/VISUAL_REFOUNDATION_2.md`](./winter-arc/VISUAL_REFOUNDATION_2.md) | `winter-arc` | Active | ~4,200 | Visual language & design specification |
-| **Android Spec** | [`winter-arc/WINTER_ARC_MOBILE.md`](./winter-arc/WINTER_ARC_MOBILE.md) | `winter-arc` | Active | ~5,000 | Wave 2 Kotlin / Jetpack Compose technical spec |
+| **Winter Arc Master Plan**| [`winter-arc/WINTER_ARC_MASTER_PLAN.md`](./winter-arc/WINTER_ARC_MASTER_PLAN.md) | `winter-arc` | Historical | ~9,500 | 46 features, 9 implementation waves |
+| **Winter Arc Progress** | [`winter-arc/WINTER_ARC_PROGRESS.md`](./winter-arc/WINTER_ARC_PROGRESS.md) | `winter-arc` | Historical | ~2,600 | Milestones 1–5, completed phase matrix |
+| **Verification Audit** | [`winter-arc/WINTER_ARC_VERIFICATION_AUDIT_2026.md`](./winter-arc/WINTER_ARC_VERIFICATION_AUDIT_2026.md) | `winter-arc` | Historical | ~3,800 | 15 hostile audit citations resolved |
+| **Visual Refoundation** | [`winter-arc/VISUAL_REFOUNDATION_2.md`](./winter-arc/VISUAL_REFOUNDATION_2.md) | `winter-arc` | Historical | ~4,200 | Visual language & design specification |
+| **Android Spec** | [`winter-arc/WINTER_ARC_MOBILE.md`](./winter-arc/WINTER_ARC_MOBILE.md) | `winter-arc` | Historical | ~5,000 | Wave 2 Kotlin / Jetpack Compose technical spec |
 
 ---
 

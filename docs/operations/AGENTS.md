@@ -39,8 +39,31 @@ When codebase artifacts, database tables, or documents disagree, resolve conflic
 6. **Feature Specifications & Taxonomy:** `docs/architecture/MODULE_GUIDE.md` and `docs/architecture/EVENT_TAXONOMY.md`.
 7. **Operational Guides & Checklists:** `docs/operations/DEV_WORKFLOW.md` and `docs/operations/RELEASE_GATE_CHECKLIST.md`.
 
+### 2.1 Invariant Priority Ordering
+
+When operational priorities, mandates, or guidelines conflict during development, resolve them strictly in descending order:
+
+$$\textbf{User request} > \textbf{Data integrity} > \textbf{Fix-on-Discovery} > \textbf{No Speculative Rewrites} > \textbf{Doc protocol}$$
+
+1. **User Request:** Direct objectives, explicit instructions, and specific task scopes provided by the user or orchestrator take absolute precedence over unsolicited tasks.
+2. **Data Integrity:** Preservation of user state, telemetry correctness, queue durability, transaction boundaries, and live database consistency strictly overrides developer convenience and velocity.
+3. **Fix-on-Discovery:** Factual drift, broken paths, or schema invalidities discovered during execution must be resolved immediately to restore ground-truth parity (bounded by the Scope Guard below).
+4. **No Speculative Rewrites:** Maintain minimal change discipline. Never perform unsolicited refactoring, stylistic rewriting, or aesthetic cleanups without explicit mandate.
+5. **Doc Protocol:** Logging sessions, maintaining ledger history, and updating handoff state are mandatory deliverables, but yield to runtime data integrity and task completion when tradeoffs arise.
+
 > [!IMPORTANT]
-> **Mandatory Fix-on-Discovery Rule:** When a discrepancy between physical code/schema reality and documentation is discovered, you MUST NOT silently bypass or ignore the documentation. You MUST correct the documentation immediately to restore truth parity.
+> **Mandatory Fix-on-Discovery Rule & Scope Guard:** When a discrepancy between physical code/schema reality and documentation is discovered, you MUST NOT silently bypass or ignore the documentation. You MUST correct the documentation immediately to restore truth parity.
+>
+> **Scope Guard (Strict Limits on Fix-on-Discovery):**  
+> Fix-on-Discovery applies **exclusively** to:
+> - **Factual errors:** Discrepancies in table names, column nullability, route paths, event taxonomy keys, or system counts.
+> - **Broken links:** Dead relative file paths, broken heading anchors, or invalid URLs.
+> - **Syntax & schema errors:** Malformed YAML frontmatter, broken TypeScript interface contracts, or invalid SQL definitions.
+>
+> Fix-on-Discovery **DOES NOT** authorize:
+> - **Formatting opinions:** Reformatting whitespace, markdown tables, indentation, or quotation styles.
+> - **Massive stylistic rewrites:** Rewriting prose, restructuring chapters, or altering documentation tone when the underlying facts are accurate.
+> - **Unrequested refactoring:** Modifying working production code, renaming variables/components, or reorganizing directories outside your assigned task scope.
 
 ---
 
@@ -61,7 +84,10 @@ When codebase artifacts, database tables, or documents disagree, resolve conflic
 | Picking up tasks from `tasks/todo.md` | All tasks are completed and archived (PR #1). | Check `docs/operations/PROJECT_ROADMAP.md` for real work |
 | Reading `LIFE_OS_FINAL_CURRENT_STATE_CONTEXT.md` as current | It's a historical snapshot from Sept 5. | Read `docs/AGENT_QUICKSTART.md` instead |
 | Using `Math.random()` in React rendering | Non-deterministic renders break React 19 reconciliation. | Use deterministic functions or `useMemo` with stable seeds |
-| Casting Supabase queries with `as any` | Bypasses TypeScript safety, hides table name errors. | Use typed Supabase client |
+| Casting Supabase queries with `as any` | Bypasses TypeScript safety, hides table name errors. *(Exemption: `AdminConsolePage.tsx` dynamic table inspection; see Tech Debt Exemption below).* | Use typed Supabase client (e.g. `supabase.from('events')`). |
+
+> **Known Tech Debt Exemption — `AdminConsolePage.tsx` Dynamic Table Casting:**  
+> In `src/features/admin/pages/AdminConsolePage.tsx`, table health telemetry and JSON schema export/import dynamically iterate over an array of table names (`['events', 'time_logs', 'life_seasons', 'user_achievements', 'learning_roadmaps']`). Dynamic iteration cannot use static table string literals without casting (`table as keyof Database['public']['Tables']` or legacy `(supabase.from as any)(table)`). This dynamic inspection in `AdminConsolePage.tsx` is an isolated, approved tech debt exemption. Under no circumstances may `as any` casting be used in domain hooks (`useMind`, `useFitness`, `useTime`, `useFinance`, etc.) or anywhere else in application source code.
 
 ---
 
@@ -169,7 +195,7 @@ When creating a new feature module, complete every step in sequential order:
 - [ ] Register route title resolution in `src/layout/shellTitle.ts` (`getShellTitle`)
 
 ### 5. Navigation & Route Registration
-- [ ] Register orbital navigation node in `src/layout/AstrolabeOrbNav.tsx` (coordinate ring `radius`, angle trigonometry, and canonical domain assignment)
+- [ ] Register orbital navigation node in `src/layout/AstrolabeOrbNav.tsx` (assign to 2-ring coordinate topology, angle trigonometry, optional fanout child registration, and canonical domain assignment)
 - [ ] Add route in `src/App.tsx` lazy-loaded with `React.lazy()` and wrapped in `<ProtectedRoute>`:
   ```tsx
   <Route
@@ -215,7 +241,7 @@ Every agent session that modifies code or documentation MUST:
    `docs/agent-ledger/MISTAKES.md` with root cause analysis
 
 ### After Completing Work
-6. Append a session entry to `docs/agent-ledger/SESSION_LOG.md`
+6. Append an atomic session entry to `docs/agent-ledger/SESSION_LOG.md` using the atomic session ID format (`YYYY-MM-DD-<4-char-agent-hash>`)
 7. Update `docs/agent-ledger/HANDOFF.md` with current context for the next agent
 8. Update any documentation files affected by your code changes:
    - New tables → DATABASE_SCHEMA.md + AGENT_QUICKSTART.md quick ref
@@ -231,6 +257,108 @@ Every agent session that modifies code or documentation MUST:
 >
 > If you discover a doc/code discrepancy but cannot fix it in this session,
 > you MUST log it in FINDINGS.md as an OPEN finding.
+
+---
+
+### 8.1 Quick Fix Protocol
+
+The full documentation and testing protocol is mandatory for all substantive features and multi-file changes. For minor maintenance, single-token fixes, or doc corrections, agents may utilize the **Quick Fix Protocol** to accelerate velocity while safeguarding stability.
+
+#### Applicability Criteria
+The Quick Fix Protocol applies **strictly** to changes satisfying ALL of the following:
+- **Diff Size:** $\le$ 50 lines total diff across the session.
+- **Blast Radius:** $\le$ 2 files modified.
+- **Zero Invariant Impact:** No alterations to database schemas, RLS policies, event bus queue semantics, or routing trees.
+- **Zero Architectural Additions:** No new components, modules, or third-party dependencies.
+
+#### Fast Path Verification
+- **Code Fixes:** Run targeted compiler and linter validation (`npx tsc -b` and `npx eslint <path-to-file>`). The multi-stage browser smoke suite and adversarial runner may be bypassed if no telemetry, query structures, or state mutations were altered.
+- **Documentation Fixes:** Run the automated documentation drift verification gate (`powershell -ExecutionPolicy Bypass -File scripts/verify-doc-drift.ps1` or `node scripts/verify-doc-drift.mjs`).
+
+#### Minimal Logging
+- **`docs/agent-ledger/SESSION_LOG.md`:** A concise 4-line entry is sufficient:
+  ```markdown
+  ### Session YYYY-MM-DD-<hash> — Quick Fix: <Summary>
+  - **Agent:** <name> | **Scope:** <file(s)> (<=50 lines)
+  - **Change:** <Description of single isolated fix>
+  - **Verification:** <Command executed> (Passed)
+  ```
+- **`docs/agent-ledger/HANDOFF.md`:** Required only if subsequent agents must adapt to an altered contract; otherwise omit.
+- **`docs/agent-ledger/FINDINGS.md` & `MISTAKES.md`:** Omit unless the quick fix specifically resolves or logs a distinct systemic error.
+
+#### Scope Constraint
+- **Strict Hard Ceiling:** The 50-line limit is an inviolable ceiling. If a fix begins exceeding 50 lines or requires touching additional subsystems, the agent MUST immediately cease the fast path and execute the complete, standard protocol in Section 8. Chaining sequential "quick fixes" to circumvent full validation is prohibited.
+
+---
+
+### 8.2 Ledger Archival Protocol
+
+As persistent agent ledgers grow, excessive file sizes impair LLM context efficiency and increase session token overhead. The following rotation thresholds and archival procedures are strictly enforced:
+
+#### Rotation Thresholds
+
+| Ledger File | Rotation Threshold | Archive Destination | Active File Retention |
+|---|---|---|---|
+| `docs/agent-ledger/SESSION_LOG.md` | **$\ge$ 2,000 lines** OR **$\ge$ 50 sessions** | `docs/agent-ledger/SESSION_LOG_ARCHIVE.md` (or monthly `SESSION_LOG_YYYYMM.md`) | Retain frontmatter, format specification, and the **5 most recent sessions**. |
+| `docs/agent-ledger/MISTAKES.md` | **$\ge$ 1,000 lines** OR **$\ge$ 30 mistakes** | `docs/agent-ledger/MISTAKES_ARCHIVE.md` | Retain frontmatter, format specification, and the **10 most critical/common mistakes**. |
+| `docs/agent-ledger/FINDINGS.md` | Closed / Resolved status | `docs/agent-ledger/FINDINGS_ARCHIVE.md` | Only **active open findings** (`[OPEN]`, `[IN PROGRESS]`) remain in the active file. All closed findings (`[RESOLVED]`, `[CLOSED]`, `[SUPERSEDED]`) MUST be archived immediately. |
+
+#### Archival Procedure (SOP)
+1. **Target Verification:** Check active ledger line counts via line-counting tools.
+2. **Archive Migration:**
+   - Move aged session blocks from `SESSION_LOG.md` to `SESSION_LOG_ARCHIVE.md`.
+   - Move resolved mistakes from `MISTAKES.md` to `MISTAKES_ARCHIVE.md`.
+   - Transfer resolved findings from `FINDINGS.md` to `FINDINGS_ARCHIVE.md`.
+3. **Preserve Format Contracts:** Ensure both the active ledger and the archive ledger retain valid frontmatter, section banners, and formatting guides.
+4. **Traceability Notice:** In the active ledger, maintain a pointer banner indicating the location of historical archives:
+   ```markdown
+   > Prior historical records have been archived to `docs/agent-ledger/<FILE>_ARCHIVE.md`.
+   ```
+
+---
+
+### 8.3 Atomic Session ID Specification
+
+To prevent merge collisions during parallel multi-agent execution, all sessions must be identified by an atomic session ID:
+
+$$\textbf{Atomic Session ID Format:}\quad \texttt{YYYY-MM-DD-<4-char-agent-hash>}$$
+
+- **`YYYY-MM-DD`:** Calendar date of the session execution in ISO 8601 format (e.g., `2026-09-22`).
+- **`<4-char-agent-hash>`:** A 4-character lowercase alphanumeric or hexadecimal hash unique to the agent instance or session run (e.g., `m6g4`, `e7b2`, `4f1a`).
+- **Example Valid IDs:** `2026-09-22-m6g4`, `2026-09-22-f8a1`, `2026-09-23-01cd`.
+
+> **Deprecation of Monotonic Sequence Counters:**  
+> Legacy sequential IDs (`YYYY-MM-DD-001`, `YYYY-MM-DD-002`) cause guaranteed merge collisions when independent workers or concurrent orchestrator branches operate simultaneously. Monotonic integer IDs are strictly prohibited for parallel agents.
+
+---
+
+### 8.4 Merge Conflict Resolution Standard Operating Procedure (SOP)
+
+When concurrent agent branches produce merge conflicts in Git, resolve them strictly according to this SOP:
+
+#### 1. Agent Ledgers (`docs/agent-ledger/`) — Purely Additive Reconciliation
+- **Never discard entries:** Agent ledger files (`SESSION_LOG.md`, `MISTAKES.md`, `FINDINGS.md`) are immutable historical logs.
+- **Resolve `SESSION_LOG.md`:** Retain session blocks from BOTH branches. Sort the combined entries chronologically by date; if dates match, sort alphanumerically by session ID hash.
+- **Resolve `MISTAKES.md` & `FINDINGS.md`:** Keep all new mistakes and findings from both branches. If numerical IDs collide (e.g., both added `M-003`), renumber the newer entry monotonically (`M-003` and `M-004`) while preserving full content.
+- **Resolve `HANDOFF.md`:** Synthesize the active status from both branches so the incoming agent has complete context of both accomplishments.
+
+#### 2. Documentation Conflicts (`docs/architecture/`, `docs/decisions/`, `docs/operations/`) — Ground-Truth Parity
+- Apply the **Source-of-Truth Priority Hierarchy** (Section 2):
+  1. Real PostgreSQL migrations (`supabase/migrations/`) take precedence over documented table/column claims.
+  2. Generated TypeScript types (`src/types/database.types.ts`) take precedence over handwritten interfaces.
+  3. Canonical ADRs (`docs/decisions/ARCHITECTURE_DECISIONS.md`) take precedence over module guides.
+- After resolving conflicts, immediately run:
+  ```bash
+  powershell -ExecutionPolicy Bypass -File scripts/verify-doc-drift.ps1
+  ```
+  All 5 parity gates must pass.
+
+#### 3. Code Conflicts (`src/`) — Invariant Verification
+- Preserve functional code changes while verifying that no architectural boundaries or invariants were violated:
+  - Verify Cognitive Boundary (Mind OS $\leftrightarrow$ Productivity Hub isolation).
+  - Verify Single Active Session / Timer constraints in Fitness OS and Time OS.
+  - Verify deterministic calculations in Brain Engine.
+- Re-run verification suite: `npx tsc -b` and `npm run lint`.
 
 ---
 

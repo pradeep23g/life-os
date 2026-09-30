@@ -48,7 +48,7 @@ Life OS evolves through hardened, evidence-based engineering phases:
 - Complete ADR register unification: Monotonic gapless sequence ADR-001 through ADR-028 in `docs/decisions/ARCHITECTURE_DECISIONS.md`.
 
 ### ✅ Phase 2 Wave 1 — IDENTITY & SHELL (Completed September 2026)
-- **Astrolabe Orb Navigation:** 3-ring kinetic orb shell with dynamic domain horizons, solar time mapping, and gesture launcher (ADR-023). Retired static desktop sidebar.
+- **Astrolabe Orb Navigation:** 2-ring kinetic orb shell with secondary bloom fanouts, dynamic domain horizons, solar time mapping, and gesture launcher (ADR-023). Retired static desktop sidebar.
 - **Visual Refoundation 2.0:** Semantic OKLCH tokens in `tailwind.config.js` and `index.css`; dynamic solar themes (`dawn`, `day`, `dusk`, `midnight`, `recovery`).
 - **Typographic Grammar:** Monumental `Newsreader` serif, high-density `Geist Sans`, and tabular `JetBrains Mono`.
 - **Home (The Porch, `/`):** Asymmetric Swiss Stage layout, living solar presence, dynamic Brain Engine action trigger.
