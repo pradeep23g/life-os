@@ -222,13 +222,36 @@ export function useToggleTaskCompletion() {
 
   return useMutation({
     mutationFn: toggleTaskCompletion,
+    onMutate: async (variables) => {
+      await queryClient.cancelQueries({ queryKey: productivityTasksQueryKey })
+      const previousTasks = queryClient.getQueryData<Task[]>(productivityTasksQueryKey)
+
+      queryClient.setQueryData<Task[]>(productivityTasksQueryKey, (old) => {
+        if (!old) return old
+        const now = new Date().toISOString()
+        return old.map((task) =>
+          task.id === variables.id
+            ? { ...task, is_completed: variables.isCompleted, updated_at: now }
+            : task,
+        )
+      })
+
+      return { previousTasks }
+    },
+    onError: (_error, _variables, context) => {
+      if (context?.previousTasks) {
+        queryClient.setQueryData(productivityTasksQueryKey, context.previousTasks)
+      }
+    },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: productivityTasksQueryKey })
-      queryClient.invalidateQueries({ queryKey: systemStatusQueryKey })
       emitSystemFeedback({
         title: variables.isCompleted ? '+1 Completion' : 'Task Reopened',
         description: variables.isCompleted ? 'Task checked off.' : 'Task returned to the active ledger.',
       })
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: productivityTasksQueryKey })
+      queryClient.invalidateQueries({ queryKey: systemStatusQueryKey })
     },
   })
 }

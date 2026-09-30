@@ -309,7 +309,7 @@ async function requireUserId() {
 async function fetchFitnessExercises(): Promise<FitnessExercise[]> {
   const { data, error } = await supabase
     .from('fitness_exercises')
-    .select('id, user_id, name, category, equipment, target_muscles, default_unit, notes, created_at, updated_at, deleted_at')
+    .select('id, user_id, name, category, equipment, target_muscles, movement_pattern, default_unit, notes, created_at, updated_at, deleted_at')
     .is('deleted_at', null)
     .order('name', { ascending: true })
 
@@ -325,7 +325,7 @@ async function fetchFitnessExercises(): Promise<FitnessExercise[]> {
     ...row,
     equipment: Array.isArray(row.equipment) ? row.equipment : (row.equipment ? [row.equipment] : null),
     primary_muscle: row.target_muscles?.[0] || row.category || 'Full Body',
-    movement_pattern: deriveMovementPattern(row.name, row.category, row.target_muscles),
+    movement_pattern: row.movement_pattern || deriveMovementPattern(row.name, row.category, row.target_muscles),
   }))
 }
 

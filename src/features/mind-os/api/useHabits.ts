@@ -982,18 +982,171 @@ export function useCreateHabit() {
   })
 }
 
+function updateOptimisticWorkspaceHabit(
+  old: HabitWorkspaceData,
+  habitId: string,
+  logDate: string,
+  value: number,
+  struggleNote?: string,
+): HabitWorkspaceData {
+  const cleanedNote =
+    struggleNote === undefined ? undefined : (struggleNote.trim().length > 0 ? struggleNote.trim() : null)
+  const logKey = `${habitId}:${logDate}`
+
+  let nextLogs = [...old.logs]
+  const nextLogValueByHabitDate = { ...old.logValueByHabitDate }
+
+  if (value > 0) {
+    nextLogValueByHabitDate[logKey] = value
+    const existingIndex = nextLogs.findIndex(
+      (l) => l.habit_id === habitId && l.log_date === logDate,
+    )
+    if (existingIndex >= 0) {
+      nextLogs[existingIndex] = {
+        ...nextLogs[existingIndex],
+        value,
+        struggle_note: cleanedNote !== undefined ? cleanedNote : nextLogs[existingIndex].struggle_note,
+      }
+    } else {
+      nextLogs = [
+        {
+          id: `optimistic-${Date.now()}`,
+          habit_id: habitId,
+          value,
+          log_date: logDate,
+          struggle_note: cleanedNote ?? null,
+          created_at: new Date().toISOString(),
+        },
+        ...nextLogs,
+      ]
+    }
+  } else {
+    delete nextLogValueByHabitDate[logKey]
+    nextLogs = nextLogs.filter((l) => !(l.habit_id === habitId && l.log_date === logDate))
+  }
+
+  const healedBreakIds = new Set(old.heals.map((item) => item.break_id))
+  const todayDateKey = getTodayIndiaDateKey()
+
+  const habitLogs = nextLogs.filter((log) => log.habit_id === habitId)
+  const targetHabit = old.habits.find((h) => h.id === habitId)
+  if (!targetHabit) {
+    return {
+      ...old,
+      logs: nextLogs,
+      logValueByHabitDate: nextLogValueByHabitDate,
+    }
+  }
+
+  const completionDates = new Set(
+    habitLogs.filter((log) => isCompletionLog(targetHabit, log)).map((log) => log.log_date),
+  )
+
+  const healedBreakDates = new Set(
+    old.breaks
+      .filter((item) => item.habit_id === habitId && isBreakHealed(item, healedBreakIds))
+      .map((item) => item.break_date),
+  )
+
+  const streakDates = new Set([...completionDates, ...healedBreakDates])
+  const todayLog = habitLogs.find((log) => log.log_date === todayDateKey)
+
+  const updatedHabits: HabitWithStats[] = old.habits.map((h) => {
+    if (h.id !== habitId) return h
+    return {
+      ...h,
+      currentStreak: getCurrentStreak(streakDates),
+      longestStreak: getLongestStreak(streakDates),
+      completedToday: completionDates.has(todayDateKey),
+      totalCompletions: completionDates.size,
+      todayValue: todayLog?.value ?? 0,
+    }
+  })
+
+  const longestHabitStreak = updatedHabits.reduce<HabitWorkspaceData['longestHabitStreak']>(
+    (best, habit) => {
+      if (habit.longestStreak <= 0) {
+        return best
+      }
+      if (!best || habit.longestStreak > best.streak) {
+        return {
+          habitId: habit.id,
+          title: habit.title,
+          streak: habit.longestStreak,
+        }
+      }
+      return best
+    },
+    null,
+  )
+
+  const rollingWeekStart = addDays(todayDateKey, -6)
+  const habitTitleById = new Map(old.habits.map((h) => [h.id, h.title]))
+  const weeklyCounters: HabitCounter[] = []
+
+  for (const h of updatedHabits) {
+    const hLogs = nextLogs.filter((l) => l.habit_id === h.id)
+    const hCompletions = new Set(
+      hLogs.filter((l) => isCompletionLog(h, l)).map((l) => l.log_date),
+    )
+    const hHealed = new Set(
+      old.breaks
+        .filter((item) => item.habit_id === h.id && isBreakHealed(item, healedBreakIds))
+        .map((item) => item.break_date),
+    )
+    const hStreakDates = new Set([...hCompletions, ...hHealed])
+    const count = [...hStreakDates].filter((dk) => dk >= rollingWeekStart && dk <= todayDateKey).length
+    weeklyCounters.push({ habitId: h.id, count })
+  }
+
+  const bestHabitThisWeek = getCounterWinner(weeklyCounters, habitTitleById)
+
+  return {
+    ...old,
+    habits: updatedHabits,
+    logs: nextLogs,
+    logValueByHabitDate: nextLogValueByHabitDate,
+    longestHabitStreak,
+    bestHabitThisWeek,
+  }
+}
+
 export function useMarkHabitDone() {
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: markHabitDone,
+    onMutate: async (variables) => {
+      await queryClient.cancelQueries({ queryKey: mindOsHabitWorkspaceQueryKey })
+      const previousWorkspace = queryClient.getQueryData<HabitWorkspaceData>(mindOsHabitWorkspaceQueryKey)
+
+      queryClient.setQueryData<HabitWorkspaceData>(mindOsHabitWorkspaceQueryKey, (old) => {
+        if (!old) return old
+        const todayDateKey = getTodayIndiaDateKey()
+        const currentHabit = old.habits.find((h) => h.id === variables.habitId)
+        const value =
+          variables.habitType === 'target'
+            ? Math.max(1, Math.floor(variables.targetValue), Math.floor(variables.currentValue ?? currentHabit?.todayValue ?? 0))
+            : 1
+        return updateOptimisticWorkspaceHabit(old, variables.habitId, todayDateKey, value, variables.struggleNote)
+      })
+
+      return { previousWorkspace }
+    },
+    onError: (_error, _variables, context) => {
+      if (context?.previousWorkspace) {
+        queryClient.setQueryData(mindOsHabitWorkspaceQueryKey, context.previousWorkspace)
+      }
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: mindOsHabitWorkspaceQueryKey })
-      queryClient.invalidateQueries({ queryKey: systemStatusQueryKey })
       emitSystemFeedback({
         title: '+1 Awareness',
         description: 'Momentum +4% — system stabilizing',
       })
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: mindOsHabitWorkspaceQueryKey })
+      queryClient.invalidateQueries({ queryKey: systemStatusQueryKey })
     },
   })
 }
@@ -1004,9 +1157,24 @@ export function useMarkHabitNotDone() {
 
   return useMutation({
     mutationFn: markHabitNotDone,
+    onMutate: async (variables) => {
+      await queryClient.cancelQueries({ queryKey: mindOsHabitWorkspaceQueryKey })
+      const previousWorkspace = queryClient.getQueryData<HabitWorkspaceData>(mindOsHabitWorkspaceQueryKey)
+
+      queryClient.setQueryData<HabitWorkspaceData>(mindOsHabitWorkspaceQueryKey, (old) => {
+        if (!old) return old
+        const todayDateKey = getTodayIndiaDateKey()
+        return updateOptimisticWorkspaceHabit(old, variables.habitId, todayDateKey, 0)
+      })
+
+      return { previousWorkspace }
+    },
+    onError: (_error, _variables, context) => {
+      if (context?.previousWorkspace) {
+        queryClient.setQueryData(mindOsHabitWorkspaceQueryKey, context.previousWorkspace)
+      }
+    },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: mindOsHabitWorkspaceQueryKey })
-      queryClient.invalidateQueries({ queryKey: systemStatusQueryKey })
       emitEvent('HABIT_FAILED', {
         habitId: variables.habitId,
       })
@@ -1014,6 +1182,10 @@ export function useMarkHabitNotDone() {
         title: '+1 Awareness',
         description: 'Momentum +4% — system stabilizing',
       })
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: mindOsHabitWorkspaceQueryKey })
+      queryClient.invalidateQueries({ queryKey: systemStatusQueryKey })
     },
   })
 }
@@ -1023,13 +1195,32 @@ export function useUndoHabitDone() {
 
   return useMutation({
     mutationFn: markHabitNotDone,
+    onMutate: async (variables) => {
+      await queryClient.cancelQueries({ queryKey: mindOsHabitWorkspaceQueryKey })
+      const previousWorkspace = queryClient.getQueryData<HabitWorkspaceData>(mindOsHabitWorkspaceQueryKey)
+
+      queryClient.setQueryData<HabitWorkspaceData>(mindOsHabitWorkspaceQueryKey, (old) => {
+        if (!old) return old
+        const todayDateKey = getTodayIndiaDateKey()
+        return updateOptimisticWorkspaceHabit(old, variables.habitId, todayDateKey, 0)
+      })
+
+      return { previousWorkspace }
+    },
+    onError: (_error, _variables, context) => {
+      if (context?.previousWorkspace) {
+        queryClient.setQueryData(mindOsHabitWorkspaceQueryKey, context.previousWorkspace)
+      }
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: mindOsHabitWorkspaceQueryKey })
-      queryClient.invalidateQueries({ queryKey: systemStatusQueryKey })
       emitSystemFeedback({
         title: '+1 Awareness',
         description: 'Momentum +4% — system stabilizing',
       })
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: mindOsHabitWorkspaceQueryKey })
+      queryClient.invalidateQueries({ queryKey: systemStatusQueryKey })
     },
   })
 }
@@ -1039,13 +1230,37 @@ export function useAdjustHabitCount() {
 
   return useMutation({
     mutationFn: adjustHabitCount,
+    onMutate: async (variables) => {
+      await queryClient.cancelQueries({ queryKey: mindOsHabitWorkspaceQueryKey })
+      const previousWorkspace = queryClient.getQueryData<HabitWorkspaceData>(mindOsHabitWorkspaceQueryKey)
+
+      queryClient.setQueryData<HabitWorkspaceData>(mindOsHabitWorkspaceQueryKey, (old) => {
+        if (!old) return old
+        const todayDateKey = getTodayIndiaDateKey()
+        const currentHabit = old.habits.find((h) => h.id === variables.habitId)
+        const currentValue =
+          currentHabit?.todayValue ?? old.logValueByHabitDate[`${variables.habitId}:${todayDateKey}`] ?? 0
+        const delta = Math.trunc(variables.delta)
+        const nextValue = Math.max(0, currentValue + delta)
+        return updateOptimisticWorkspaceHabit(old, variables.habitId, todayDateKey, nextValue, variables.struggleNote)
+      })
+
+      return { previousWorkspace }
+    },
+    onError: (_error, _variables, context) => {
+      if (context?.previousWorkspace) {
+        queryClient.setQueryData(mindOsHabitWorkspaceQueryKey, context.previousWorkspace)
+      }
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: mindOsHabitWorkspaceQueryKey })
-      queryClient.invalidateQueries({ queryKey: systemStatusQueryKey })
       emitSystemFeedback({
         title: '+1 Awareness',
         description: 'Momentum +4% — system stabilizing',
       })
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: mindOsHabitWorkspaceQueryKey })
+      queryClient.invalidateQueries({ queryKey: systemStatusQueryKey })
     },
   })
 }
@@ -1055,13 +1270,33 @@ export function useSetHabitCountForToday() {
 
   return useMutation({
     mutationFn: setHabitCountForToday,
+    onMutate: async (variables) => {
+      await queryClient.cancelQueries({ queryKey: mindOsHabitWorkspaceQueryKey })
+      const previousWorkspace = queryClient.getQueryData<HabitWorkspaceData>(mindOsHabitWorkspaceQueryKey)
+
+      queryClient.setQueryData<HabitWorkspaceData>(mindOsHabitWorkspaceQueryKey, (old) => {
+        if (!old) return old
+        const todayDateKey = getTodayIndiaDateKey()
+        const nextValue = Math.max(0, Math.floor(variables.value))
+        return updateOptimisticWorkspaceHabit(old, variables.habitId, todayDateKey, nextValue)
+      })
+
+      return { previousWorkspace }
+    },
+    onError: (_error, _variables, context) => {
+      if (context?.previousWorkspace) {
+        queryClient.setQueryData(mindOsHabitWorkspaceQueryKey, context.previousWorkspace)
+      }
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: mindOsHabitWorkspaceQueryKey })
-      queryClient.invalidateQueries({ queryKey: systemStatusQueryKey })
       emitSystemFeedback({
         title: '+1 Awareness',
         description: 'Momentum +4% — system stabilizing',
       })
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: mindOsHabitWorkspaceQueryKey })
+      queryClient.invalidateQueries({ queryKey: systemStatusQueryKey })
     },
   })
 }

@@ -15,24 +15,6 @@ export function getMoodLabel(mood: number): string {
   return match ? match.label : 'Stable'
 }
 
-export function getPast7DayKeys(referenceTodayKey?: string): string[] {
-  const today = referenceTodayKey ?? getTodayIndiaDateKey()
-  const days: string[] = []
-  for (let i = 6; i >= 0; i -= 1) {
-    days.push(addDays(today, -i))
-  }
-  return days
-}
-
-export function getPast30DayKeys(referenceTodayKey?: string): string[] {
-  const today = referenceTodayKey ?? getTodayIndiaDateKey()
-  const days: string[] = []
-  for (let i = 29; i >= 0; i -= 1) {
-    days.push(addDays(today, -i))
-  }
-  return days
-}
-
 export function calculateHabit30DayConsistency(
   habitId: string,
   habitType: 'binary' | 'target',
