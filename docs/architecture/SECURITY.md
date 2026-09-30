@@ -58,14 +58,42 @@ Every base table in PostgreSQL has RLS enabled (`ALTER TABLE <table> ENABLE ROW 
 | `events` | ALL | `auth.uid() = user_id` | Durable audit log (append-only) |
 | `system_event_queue` | ALL | `auth.uid() = user_id` | Transient queue buffer |
 | `system_metrics` | ALL | `auth.uid() = user_id` | Daily sync closing totals |
-| `life_seasons` | ALL | `auth.uid() = user_id` | Seasonal vows & countdown |
-| `user_achievements` | ALL | `auth.uid() = user_id` | Badges & capability crests |
-| `pulse_logs` | ALL | `auth.uid() = user_id` | Periodic readiness check-ins |
-| `knowledge_resources`| ALL | `auth.uid() = user_id` | Ingested URLs & reading notes |
-| `experiments` | ALL | `auth.uid() = user_id` | Lifestyle behavioral experiments |
-| `user_settings` | ALL | `auth.uid() = user_id` | Unique per user (`user_id` PK/unique) |
+| `life_seasons` | ALL | `(select auth.uid()) = user_id` | Seasonal vows & countdown (hardened in 202609220000) |
+| `user_achievements` | ALL | `(select auth.uid()) = user_id` | Badges & capability crests (hardened in 202609220000) |
+| `pulse_logs` | ALL | `(select auth.uid()) = user_id` | Periodic readiness check-ins (hardened in 202609220000) |
+| `knowledge_resources`| ALL | `(select auth.uid()) = user_id` | Ingested URLs & reading notes (hardened in 202609220000) |
+| `experiments` | ALL | `(select auth.uid()) = user_id` | Lifestyle behavioral experiments (hardened in 202609220000) |
+| `user_settings` | ALL | `(select auth.uid()) = user_id` | Unique per user (`user_id` PK/unique, hardened in 202609220000) |
 | `progress_hub_archive` | ALL | `auth.uid() = user_id` | Historical migration archive |
 | `data_lab_signal_config`| SELECT only | `auth.role() = 'authenticated'` | Global configuration (see Section 3) |
+
+### 2.2 Winter Arc RLS Hardening & Shorthand Deviation
+
+In migration `202609120000_winter_arc_remediation.sql`, the 6 Winter Arc tables (`life_seasons`, `user_achievements`, `pulse_logs`, `knowledge_resources`, `experiments`, `user_settings`) initially used shorthand RLS policies:
+```sql
+CREATE POLICY "Users can manage their own life seasons" ON public.life_seasons FOR ALL USING (auth.uid() = user_id);
+```
+
+#### Deviation Analysis & Hazards
+1. **Implicit Role Target:** Omitting `TO authenticated` caused PostgreSQL to bind the policy to the `PUBLIC` pseudo-role. Unauthenticated requests (`anon`) were evaluated against the policy expression rather than failing fast at the role boundary.
+2. **Missing Explicit `WITH CHECK`:** PostgreSQL defaults `WITH CHECK` to match `USING` on `FOR ALL` policies, but explicit `WITH CHECK` clauses ensure write-phase validation is strictly enforced across schema introspection tools and security advisors.
+3. **Scalar Subquery Optimization:** Using raw `auth.uid() = user_id` calls `auth.uid()` per row evaluated. Best practices require wrapping auth calls in a scalar subquery `((select auth.uid()) = user_id)` to enable PostgreSQL to cache the query result across rows.
+
+#### Hardening Migration (`202609220000_rls_policy_hardening.sql`)
+Migration `supabase/migrations/202609220000_rls_policy_hardening.sql` drops the shorthand policies and applies hardened definitions across all 6 Winter Arc tables:
+```sql
+ALTER TABLE public.<table_name> ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users can manage their own <resource>" ON public.<table_name>;
+
+CREATE POLICY "Users can manage their own <resource>"
+  ON public.<table_name>
+  FOR ALL
+  TO authenticated
+  USING ((select auth.uid()) = user_id)
+  WITH CHECK ((select auth.uid()) = user_id);
+```
+This guarantees strict role isolation (`TO authenticated`), optimal execution caching via `(select auth.uid())`, and verified write constraints (`WITH CHECK`).
 
 ---
 
@@ -152,4 +180,4 @@ Browser Client                           Supabase Auth Service
 ### Session Lifecycle Rules
 - **State Synchronization:** `AuthProvider` (`src/lib/AuthContext.tsx`) subscribes to `supabase.auth.onAuthStateChange` to synchronize auth tokens and user presence across tabs.
 - **Protected Route Interception:** `<ProtectedRoute>` (`src/App.tsx`) monitors session validity. If unauthenticated, all private application routes redirect immediately to `/auth`.
-- **Cryptographic Sign-Out:** The Astrolabe Orb navigation HUD and Profile page provide one-click session termination, clearing memory tokens and localStorage state before redirecting.
+- **Cryptographic Sign-Out:** Session termination is securely governed via the Profile Dossier (`/profile` Room 05 System Operations via `ProfileSystemOperations.tsx`), accessible directly from the Astrolabe Orb navigation cluster, clearing memory tokens and localStorage state before redirecting.

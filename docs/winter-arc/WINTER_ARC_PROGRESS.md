@@ -12,14 +12,14 @@ domain: "winter-arc"
 
 ### Current Status
 
-- **Current Phase:** Phase D, E, F Complete & Verified | Phase L (Admin Control), Phase M (Recovery OS), Phase N (AI Curriculum) Added
-- **Status:** GREEN BASELINE VERIFIED — READY FOR ADMIN PANEL, RECOVERY OS & PHASE G (NATIVE ANDROID)
+- **Current Phase:** Phase D, E, F, L (Admin Control), N (AI Curriculum) Complete & Verified | Phase M (Recovery OS) Next
+- **Status:** GREEN BASELINE VERIFIED — PHASE L & N DEPLOYED, READY FOR RECOVERY OS & PHASE G (NATIVE ANDROID)
 - **Last Completed Milestones:**
-  1. **Database Schema Realization & Production Deployment:** Authored `202609120000_winter_arc_remediation.sql` and deployed all 22+ migrations to remote Supabase project (`life-os`). Tables `life_seasons`, `user_achievements`, `pulse_logs`, `knowledge_resources`, `experiments`, and `user_settings` are live.
-  2. **TypeScript Strict Type Sync:** Regenerated `src/types/database.types.ts` against remote database and eliminated all synthetic `(supabase as any)` hacks.
-  3. **Living Avatar Emblem Rendering:** Resolved SVG CSS color bug (`oklch(...)` wrapping) allowing the generative geometric emblem to render reliably across solar themes and life states.
-  4. **Release Gate Verification:** `npm run verify:release` passing with 0 errors, 0 warnings, and clean 2000-module production build.
-  5. **System Remediation & Forensic Audit Baseline (Sept 2026):** Executed complete codebase forensic audit. Purged 49 unreferenced Data Lab files, dead `SystemStatusCard.tsx`, test simulations, and default starter files. Eradicated all 46 `text-text-primary0` typo classes and rogue hex codes. Eliminated 10-query route waterfall in `Sidebar.tsx` via `useSystemStatus()`. Parameterized Avatar momentum with real Brain Engine telemetry, and aligned `/arc` default season fallback with canonical 90-day Winter Arc 2026 contract. Documented in [WINTER_ARC_SYSTEM_REMEDIATION_AND_AUDIT_2026.md](./WINTER_ARC_SYSTEM_REMEDIATION_AND_AUDIT_2026.md).
+  1. **Phase N — AI Curriculum Importer (ADR-028):** Implemented client-side schema validator (`curriculumSchema.ts`), interactive modal (`ImportCurriculumModal.tsx`) with markdown block stripping, visual preview outline, and atomic 5-table cascading persistence.
+  2. **Phase L — Admin Control & Season Config Ingestion (ADR-026):** Implemented canonical ADR-026 schema validation (`seasonConfigSchema.ts`), updated `AdminConsolePage.tsx` with authenticated RLS injection, snake_case mapping, and bidirectional canonical export. Exposed `/admin` in Outer Orbit and Command Palette.
+  3. **ADR-016 Capability Crest Harmonization:** Synchronized `public.user_achievements` in `useProfileDossier.ts` guaranteeing permanent milestone affirmation across weekly metric resets.
+  4. **Canonical Prompt Templates:** Created `docs/prompts/CURRICULUM_PROMPT_TEMPLATE.md` and `docs/prompts/SEASON_PROMPT_TEMPLATE.md`.
+  5. **Database Schema Realization & Production Deployment:** Authored `202609120000_winter_arc_remediation.sql` and deployed all 22+ migrations to remote Supabase project (`life-os`). Tables `life_seasons`, `user_achievements`, `pulse_logs`, `knowledge_resources`, `experiments`, and `user_settings` are live.
 - **Current Blockers:** None.
 
 ---
@@ -39,15 +39,28 @@ domain: "winter-arc"
 | **Phase I** | Android Widgets, Notifications, Deep Links | NOT STARTED | Android Specialist | App Widgets, Notification Engine |
 | **Phase J** | API / MCP Server Integration | NOT STARTED | Systems Guardian | Model Context Protocol Server |
 | **Phase K** | AI Gateway & Provider Router | NOT STARTED | Intelligence Specialist | AI Engine |
-| **Phase L** | Seasons & Achievements Admin Control Layer (ADR-026) | PLANNED / SPECIFIED | Systems Specialist | `/admin` |
+| **Phase L** | Seasons & Achievements Admin Control Layer (ADR-026) | COMPLETED / VERIFIED | Systems Specialist | `/admin`, Profile Room 05 System Operations, Command Palette |
 | **Phase M** | Recovery OS — Sanctuary & Grief Protocol (ADR-027) | PLANNED / SPECIFIED | Empathy & Sanctuary Specialist | `/recovery`, `.theme-recovery` |
-| **Phase N** | Learning OS AI Curriculum Importer (ADR-028) | PLANNED / SPECIFIED | Intelligence & Learning Specialist | `/learning-os` Modal |
+| **Phase N** | Learning OS AI Curriculum Importer (ADR-028) | COMPLETED / VERIFIED | Intelligence & Learning Specialist | `/learning-os` Modal, StudyShelf, CreateRoadmapModal |
 
 ---
 
 ### Chronological Development Log
 
-#### 2026-09-12 — Database Schema Realization, Type Hardening & Avatar Rendering
+#### 2026-09-27 — Phase L & Phase N: Admin Control Plane & AI Curriculum Ingestion
+- **Phase N — Learning OS AI Curriculum Ingestion (ADR-028):**
+  - Integrated `zod` client-side schema validation for curriculum payloads (`src/lib/schemas/curriculumSchema.ts`).
+  - Authored `ImportCurriculumModal.tsx` featuring markdown codeblock cleaning, live validation diagnostics, architectural outline preview, copyable LLM prompt template, and atomic multi-table persistence into `learning_roadmaps`, `learning_stages`, `learning_sessions`, `learning_milestones`, and `learning_projects`.
+  - Implemented cascading rollback on error to maintain transactional database purity.
+  - Wired import triggers directly into `RoadmapDashboard.tsx`, `StudyShelf.tsx`, and `CreateRoadmapModal.tsx`.
+- **Phase L — Seasons & Achievements Admin Control (ADR-026):**
+  - Authored canonical ADR-026 schema validator (`src/lib/schemas/seasonConfigSchema.ts`).
+  - Upgraded `AdminConsolePage.tsx` with authenticated session context (`useAuth()`), automatic `user_id` injection, camelCase (`startDate`, `endDate`) to PostgreSQL snake_case (`start_date`, `end_date`) normalization, bidirectional canonical JSON export, and LLM prompt copying.
+  - Exposed `/admin` navigation via `/admin` slash command in `CommandPalette.tsx` and Room 05 System Operations in Profile Dossier (`ProfileSystemOperations.tsx`), keeping `AstrolabeOrbNav.tsx` focused on the 9 primary operational nodes.
+- **ADR-016 Achievement Harmonization:**
+  - Connected `public.user_achievements` in `useProfileDossier.ts` with automated database synchronization for newly earned crests and fallback display for permanently affirmed badges across weekly metric roll-overs.
+- **Canonical Prompt Templates:**
+  - Published `docs/prompts/CURRICULUM_PROMPT_TEMPLATE.md` and `docs/prompts/SEASON_PROMPT_TEMPLATE.md`.
 - **Database Schema Deployment:**
   - Created migration `202609120000_winter_arc_remediation.sql` realizing ADR-012 (`life_seasons`), ADR-016 (`user_achievements`), ADR-022 (`pulse_logs`), `knowledge_resources`, `experiments`, and `user_settings`.
   - Resolved remote database conflicts (view signature cascades, RLS policy idempotency) and deployed all migrations to remote Supabase server (`life-os`).

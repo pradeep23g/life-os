@@ -19,7 +19,7 @@ Life OS is a **personal command center and cognitive sanctuary**. The visual lan
 - **True-Black & Monospace Grounding:** Pure OLED black (`#000000`) background with brutalist `#0a0a0a` surfaces and edge-to-edge content.
 - **Three-Tier Typographic Grammar:** Clear separation between contemplative editorial prose, tactical actions, and precision telemetry data.
 - **Solar & Circadian Harmonics:** Dynamic OKLCH color tokens adapting across natural solar transitions (`dawn`, `day`, `dusk`, `midnight`) plus sanctuary mode (`recovery`).
-- **Kinetic Astrolabe Orb Navigation:** Stripped out traditional sidebars in favor of a 3-ring orbital astrolabe with a central telemetry HUD readout (see ADR-023).
+- **Kinetic Astrolabe Orb Navigation:** Stripped out traditional sidebars in favor of a 2-ring orbital astrolabe with secondary bloom fanouts and a central telemetry HUD readout (see ADR-023).
 - **Tactile Inputs:** Purpose-built tactical touch numpads, batch command parsing, and zero layout shift.
 
 ---
@@ -81,11 +81,19 @@ The document root `<html class="theme-*">` dynamically switches based on local t
 ## 5. Standard Navigation & Shell Components
 
 ### 5.1 Kinetic Astrolabe Orb (`AstrolabeOrbNav.tsx`)
-- Fixed viewport anchor (`fixed bottom-6 right-6 z-50`).
-- 3 concentric orbital rings: Ring 1 (Horizon/Presence), Ring 2 (Core Domains), Ring 3 (Observability & Tools).
-- Orbital radii: Desktop (96px, 147px, 198px), Mobile (75px, 119px, 163px).
-- Central Avatar Core: In expanded state, hovering any module icon projects the module name, signature color, and back-glow directly into the central core rather than overlapping floating tooltips.
-- Direct quick actions for `/profile`, `/admin`, and Supabase `signOut`.
+- Fixed viewport anchor (`fixed bottom-4 left-4 md:bottom-8 md:left-8 z-50`).
+- 2 concentric orbital rings: Ring 1 (Inner Arc: Productivity & Time fanout, Mind OS, Winter Arc, Fitness OS), Ring 2 (Outer Arc: Learning OS, Finance OS, Data & Reports fanout, Mission Control, Profile Dossier).
+- Orbital radii: Desktop (125px, 210px), Mobile (95px, 165px).
+- Two-Tier Bloom Navigation:
+  - First Bloom (Central Orb click): Blurs viewport background and reveals the 9 primary nodes with asynchronous organic drift physics (`animate-orb-float-1` to `4`).
+  - Secondary Bloom (Fanout click): Clicking Productivity & Time or Data & Reports triggers focused fanout; sibling orbs receive `filter: blur(3px) opacity(0.25)` to isolate attention on satellite child nodes.
+- Central Core Mechanics:
+  - Closed: Displays user avatar surrounded by dynamic momentum progress ring.
+  - Open: Serves as direct "HOME" launchpad (`/`).
+  - Hover: Displays crisp module label directly inside circular core with subtle halo and module border glow (zero unreadable oversaturation or rectangular badges).
+- Circadian Theme Synchronized: Orb surfaces and borders dynamically inherit `--bg-surface`, `--border-base`, and `--text-secondary` across dawn, day, dusk, and midnight.
+- Administrative & Session Governance: Streamlined into `/profile` (Room 05 · System Operations via `ProfileSystemOperations.tsx`) housing direct Admin Console link and secure Session Termination.
+
 
 ### 5.2 Module Header
 ```tsx

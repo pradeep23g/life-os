@@ -30,7 +30,7 @@ Browser Client (SPA)
   ├── TailwindCSS v3 (True-black high-contrast design system + OKLCH Solar Themes)
   ├── TanStack React Query v5 (Exclusive server state manager & cache)
   ├── Zustand v5 (Transient operational event bus & UI state)
-  ├── Astrolabe Orb Navigation (3-ring kinetic orb shell, ADR-023)
+  ├── Astrolabe Orb Navigation (2-ring kinetic orb shell with secondary bloom fanouts, ADR-023)
   ├── Lucide React (Iconography)
   └── Supabase JS v2 Client (@supabase/supabase-js)
         ↓
@@ -109,7 +109,7 @@ Presenting execution pressure (e.g. overdue tasks, urgent deadlines, backlog cou
 
 ## 6. Routing & Navigation Architecture
 
-Life OS features 14 active client routes declared in [src/App.tsx](../../src/App.tsx) with route-level code splitting via `React.lazy()` and `<Suspense>` fallbacks (`PageLoadingFallback`). The primary user interface is anchored by the 3-ring Kinetic Astrolabe Orb navigation shell (ADR-023).
+Life OS features 14 active client routes declared in [src/App.tsx](../../src/App.tsx) with route-level code splitting via `React.lazy()` and `<Suspense>` fallbacks (`PageLoadingFallback`). The primary user interface is anchored by the 2-ring Kinetic Astrolabe Orb navigation shell (ADR-023).
 
 ### 6.1 Client Route Tree & Layout Hierarchy
 
@@ -159,23 +159,26 @@ The historical static desktop sidebar and mobile drawer were retired in Winter A
 
 1. **Spatial Anchoring & Radial Geometry:**
    - Anchored to the bottom-left viewport corner (`fixed bottom-4 left-4 md:bottom-8 md:left-8 z-50 flex items-end justify-start`).
-   - Trigonometrically deploys 12 orbital navigation nodes across a $0^\circ$ to $90^\circ$ radial quadrant outward into the viewport.
+   - Trigonometrically deploys 9 primary orbital navigation nodes across a $0^\circ$ to $90^\circ$ radial quadrant outward into the viewport across 2 spacious concentric rings.
    - Coordinates are calculated dynamically: $x = \text{round}(\cos(\theta) \times r)$, $y = \text{round}(-\sin(\theta) \times r)$ (negative $y$ projects upward in screen coordinates).
-   - Orbital radii are tightened by 20% for dense brutalist ergonomics:
-     - **Desktop ($\ge 768\text{px}$):** Inner Ring $r_1 = 96\text{px}$, Middle Ring $r_2 = 147\text{px}$, Outer Ring $r_3 = 198\text{px}$.
-     - **Mobile ($< 768\text{px}$):** Inner Ring $r_1 = 75\text{px}$, Middle Ring $r_2 = 119\text{px}$, Outer Ring $r_3 = 163\text{px}$.
+   - Orbital radii:
+     - **Desktop ($\ge 768\text{px}$):** Inner Ring $r_1 = 125\text{px}$, Outer Ring $r_2 = 210\text{px}$.
+     - **Mobile ($< 768\text{px}$):** Inner Ring $r_1 = 95\text{px}$, Outer Ring $r_2 = 165\text{px}$.
 
-2. **Concentric 3-Ring Node Topology:**
-   - **Central Core HUD (64px trigger orb):** When closed, displays user avatar encircled by a circular SVG momentum gauge (`strokeDasharray="289"`, `strokeDashoffset="100"`). When open, hovering any orbital item projects the module's uppercase title, signature neon branding, and ambient back-glow into the core HUD, eliminating overlapping peripheral tooltips. When unhovered, renders a clean close icon (`X`).
-   - **Satellite Cluster:** Positioned at `absolute -top-4 -right-12` containing quick-action triggers for `/profile` (Profile Dossier) and `signOut` (End Session).
-   - **Ring 1 (Inner — Foundational Cadence):** Home (`/`, $0^\circ$), Productivity (`/productivity-hub`, $30^\circ$), Time OS (`/time-os`, $60^\circ$), Mind OS (`/mind-os`, $90^\circ$).
-   - **Ring 2 (Middle — Execution & Knowledge):** Winter Arc (`/arc`, $0^\circ$), Fitness OS (`/fitness-os`, $30^\circ$), Learning OS (`/learning-os`, $60^\circ$), Finance OS (`/finance-os`, $90^\circ$).
-   - **Ring 3 (Outer — Expansion & Governance):** Data Lab (`/data-lab`, $0^\circ$), Reports (`/reports`, $30^\circ$), Mission Control (`/system`, $60^\circ$), Admin (`/admin`, $90^\circ$).
 
-3. **State, Kinetics & Keyboard Shortcuts:**
-   - Staggered outward deployment transitions over $500\text{ms}$ with progressive $30\text{ms}$ delay increments per orbital node (Ring 1 base: $0\text{ms}$, Ring 2 base: $120\text{ms}$, Ring 3 base: $240\text{ms}$).
-   - Dismissed cleanly via outside document click (`mousedown`) or `Escape` key.
-   - Universal Command Palette available globally via `Ctrl+K` / `Cmd+K` for instant `/f` (finance) and `/t` (task) command execution.
+2. **Concentric 2-Ring Node Topology & Two-Tier Bloom:**
+   - **Central Core (64px trigger & Home launchpad):** When closed, displays user avatar encircled by a circular SVG momentum gauge (`strokeDasharray="289"`, `strokeDashoffset="100"`). When open, functions as direct "HOME" launchpad (`/`). When hovering any orbital item, projects clean, high-contrast monospace text directly inside the circular orb with a softened, non-blinding halo (`opacity-20 blur-xl`) and matching module border glow (zero unreadable oversaturation or rectangular badges).
+   - **Two-Tier Bloom Navigation:** First Bloom (Central Orb click) blurs the viewport background (`backdrop-blur-md bg-background/80`) and deploys the 9 primary nodes with asynchronous organic drift physics (`animate-orb-float-1` to `4`). Secondary Bloom (Fanout parent click on Productivity & Time or Data & Reports) smoothly blooms 2 satellite child orbs in a mini-arc ($r + 54\text{px}$) while sibling orbs receive `filter: blur(3px) opacity(0.25)` to isolate attention on active child nodes.
+   - **Admin & Session Governance Consolidation:** Administrative controls and session termination previously floating off-ring at `-top-4 -right-12` are consolidated into `/profile` under Room 05 System Operations (`ProfileSystemOperations.tsx`), housing direct Admin Console navigation and secure Session Sign Out (`signOut`).
+   - **Ring 1 (Inner Arc — Foundational Rhythm, 4 nodes):** Productivity & Time ($0^\circ$, fanout parent: `/productivity-hub` + `/time-os`), Mind OS (`/mind-os`, $30^\circ$), Winter Arc (`/arc`, $60^\circ$ — preserved as standalone primary node), Fitness OS (`/fitness-os`, $90^\circ$).
+   - **Ring 2 (Outer Arc — Knowledge, Observability & Governance, 5 nodes):** Learning OS (`/learning-os`, $0^\circ$), Finance OS (`/finance-os`, $22.5^\circ$), Data & Reports ($45^\circ$, fanout parent: `/data-lab` + `/reports`), Mission Control (`/system`, $67.5^\circ$), Profile Dossier (`/profile`, $90^\circ$).
+
+3. **State, Kinetics, Theme Synchronization & Keyboard Shortcuts:**
+   - Staggered outward deployment transitions over $500\text{ms}$ with progressive $35\text{ms}$ delay increments per orbital node (Ring 1 base: $0\text{ms}$, Ring 2 base: $140\text{ms}$).
+   - **Circadian Day/Night Synchronization:** Orb backgrounds and borders dynamically inherit `--bg-surface`, `--border-base`, and `--text-secondary` across Dawn, Day, Dusk, and Midnight.
+   - **Organic Drift Physics:** Continuous multi-phase floating animations (`animate-orb-float-1` to `4`) applied to inner node wrappers for a living celestial feel without interfering with polar expansion transforms.
+   - Dismissed cleanly via outside document click (`mousedown`) or `Escape` key (collapsing active fanout first if open).
+   - Universal Command Palette available globally via `Ctrl+K` / `Cmd+K` for instant command execution.
 
 ---
 
@@ -337,7 +340,7 @@ Learning OS (`src/features/learning-os/`) provides structured skill curriculum m
 
 ## 13. Shared Infrastructure & App Shell
 
-- **Astrolabe Orb Navigation:** Edge-anchored 3-ring kinetic orb shell with central telemetry HUD, satellite profile controls, and staggered radial animations (see Section 6.2 & ADR-023).
+- **Astrolabe Orb Navigation:** Edge-anchored 2-ring kinetic orb shell with secondary bloom fanouts, dual-role Central Orb Home launcher, organic drift physics, and consolidated profile operations (see Section 6.2 & ADR-023).
 - **Living Horizon Header:** Contextual mobile top navigation bar (`md:hidden`) synchronizing domain branding and shell title (`src/layout/shellTitle.ts`).
 - **Global Overlays:**
   - `GlobalTimerBar`: Sticky floating timer bar for running focus sessions.

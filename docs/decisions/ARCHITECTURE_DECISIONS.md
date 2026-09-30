@@ -37,8 +37,8 @@ domain: "decisions"
 - **Context:** Permanent analytics vs. immediate operational responsiveness.
 - **Decision:**
   - `public.events` (via `logEventSafe`) provides permanent, immutable analytics.
-  - `public.system_event_queue` (via `useEventBus`) provides transient operational signals consumed by Evening Sync.
-- **Consequences:** Analytics data remains clean; operational UI updates remain instant.
+  - `public.system_event_queue` (via `useEventBus`) provides transient operational signals consumed by Evening Sync. The in-memory Zustand store functions as an asynchronous telemetry outbox and staging buffer with offline queueing, exponential retry, and dead-letter quarantine before remote persistence. Instant operational UI responsiveness is provided natively by TanStack Query cache mutations (`onMutate` optimistic updates with snapshot rollback), rather than relying on the Zustand store as an operational UI state bus.
+- **Consequences:** Analytics data remains clean and durable in PostgreSQL; operational UI updates are instant and resilient via TanStack Query optimistic updates; transient telemetry is safely buffered and decoupled from view rendering.
 
 ---
 
@@ -250,12 +250,15 @@ domain: "decisions"
 ---
 
 ## ADR-023: Kinetic Astrolabe Orb Navigation Architecture
-- **Context:** The legacy persistent sidebar consumed 64px–240px of horizontal layout space, causing content reflow and layout friction across subpage headers. An initial prototype of the orb menu suffered from overlapping text labels across satellite icons, vague orbital distances, and lacked integrated session/profile termination.
-- **Decision:** Replaced traditional navigation sidebars with an edge-anchored 3-ring Kinetic Astrolabe Orb navigation (`src/layout/AstrolabeOrbNav.tsx`).
-  - Orbital radii were tightened by 20% (desktop: 96px, 147px, 198px; mobile: 75px, 119px, 163px) to ensure sharp visual grouping.
-  - Peripheral hover tooltips were eliminated to avoid collision; instead, the open central avatar orb functions as the dynamic telemetry HUD, displaying the hovered module's uppercase title, signature neon branding, and ambient back-glow.
-  - Integrated user profile navigation and Supabase session sign-out directly into the central Astrolabe controls via `AuthContext`.
-- **Consequences:** Clean, edge-to-edge brutalist canvas across all active modules; zero tooltip occlusion; unified focal point for multi-module switching on desktop and touch devices.
+- **Context:** The legacy persistent sidebar consumed 64px–240px of horizontal layout space, causing content reflow and layout friction across subpage headers. An earlier 14-button 3-ring layout created visual congestion, unreadable oversaturated hover glow across the central core, and lacked circadian theme inheritance.
+- **Decision:** Replaced traditional navigation sidebars with an edge-anchored 2-ring Kinetic Astrolabe Orb navigation (`src/layout/AstrolabeOrbNav.tsx`) featuring Two-Tier Bloom navigation:
+  - **Orbital Radii & Geometry:** Consolidated into 2 spacious rings (desktop: 125px, 210px; mobile: 95px, 165px) distributing 9 primary operational nodes across a $0^\circ$ to $90^\circ$ quadrant.
+  - **Two-Tier Bloom with Sibling Blur:** First bloom reveals 9 primary nodes while blurring the background page. Clicking a fanout parent (`Productivity & Time` or `Data & Reports`) smoothly blooms 2 satellite child nodes ($r + 54\text{px}$) while sibling orbs receive `filter: blur(3px) opacity(0.25)` to isolate focus. Winter Arc is preserved as its own standalone primary node.
+  - **Dual-Role Central Core:** When closed, displays user avatar with momentum progress gauge. When open, serves as direct "HOME" launchpad (`/`). When hovering any module, projects clean high-contrast monospace text directly inside the circular orb with a softened ambient halo (`opacity-20 blur-xl`) and matching module border glow (zero unreadable oversaturation or rectangular badges).
+  - **Circadian Theme Synchronization:** Orb surfaces and borders dynamically inherit `--bg-surface`, `--border-base`, and `--text-secondary` across Dawn, Day, Dusk, and Midnight.
+  - **Organic Drifting Motion:** Staggered multi-phase floating animations (`animate-orb-float-1` to `4`) applied asynchronously to inner node containers for a living celestial feel.
+  - **Administrative & Session Governance Consolidation:** Administrative controls and session termination previously floating off-ring at `-top-4 -right-12` are consolidated into `/profile` under Room 05 System Operations (`ProfileSystemOperations.tsx`), housing direct Admin Console navigation and secure Session Sign Out (`signOut`).
+- **Consequences:** Clean, edge-to-edge brutalist canvas across all active modules; zero tooltip occlusion; uncluttered 9-node hierarchy with rapid fanout access; 100% legibility on hover; unified focal point for multi-module switching on desktop and touch devices.
 
 ---
 

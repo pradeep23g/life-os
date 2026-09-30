@@ -253,10 +253,7 @@ The user's personal chronicle, biographical identity, and long-term achievement 
 The central maintenance and governance cockpit for Life OS. Provides database health monitoring against canonical tables (`public.events`, `public.time_logs`), JSON schema ingestion and export for roadmaps and seasons, table telemetry audits, and administrative overrides.
 
 ### Key Components & Hooks
-- `AdminConsolePage.tsx`: Administrative dashboard layout with database health status, telemetry counters, and configuration controls.
-- `DatabaseHealthMonitor.tsx`: Queries canonical tables (`events` for total telemetry volume, `time_logs` for focus duration records) to verify RLS connectivity and table health.
-- `SchemaImportExportModal.tsx`: Validates and ingests JSON payloads for Learning OS roadmaps (ADR-028) and seasonal directives (ADR-026).
-- `DataExportEngine.ts`: Generates structured, encrypted JSON backups of user behavioral records.
+- `AdminConsolePage.tsx`: Monolithic administrative control plane layout and logic containing integrated database health status checks, table telemetry counters (`events`, `time_logs`), JSON schema ingestion and export tools for roadmaps and seasons, and administrative overrides.
 
 ---
 
@@ -270,10 +267,7 @@ The central maintenance and governance cockpit for Life OS. Provides database he
 A dense, editorial-style Sunday field dossier synthesizing cross-domain performance. Modeled on broadsheet print layout standards (Geist Mono and Newsreader serif typography), it compiles weekly planning goals (`weekly_plans`), commitment items (`weekly_plan_items`), retrospective reviews (`weekly_reviews`), time density, and financial discipline into an executive summary ready for print or digital reflection.
 
 ### Key Components & Hooks
-- `FieldReportPage.tsx`: Responsive broadsheet container with print-ready CSS pagination styles.
-- `BroadsheetDossier.tsx`: High-density multi-column editorial report layout.
-- `WeeklySynthesisEngine.ts`: Automatically aggregates weekly wins, bottlenecks, time allocation per bucket, and habit adherence into bulleted narrative briefs.
-- `DossierMetrics.tsx`: High-contrast summary blocks reporting weekly discipline index, workout completions, and need-to-want financial ratio.
+- `FieldReportPage.tsx`: Monolithic broadsheet container and synthesis engine implementing responsive multi-column editorial report layouts, print-ready CSS pagination, cross-domain aggregation (weekly plans, reviews, time density, and financial need-to-want ratios), and executive narrative briefs.
 
 ---
 

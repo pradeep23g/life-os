@@ -1,13 +1,16 @@
 ---
 title: "Winter Arc — Data Model Specification"
-status: "active"
+status: "historical"
 last_synchronized_commit: "77d1a5b"
 domain: "winter-arc"
 ---
 
+> [!WARNING]
+> **HISTORICAL ARCHIVE**: This document is preserved for historical reference and architectural intent only. It does not reflect the current production implementation, active database schema, or live routes. For current specifications, refer to `docs/architecture/SYSTEM_ARCHITECTURE.md`, `docs/architecture/DATABASE_SCHEMA.md`, and `docs/AGENT_QUICKSTART.md`.
+
 # Winter Arc Data Model Gap Analysis
 
-**Status:** [CURRENT]  
+**Status:** [HISTORICAL — see docs/architecture/DATABASE_SCHEMA.md for current schema]  
 **Purpose:** Determine what existing data structures can support Winter Arc features and what genuinely needs new tables. Follows the principle of DO NOT OVER-ENGINEER.
 
 **Cross-References:**

@@ -1,9 +1,12 @@
 ---
 title: "Winter Arc — Architecture Specification"
-status: "active"
+status: "historical"
 last_synchronized_commit: "77d1a5b"
 domain: "winter-arc"
 ---
+
+> [!WARNING]
+> **HISTORICAL ARCHIVE**: This document is preserved for historical reference and architectural intent only. It does not reflect the current production implementation, active database schema, or live routes. For current specifications, refer to `docs/architecture/SYSTEM_ARCHITECTURE.md`, `docs/architecture/DATABASE_SCHEMA.md`, and `docs/AGENT_QUICKSTART.md`.
 
 # Winter Arc Architecture Evolution
 
