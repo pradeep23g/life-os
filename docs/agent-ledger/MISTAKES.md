@@ -99,3 +99,27 @@ Admin Console silently displayed blank statistics for 2 of 4 tables.
 Never guess table names. Always verify against DATABASE_SCHEMA.md or `database.types.ts`.
 Never use `(supabase.from as any)` — if TypeScript doesn't recognize the table name,
 the table probably doesn't exist.
+
+---
+
+### [M-003] Raw timestamp subtraction across dates with non-zero hours
+- **Agent:** Antigravity, Session 2026-10-02-001
+- **Date:** 2026-10-02
+- **Impact:** MEDIUM
+- **Root Cause Category:** WRONG_ASSUMPTION
+
+**What happened:**
+Calendar horizon day differences were calculated using raw `(new Date(endDate).getTime() - new Date(startDate).getTime()) / 86400000`. When ISO strings contained non-zero UTC hours or local offsets, fractional milliseconds caused the duration to be calculated as 91 days instead of 90 days.
+
+**Root cause:**
+Assumed standard `Date.getTime()` difference division by 86,400,000 always yields exact integer calendar days regardless of time-of-day components.
+
+**Damage:**
+Unit tests for `calculateTemporalHorizon` flagged duration skew (+1 day) on standard ISO timestamps with non-zero hour components.
+
+**System fix applied:**
+1. Created `parseDateOnly()` utility in `src/features/arc/utils/paceEvaluator.ts` slicing the `YYYY-MM-DD` prefix and parsing at `00:00:00.000Z`.
+2. Added comprehensive unit tests covering Day 0, active midpoint, naturally concluded, and early-completed arcs with varying ISO time strings.
+
+**Detection rule:**
+Whenever computing calendar day differences between two dates, never use raw timestamp subtraction unless dates are guaranteed to be normalized to midnight UTC (`YYYY-MM-DDT00:00:00.000Z`). Use `parseDateOnly` or date-only string slicing.

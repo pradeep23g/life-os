@@ -290,6 +290,55 @@ Each entry follows this exact structure:
 **Handoff notes for next agent:**
 > Astrolabe Orb Navigation is fully consolidated to 9 primary nodes + Central Orb (Home). Fanout secondary bloom is active on Productivity & Time and Data & Reports. Admin and Logout actions live permanently in `/profile` under Room 05 System Operations.
 
+---
+
+### Session 2026-10-02-001 — Arc Engine Architecture, Implementation, and ADR-029 Documentation
+- **Agent:** Antigravity (DeepMind Advanced Agentic Coding)
+- **Date:** 2026-10-02T13:06:00+05:30
+- **Duration:** 3h 30m
+- **Task:** Refine Arc Engine architecture (`/idea-refine`), generate 4-phase implementation plan (`tasks/todo.md`, `tasks/plan.md`), implement all 12 tasks across foundation, runtime, authoring, and ambient penetration, and document fully under ADR-029 and `docs/INDEX.md`.
+- **Scope:** `supabase/migrations/`, `src/features/arc/`, `src/features/home/`, `src/layout/`, `docs/`, `tasks/`
+
+**What was done:**
+- Phase 1 (Foundation & Telemetry Engine):
+  - Created migration `202610010000_arc_engine_lifecycle_schema.sql` evolving `public.life_seasons` with 4-stage lifecycle (`draft`, `active`, `completed`, `archived`), `original_config`, `amendments`, `milestone_progress`, `retrospective`, `completed_at`, `archived_at`, `planned_end_date`, and partial unique index `idx_life_seasons_single_active`.
+  - Defined constants in `src/features/arc/constants.ts` (8 canonical seasonal icons, 12 curated hex colors, system pace thresholds `0.85`/`0.60`, 14 telemetry keys).
+  - Defined authoritative types in `src/features/arc/types.ts` and updated Zod validation in `src/lib/schemas/seasonConfigSchema.ts`.
+  - Implemented `src/features/arc/utils/telemetryRegistry.ts` (zero-daemon mapping to `data_lab_daily_activity_90d`) and `src/features/arc/utils/paceEvaluator.ts` (strict linear pacing, normalized calendar day arithmetic, early completion bounding).
+- Phase 2 (Runtime Hook & UI Decoupling):
+  - Updated `src/features/arc/hooks/useArcTelemetry.ts` querying `status = 'active'`, removing `DEFAULT_SEASON` fallback, and providing optimistic `toggleManualMilestone`.
+  - Decoupled `ChapterHero.tsx`, `FocusDomainsSection.tsx`, `ArcCountdownLedger.tsx`, `EpochHorizonRail.tsx`, `CheckpointLedger.tsx`, `SeasonalMilestones.tsx`, `shellTitle.ts`, `useModuleColors.ts`, and `ModuleIcons.tsx`.
+- Phase 3 (Zero-Overhead Authoring & Ingestion Protocol):
+  - Implemented `arcPromptTemplate.ts` and `docs/prompts/ARC_PROMPT_TEMPLATE.md` defining `ARC_PROMPT_TEMPLATE` for conversational AI interrogation.
+  - Implemented `CreateArcModal.tsx` with 1-click prompt copy, real-time Zod schema validation, visual preview cards, and 1-click activation.
+  - Implemented `ArcArchiveView.tsx` with lifetime health computation and "Initiate Seasonal Arc" hero button.
+  - Implemented `AmendArcModal.tsx` and `amendmentAuditor.ts` with mandatory non-empty reason strings and milestone ID diffing.
+- Phase 4 (Ambient Penetration & Two-Stage Completion):
+  - Connected `AstrolabeOrbNav.tsx` to active Arc telemetry, dynamically displaying active title, icon, accent color, and ambient health glow indicator.
+  - Connected `AmbientHorizonBar.tsx` on `HomePage` to display active campaign ticker datum.
+  - Implemented two-stage lifecycle: Stage 1 (`ACTIVE → COMPLETED`) freezes milestone telemetry; Stage 2 (`COMPLETED → ARCHIVED`) gates archival behind 5-question structured retrospective (`ArcRetrospectiveModal.tsx`).
+- Documentation & ADR Registry:
+  - Added `ADR-029` to `docs/decisions/ARCHITECTURE_DECISIONS.md`.
+  - Updated `docs/INDEX.md` adding Prompt Protocols and Ideas & RFCs sections.
+  - Updated `docs/architecture/DATABASE_SCHEMA.md`, `MODULE_GUIDE.md`, `SYSTEM_ARCHITECTURE.md`, `docs/AGENT_QUICKSTART.md`, and `docs/operations/PROJECT_ROADMAP.md`.
+
+**What was NOT done (and why):**
+- "Phased Rhythm" pacing mode was explicitly rejected during architectural review as scope creep and cognitive distortion; strict linear pacing is maintained across v1.
+
+**Findings logged:** [F-005](FINDINGS.md#f-005-zod-4-enum-errormap-incompatibility), [F-006](FINDINGS.md#f-006-non-zero-utc-hour-skew-in-calendar-day-horizon-math), [F-007](FINDINGS.md#f-007-milestone-diffing-array-index-collision-in-amendment-auditing)
+**Mistakes logged:** [M-003](MISTAKES.md#m-003-raw-timestamp-subtraction-across-dates-with-non-zero-hours)
+
+**Verification:**
+- [x] Unit test suite (`scripts/test-arc-engine.mjs`): 26/26 tests passed.
+- [x] Documentation drift verification (`node scripts/verify-doc-drift.mjs`): 11/11 gates passed across 58 markdown files.
+- [x] `tsc -b` passes (0 errors).
+- [x] `eslint .` passes (0 errors, 0 warnings).
+- [x] `npm run build` succeeds (production bundle generated in ~10s).
+
+**Handoff notes for next agent:**
+> Arc Engine is 100% complete and documented under ADR-029. Invariant: only one arc can be active at a time (`idx_life_seasons_single_active`). Pacing is strictly linear with 0.85/0.60 thresholds. Archival requires submitting all 5 retrospective questions.
+
+
 
 
 

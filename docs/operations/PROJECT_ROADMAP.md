@@ -69,6 +69,14 @@ Life OS evolves through hardened, evidence-based engineering phases:
 - **Field Reports (`/reports`):** Broadsheet Sunday field dossier auto-synthesized from weekly plans (`weekly_plans`), commitment items (`weekly_plan_items`), and reviews (`weekly_reviews`).
 - **A4 Print Engine:** High-contrast typographic measures, pull quotes, and print-ready pagination CSS.
 
+### ✅ Phase 3 — ARC ENGINE & AMBIENT CAMPAIGNS (Completed October 2026)
+- **Dynamic Campaign Engine:** Migrated `public.life_seasons` to 4-stage lifecycle (`draft`, `active`, `completed`, `archived`) with partial unique index `idx_life_seasons_single_active` and frozen baseline `original_config` (ADR-029).
+- **Deterministic Strict Linear Pacing:** Telemetry milestones evaluated against `data_lab_daily_activity_90d` with fixed thresholds (`0.85` / `0.60`), daily recovery rates, and overall health aggregation.
+- **Zero-Overhead Ingestion Protocol:** Ingestion modal (`CreateArcModal`) featuring copyable interrogation prompt, client-side Zod validation with visual preview cards, and 1-click activation.
+- **Mandatory Amendment Auditing:** Active commitment changes strictly enforce non-empty reason strings with granular milestone ID diff logging.
+- **Two-Stage Completion Lifecycle:** Stage 1 (`ACTIVE → COMPLETED`) freezes telemetry evaluation; Stage 2 (`COMPLETED → ARCHIVED`) gates archival behind 5-question structured retrospective.
+- **Cross-OS Ambient Penetration:** Dynamic Astrolabe Orb navigation node, Home screen ambient horizon bar ticker, decoupled shell titles and brand lockups.
+
 ---
 
 ## 3. FUTURE WORK — Scheduled Implementation Waves

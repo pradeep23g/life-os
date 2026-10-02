@@ -113,3 +113,57 @@ All items marked `[x]`, completion banner added, completion record appended.
 
 **Resolution:**
 Update `src/features/finance-os/config.ts` TODO comment to cite finding F-004 and note the existing `user_settings.finance_preferences` schema. In a subsequent release wave, implement a hook to read and persist monthly budget targets in `user_settings`.
+
+---
+
+### [F-005] Zod 4 enum errorMap incompatibility
+- **Severity:** HIGH
+- **Found by:** Antigravity, Session 2026-10-02-001
+- **Date:** 2026-10-02
+- **Category:** BUG
+- **Status:** FIXED (Session 2026-10-02-001)
+
+**Description:**
+In Zod 4.x, passing `{ errorMap: ... }` to `z.enum()` produces a runtime TypeScript/Zod error because `z.enum()` in v4 no longer supports `errorMap` in its options object.
+
+**Evidence:**
+- `src/lib/schemas/seasonConfigSchema.ts`: Attempted to supply custom errorMap for unauthorized seasonal icons.
+
+**Resolution:**
+Replaced `errorMap` parameter with direct `{ message: ... }` descriptor in `z.enum(ALLOWED_ICONS, { message: 'Invalid icon' })`.
+
+---
+
+### [F-006] Non-zero UTC hour skew in calendar-day horizon math
+- **Severity:** HIGH
+- **Found by:** Antigravity, Session 2026-10-02-001
+- **Date:** 2026-10-02
+- **Category:** BUG
+- **Status:** FIXED (Session 2026-10-02-001)
+
+**Description:**
+Parsing ISO timestamps with non-zero hours (e.g., `2026-10-31T18:00:00Z` or local timezone offsets) causes `(endDate - startDate) / 86400000` to skew calendar day differences by +1 day due to fractional day truncation or rounding across midnight boundaries.
+
+**Evidence:**
+- `src/features/arc/utils/paceEvaluator.ts`: 90-day canonical campaign duration evaluated to 91 days when evaluated with non-midnight ISO strings.
+
+**Resolution:**
+Implemented `parseDateOnly(dateStr)` which strictly slices the `YYYY-MM-DD` prefix and parses it at `00:00:00.000Z`, ensuring pure calendar day arithmetic independent of time-of-day offsets.
+
+---
+
+### [F-007] Milestone diffing array index collision in amendment auditing
+- **Severity:** MEDIUM
+- **Found by:** Antigravity, Session 2026-10-02-001
+- **Date:** 2026-10-02
+- **Category:** DRIFT
+- **Status:** FIXED (Session 2026-10-02-001)
+
+**Description:**
+When evaluating commitment amendments in `amendmentAuditor.ts`, matching milestones by array index caused cascading false diffs whenever milestones were reordered, prepended, or deleted.
+
+**Evidence:**
+- `src/features/arc/utils/amendmentAuditor.ts`: Adding a new milestone at index 0 resulted in modifying all subsequent milestones in the generated audit log.
+
+**Resolution:**
+Updated `computeAmendmentDiffs` to match milestones strictly on `milestone.id`. Milestones with matching IDs are audited for field changes; missing IDs are flagged as additions or removals.

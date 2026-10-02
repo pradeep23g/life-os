@@ -19,7 +19,7 @@ domain: "governance"
 | **Agent Quickstart** | [`AGENT_QUICKSTART.md`](./AGENT_QUICKSTART.md) | `governance` | Active | ~3,100 | Machine entrypoint, 33-table / 14-route summary |
 | **Documentation Index** | `INDEX.md` *(current page)* | `governance` | Active | ~600 | Token budget index & document taxonomy |
 | **AI Constitution** | [`decisions/AI_ENGINEERING_CONSTITUTION.md`](./decisions/AI_ENGINEERING_CONSTITUTION.md) | `governance` | Active | ~1,100 | Core invariants, source-of-truth hierarchy |
-| **ADR Register** | [`decisions/ARCHITECTURE_DECISIONS.md`](./decisions/ARCHITECTURE_DECISIONS.md) | `architecture` | Active | ~8,500 | Gapless ADR-001 through ADR-028 |
+| **ADR Register** | [`decisions/ARCHITECTURE_DECISIONS.md`](./decisions/ARCHITECTURE_DECISIONS.md) | `architecture` | Active | ~9,500 | Gapless ADR-001 through ADR-029 |
 
 ---
 
@@ -30,7 +30,7 @@ domain: "governance"
 | **System Architecture** | [`architecture/SYSTEM_ARCHITECTURE.md`](./architecture/SYSTEM_ARCHITECTURE.md) | `architecture` | Active | ~3,800 | 14-route map, 3-ring Astrolabe, Brain Engine pipeline |
 | **Database Schema** | [`architecture/DATABASE_SCHEMA.md`](./architecture/DATABASE_SCHEMA.md) | `architecture` | Active | ~6,200 | 33 tables, 15 active views, 4 planned views |
 | **Event Taxonomy** | [`architecture/EVENT_TAXONOMY.md`](./architecture/EVENT_TAXONOMY.md) | `architecture` | Active | ~3,100 | 45 canonical events, transient event bus, telemetry |
-| **Module Guide** | [`architecture/MODULE_GUIDE.md`](./architecture/MODULE_GUIDE.md) | `architecture` | Active | ~3,900 | 14 domain modules, components, hooks, responsibilities |
+| **Module Guide** | [`architecture/MODULE_GUIDE.md`](./architecture/MODULE_GUIDE.md) | `architecture` | Active | ~3,900 | 14 domain modules including Arc Engine, components, hooks |
 | **UI System** | [`architecture/UI_SYSTEM.md`](./architecture/UI_SYSTEM.md) | `architecture` | Active | ~1,600 | 3-tier typography, OKLCH tokens, 5 solar themes |
 | **Security Architecture** | [`architecture/SECURITY.md`](./architecture/SECURITY.md) | `security` | Active | ~2,200 | RLS matrix, service role boundaries, auth session lifecycle |
 | **Life Rules** | [`architecture/LIFE_RULES.md`](./architecture/LIFE_RULES.md) | `architecture` | Active | ~800 | 8 behavioral principles, multi-dimensional growth |
@@ -44,11 +44,29 @@ domain: "governance"
 | **Release Gate Checklist**| [`operations/RELEASE_GATE_CHECKLIST.md`](./operations/RELEASE_GATE_CHECKLIST.md) | `operations` | Active | ~1,800 | 4-tier verification protocol & pre-commit gates |
 | **Development Workflow** | [`operations/DEV_WORKFLOW.md`](./operations/DEV_WORKFLOW.md) | `operations` | Active | ~1,900 | Branching, testing, migrations, commit etiquette |
 | **Agent Handbook** | [`operations/AGENTS.md`](./operations/AGENTS.md) | `operations` | Active | ~2,500 | Subsystem file boundaries, fix-on-discovery rule |
-| **Project Roadmap** | [`operations/PROJECT_ROADMAP.md`](./operations/PROJECT_ROADMAP.md) | `operations` | Active | ~2,100 | Waves 0, 1, 3, 5, 6 completed; Waves 2, 4, 7, 8, 9 future |
+| **Project Roadmap** | [`operations/PROJECT_ROADMAP.md`](./operations/PROJECT_ROADMAP.md) | `operations` | Active | ~2,300 | Completed Phases 0–3 (including Arc Engine); future waves |
 
 ---
 
-## 4. Winter Arc Specifications
+## 4. Prompt Protocols & AI Ingestion
+
+| Document | Path | Domain | Status | Est. Tokens | Protocol Scope |
+|---|---|---|---|:---:|---|
+| **Arc Interrogation Prompt** | [`prompts/ARC_PROMPT_TEMPLATE.md`](./prompts/ARC_PROMPT_TEMPLATE.md) | `prompts` | Active | ~1,200 | Arc Engine AI Strategist interrogation protocol (ADR-029) |
+| **Curriculum Ingestion Prompt** | [`prompts/CURRICULUM_PROMPT_TEMPLATE.md`](./prompts/CURRICULUM_PROMPT_TEMPLATE.md) | `prompts` | Active | ~1,100 | Learning OS study plan & curriculum schema (ADR-028) |
+| **Admin Season Ingestion** | [`prompts/SEASON_PROMPT_TEMPLATE.md`](./prompts/SEASON_PROMPT_TEMPLATE.md) | `prompts` | Historical | ~900 | Admin Console JSON seasonal import format (ADR-026) |
+
+---
+
+## 5. Architectural Ideas & RFCs
+
+| Document | Path | Domain | Status | Est. Tokens | Scope & Synthesis |
+|---|---|---|---|:---:|---|
+| **Arc Engine RFC** | [`ideas/arc-engine.md`](./ideas/arc-engine.md) | `ideas` | Active | ~1,600 | Architectural refinement & MVP scope for Arc Engine |
+
+---
+
+## 6. Winter Arc Specifications
 
 | Document | Path | Domain | Status | Est. Tokens | Primary Content |
 |---|---|---|---|:---:|---|
@@ -60,7 +78,7 @@ domain: "governance"
 
 ---
 
-## 5. Historical Archives
+## 7. Historical Archives
 
 | Document | Path | Domain | Status | Est. Tokens | Archive Purpose |
 |---|---|---|---|:---:|---|
@@ -70,7 +88,7 @@ domain: "governance"
 
 ---
 
-## 6. Agent Operations Ledger
+## 8. Agent Operations Ledger
 
 | Document | Path | Domain | Status | Est. Tokens | Operational Purpose |
 |---|---|---|---|:---:|---|

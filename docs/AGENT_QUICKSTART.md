@@ -114,7 +114,7 @@ Hosted PostgreSQL 15+ (Supabase Cloud Instance)
 
 | Table | Key Columns | Notes |
 |---|---|---|
-| `life_seasons` | user_id, name, start_date, end_date, **vows** (jsonb) | No `status` column |
+| `life_seasons` | user_id, name, start_date, end_date, **vows** (jsonb), **status**, original_config, amendments, milestone_progress, retrospective, completed_at, archived_at, planned_end_date | Lifecycle: `'draft'`, `'active'`, `'completed'`, `'archived'`; partial unique index on active |
 | `user_achievements` | user_id, **badge_id** (text), unlocked_at, metadata (jsonb) | NOT `achievement_key` |
 | `pulse_logs` | user_id, **timestamp** (timestamptz), **value** (text), metadata (jsonb) | NOT `logged_at`, `category`, `intensity` |
 | `knowledge_resources` | user_id, title, url, metadata (jsonb) | |
