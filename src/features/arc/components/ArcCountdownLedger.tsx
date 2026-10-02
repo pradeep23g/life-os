@@ -2,9 +2,10 @@ import type { ArcTemporalProgress } from '../types'
 
 interface ArcCountdownLedgerProps {
   progress: ArcTemporalProgress
+  accentColor?: string
 }
 
-export function ArcCountdownLedger({ progress }: ArcCountdownLedgerProps) {
+export function ArcCountdownLedger({ progress, accentColor = '#22d3ee' }: ArcCountdownLedgerProps) {
   const { currentDay, totalDays, remainingDays, percentElapsed, status } = progress
 
   return (
@@ -36,7 +37,7 @@ export function ArcCountdownLedger({ progress }: ArcCountdownLedgerProps) {
           <span className="text-border hidden sm:inline">•</span>
 
           <div className="flex items-center gap-2 text-text-secondary">
-            <span className="font-semibold text-accent-primary">
+            <span className="font-semibold" style={{ color: accentColor }}>
               {percentElapsed.toFixed(1)}%
             </span>
             <span>ELAPSED</span>
@@ -47,8 +48,11 @@ export function ArcCountdownLedger({ progress }: ArcCountdownLedgerProps) {
         <div className="font-mono text-xs uppercase tracking-wider text-text-tertiary">
           {status === 'upcoming' && 'TEMPORAL STATE: PRE-SEASON'}
           {status === 'active' && (
-            <span className="inline-flex items-center gap-1.5 text-accent-primary">
-              <span className="inline-block h-1.5 w-1.5 rounded-full bg-accent-primary animate-pulse" />
+            <span className="inline-flex items-center gap-1.5" style={{ color: accentColor }}>
+              <span
+                className="inline-block h-1.5 w-1.5 rounded-full animate-pulse"
+                style={{ backgroundColor: accentColor }}
+              />
               TEMPORAL STATE: ACTIVE CHAPTER
             </span>
           )}
