@@ -5,6 +5,7 @@ export const DEFAULT_MODULE_COLORS: Record<string, string> = {
   'Productivity': '#3b82f6',
   'Time OS': '#f59e0b',
   'Mind OS': '#a855f7',
+  'Arc': '#22d3ee',
   'Winter Arc': '#22d3ee',
   'Fitness OS': '#ef4444',
   'Learning OS': '#eab308',
@@ -42,18 +43,29 @@ function getSnapshot() {
   return currentColors
 }
 
+function updateColor(moduleName: string, hex: string) {
+  currentColors = { ...currentColors, [moduleName]: hex }
+  if (moduleName === 'Arc') {
+    currentColors['Winter Arc'] = hex
+  } else if (moduleName === 'Winter Arc') {
+    currentColors['Arc'] = hex
+  }
+  try {
+    localStorage.setItem('life_os_module_colors', JSON.stringify(currentColors))
+  } catch {
+    // Ignore storage write error
+  }
+  subscribers.forEach((callback) => callback())
+}
+
+function setArcAccentColor(hex: string) {
+  if (currentColors['Arc'] !== hex || currentColors['Winter Arc'] !== hex) {
+    updateColor('Arc', hex)
+  }
+}
+
 export function useModuleColors() {
   const colors = useSyncExternalStore(subscribe, getSnapshot, () => DEFAULT_MODULE_COLORS)
 
-  const updateColor = (moduleName: string, hex: string) => {
-    currentColors = { ...currentColors, [moduleName]: hex }
-    try {
-      localStorage.setItem('life_os_module_colors', JSON.stringify(currentColors))
-    } catch {
-      // Ignore storage write error
-    }
-    subscribers.forEach((callback) => callback())
-  }
-
-  return { colors, updateColor }
+  return { colors, updateColor, setArcAccentColor }
 }

@@ -1,5 +1,6 @@
 import { Avatar } from '../../../components/Avatar'
 import type { LifeState } from '../../mission-control/types/snapshot'
+import { useActiveArcSeason } from '../../arc'
 
 interface ProfileHeroProps {
   lifeState: LifeState
@@ -18,6 +19,7 @@ export function ProfileHero({
   consistencyPercent,
   activeDaysThisWeek,
 }: ProfileHeroProps) {
+  const { data: activeSeason } = useActiveArcSeason()
   const avatarState =
     lifeState === 'Recovering'
       ? 'recovering'
@@ -38,7 +40,7 @@ export function ProfileHero({
       <div className="flex flex-col-reverse sm:flex-row sm:items-start justify-between gap-6 sm:gap-8">
         <div className="space-y-3 max-w-2xl">
           <p className="font-mono text-xs uppercase tracking-wider text-text-tertiary">
-            Personal Dossier • Winter Arc 2026
+            Personal Dossier • {activeSeason?.title ?? 'Arc'}
           </p>
           <h1 className="font-serif font-light text-4xl sm:text-6xl md:text-7xl text-text-primary tracking-tight leading-[1.08] text-balance">
             Chapter: <br className="hidden sm:block" />

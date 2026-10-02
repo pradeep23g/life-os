@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { User } from 'lucide-react'
 import {
@@ -6,6 +6,10 @@ import {
   WinterArcIcon, FitnessIcon, LearningIcon, FinanceIcon,
   DataLabIcon, ReportsIcon, SystemIcon
 } from '../components/icons/ModuleIcons'
+import { ArcIcon } from '../features/arc/components/ArcIcon'
+import { getArcHealthColor } from '../features/arc/constants'
+import { useArcTelemetry } from '../features/arc/hooks/useArcTelemetry'
+import type { ArcPaceStatus } from '../features/arc/types'
 import { useAuth } from '../lib/AuthContext'
 import { useModuleColors } from '../lib/useModuleColors'
 
@@ -23,6 +27,10 @@ export interface NavOrbItem {
   colorKey: string
   path?: string
   fanout?: NavChildItem[]
+  customColor?: string
+  isArcNode?: boolean
+  isArcActive?: boolean
+  health?: ArcPaceStatus
 }
 
 const ORBIT_1: NavOrbItem[] = [
@@ -62,6 +70,7 @@ export function AstrolabeOrbNav() {
   const [isOpen, setIsOpen] = useState(false)
   const [hoveredModule, setHoveredModule] = useState<string | null>(null)
   const [hoveredColorKey, setHoveredColorKey] = useState<string | null>(null)
+  const [hoveredCustomColor, setHoveredCustomColor] = useState<string | null>(null)
   const [activeFanout, setActiveFanout] = useState<string | null>(null)
   const [isMobile, setIsMobile] = useState(false)
   const navRef = useRef<HTMLDivElement>(null)
@@ -69,6 +78,35 @@ export function AstrolabeOrbNav() {
   const location = useLocation()
   const { user } = useAuth()
   const { colors } = useModuleColors()
+  const { config: activeArcConfig, overallHealth: arcHealth } = useArcTelemetry()
+
+  // Dynamic Orbit 1 items: Replaces static Winter Arc node with active Arc title, icon, accent color, and health glow
+  const orbit1Items = useMemo(() => {
+    return ORBIT_1.map((item) => {
+      if (item.id === 'winter-arc') {
+        const isArcActive = Boolean(
+          activeArcConfig && (activeArcConfig.status === 'active' || activeArcConfig.status === 'completed')
+        )
+        const title = isArcActive && activeArcConfig ? activeArcConfig.title : 'Seasonal Arc'
+        const iconName = isArcActive && activeArcConfig ? activeArcConfig.icon : 'snowflake'
+        const customColor = isArcActive && activeArcConfig?.accentColor
+          ? activeArcConfig.accentColor
+          : '#94a3b8'
+
+        return {
+          ...item,
+          label: title,
+          icon: ({ className }: { className?: string }) => <ArcIcon name={iconName} className={className} />,
+          colorKey: isArcActive ? 'Arc' : 'Profile',
+          customColor,
+          isArcNode: true,
+          isArcActive,
+          health: isArcActive ? arcHealth : undefined,
+        }
+      }
+      return item
+    })
+  }, [activeArcConfig, arcHealth])
 
   // Track screen size for responsive radius
   useEffect(() => {
@@ -115,6 +153,7 @@ export function AstrolabeOrbNav() {
     setActiveFanout(null)
     setHoveredModule(null)
     setHoveredColorKey(null)
+    setHoveredCustomColor(null)
   }
 
   // Trigonometry for radial layout (bottom-left corner expands to top-right -> 0 to 90 degrees)
@@ -172,7 +211,7 @@ export function AstrolabeOrbNav() {
     return `animate-orb-float-${mod}`
   }
 
-  const hoveredColor = hoveredColorKey ? colors[hoveredColorKey] : undefined
+  const hoveredColor = hoveredCustomColor || (hoveredColorKey ? colors[hoveredColorKey] : undefined)
 
   return (
     <>
@@ -202,8 +241,8 @@ export function AstrolabeOrbNav() {
         >
           {/* Rendering the 2 Concentric Orbits */}
           {[
-            { items: ORBIT_1, radius: radius1, delayBase: 0 },
-            { items: ORBIT_2, radius: radius2, delayBase: ORBIT_1.length * 35 }
+            { items: orbit1Items, radius: radius1, delayBase: 0 },
+            { items: ORBIT_2, radius: radius2, delayBase: orbit1Items.length * 35 }
           ].map((orbit, orbitIndex) => (
             <div key={`orbit-${orbitIndex}`}>
               {orbit.items.map((item, index) => {
@@ -214,11 +253,15 @@ export function AstrolabeOrbNav() {
                   ? (location.pathname === item.path || (item.path !== '/' && location.pathname.startsWith(item.path)))
                   : (item.fanout?.some(child => location.pathname === child.path || (child.path !== '/' && location.pathname.startsWith(child.path))) ?? false)
 
-                const moduleColor = colors[item.colorKey] || '#ffffff'
+                const moduleColor = item.customColor || colors[item.colorKey] || '#ffffff'
                 const isHovered = hoveredModule === item.label
                 const isParentFanoutActive = activeFanout === item.id
                 // Secondary bloom sibling dimming: Dim if another fanout is active
                 const isDimmed = activeFanout !== null && !isParentFanoutActive
+
+                // Ambient health glow for active Arc node
+                const healthColor = item.health ? getArcHealthColor(item.health) : undefined
+                const hasHealthGlow = Boolean(item.isArcNode && item.isArcActive && healthColor)
 
                 return (
                   <div key={item.id}>
@@ -228,10 +271,12 @@ export function AstrolabeOrbNav() {
                       onMouseEnter={() => {
                         setHoveredModule(item.label)
                         setHoveredColorKey(item.colorKey)
+                        setHoveredCustomColor(item.customColor ?? null)
                       }}
                       onMouseLeave={() => {
                         setHoveredModule(null)
                         setHoveredColorKey(null)
+                        setHoveredCustomColor(null)
                       }}
                       aria-label={item.label}
                       className={`absolute bottom-2 left-2 flex h-12 w-12 items-center justify-center rounded-full border shadow-lg transition-all duration-500 ease-out hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary group
@@ -242,16 +287,39 @@ export function AstrolabeOrbNav() {
                         transform: isOpen ? `translate3d(${x}px, ${y}px, 0)` : 'translate3d(0, 0, 0)',
                         transitionDelay: isOpen ? `${orbit.delayBase + (index * 35)}ms` : '0ms',
                         backgroundColor: isItemActive ? moduleColor : 'oklch(var(--bg-surface) / 0.9)',
-                        borderColor: isItemActive || isHovered || isParentFanoutActive ? moduleColor : 'oklch(var(--border-base))',
-                        color: isItemActive ? '#000' : (isHovered || isParentFanoutActive ? moduleColor : 'oklch(var(--text-secondary))'),
+                        borderColor: isItemActive || isHovered || isParentFanoutActive
+                          ? moduleColor
+                          : hasHealthGlow
+                          ? healthColor
+                          : 'oklch(var(--border-base))',
+                        color: isItemActive
+                          ? '#000'
+                          : (isHovered || isParentFanoutActive
+                            ? moduleColor
+                            : hasHealthGlow
+                            ? healthColor
+                            : 'oklch(var(--text-secondary))'),
                         boxShadow: isItemActive || isHovered || isParentFanoutActive 
                           ? `0 0 20px ${moduleColor}70` 
+                          : hasHealthGlow
+                          ? `0 0 16px ${healthColor}60, 0 4px 12px rgba(0,0,0,0.2)`
                           : '0 4px 12px rgba(0,0,0,0.2)'
                       }}
                     >
                       {/* Organic Drift Wrapper */}
                       <div className={`flex h-full w-full items-center justify-center ${isOpen && !isDimmed ? floatClass(globalIndex) : ''}`}>
                         <item.icon className="h-5 w-5" />
+                        {/* Ambient status indicator dot for active Arc */}
+                        {item.isArcNode && item.isArcActive && healthColor && (
+                          <span 
+                            className="absolute -top-0.5 -right-0.5 flex h-3 w-3 items-center justify-center rounded-full border-2 border-surface shadow-sm animate-pulse"
+                            style={{
+                              backgroundColor: healthColor,
+                              boxShadow: `0 0 8px ${healthColor}`
+                            }}
+                            title={`Arc Health: ${item.health?.replace('_', ' ').toUpperCase()}`}
+                          />
+                        )}
                         {/* Sub-module fanout indicator badge */}
                         {item.fanout && (
                           <span 

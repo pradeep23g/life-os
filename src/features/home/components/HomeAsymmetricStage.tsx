@@ -24,6 +24,12 @@ export function HomeAsymmetricStage({ telemetry }: HomeAsymmetricStageProps) {
     totalPending,
     focusTimeDisplay,
     dateDisplay,
+    hasActiveArc,
+    arcTitle,
+    arcCurrentDay,
+    arcTotalDays,
+    arcOverallHealth,
+    arcAccentColor,
   } = telemetry
 
   return (
@@ -70,6 +76,12 @@ export function HomeAsymmetricStage({ telemetry }: HomeAsymmetricStageProps) {
         pendingTasksCount={pendingTasksCount}
         pendingHabitsCount={pendingHabitsCount}
         totalPending={totalPending}
+        hasActiveArc={hasActiveArc}
+        arcTitle={arcTitle}
+        arcCurrentDay={arcCurrentDay}
+        arcTotalDays={arcTotalDays}
+        arcOverallHealth={arcOverallHealth}
+        arcAccentColor={arcAccentColor}
       />
     </article>
   )

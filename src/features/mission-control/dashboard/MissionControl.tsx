@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { useMissionControlSnapshot } from '../api/useMissionControlSnapshot'
 import BrainEngineHero from '../../system/components/BrainEngineHero'
 import EndOfDayCard from '../components/EndOfDayCard'
@@ -5,9 +6,11 @@ import { toIndiaDateKey } from '../../../lib/events'
 import { Avatar } from '../../../components/Avatar'
 import { Activity, Clock, Target } from 'lucide-react'
 import { LoadingView } from '../../../components/LoadingView'
+import { useActiveArcSeason } from '../../arc'
 
 function MissionControl() {
   const { isLoading, isError, snapshotDate, brain, systems, metrics, recentEvents } = useMissionControlSnapshot()
+  const { data: activeSeason } = useActiveArcSeason()
 
   if (isLoading) {
     return (
@@ -72,7 +75,9 @@ function MissionControl() {
  </div>
  <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary font-mono">
  <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> {displayDate}</span>
- <span className="flex items-center gap-1.5"><Target className="w-3.5 h-3.5" /> Winter Arc</span>
+ <Link to="/arc" className="flex items-center gap-1.5 hover:text-text-primary transition-colors">
+ <Target className="w-3.5 h-3.5" /> {activeSeason?.title ?? 'Arc'}
+ </Link>
  </div>
  </div>
  </div>

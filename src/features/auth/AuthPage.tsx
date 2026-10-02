@@ -62,7 +62,7 @@ function AuthPage() {
  </div>
  <div>
  <h1 className="text-xl font-serif font-medium text-text-primary tracking-tight">Life OS</h1>
- <p className="text-[10px] font-mono text-text-tertiary uppercase tracking-wider">Winter Arc 2026</p>
+ <p className="text-[10px] font-mono text-text-tertiary uppercase tracking-wider">Life OS Arc</p>
  </div>
  </div>
  <p className="text-sm text-text-secondary">Sign in to resume your active campaign and telemetry ledger.</p>

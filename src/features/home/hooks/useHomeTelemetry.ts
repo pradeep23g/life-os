@@ -7,6 +7,17 @@ import { useActiveTimer, useStartTimer } from '../../time-os/api/useTimeLogs'
 import { useTasks } from '../../productivity-hub/api/useTasks'
 import { useHabitWorkspace } from '../../mind-os/api/useHabits'
 import { useTimeAnalytics } from '../../time-os/api/useTimeAnalytics'
+import { useArcTelemetry } from '../../arc/hooks/useArcTelemetry'
+import type { ArcPaceStatus } from '../../arc/types'
+
+export interface ArcHomeSummary {
+  hasActiveArc: boolean
+  arcTitle: string
+  currentDay: number
+  totalDays: number
+  overallHealth: ArcPaceStatus
+  accentColor: string
+}
 
 export interface SolarContextInfo {
   phase: 'dawn' | 'day' | 'dusk' | 'midnight'
@@ -70,8 +81,41 @@ export function useHomeTelemetry() {
   const { data: tasks = [], isLoading: isTasksLoading } = useTasks()
   const { data: habitData, isLoading: isHabitsLoading } = useHabitWorkspace()
   const { data: timeAnalytics } = useTimeAnalytics()
+  const {
+    config: activeArcConfig,
+    progress: arcProgress,
+    overallHealth: arcOverallHealth,
+    isLoading: isArcLoading,
+  } = useArcTelemetry()
 
   const solarContext = SOLAR_CONFIG[timeOfDay] ?? SOLAR_CONFIG.day
+
+  // Active Arc Campaign Telemetry Summary
+  const hasActiveArc = Boolean(
+    activeArcConfig && (activeArcConfig.status === 'active' || activeArcConfig.status === 'completed')
+  )
+
+  const arcSummary: ArcHomeSummary = useMemo(() => {
+    if (!activeArcConfig || !hasActiveArc) {
+      return {
+        hasActiveArc: false,
+        arcTitle: '',
+        currentDay: 0,
+        totalDays: 0,
+        overallHealth: 'on_track',
+        accentColor: '#22d3ee',
+      }
+    }
+
+    return {
+      hasActiveArc: true,
+      arcTitle: activeArcConfig.title,
+      currentDay: arcProgress.currentDay,
+      totalDays: arcProgress.totalDays,
+      overallHealth: arcOverallHealth,
+      accentColor: activeArcConfig.accentColor || '#22d3ee',
+    }
+  }, [activeArcConfig, hasActiveArc, arcProgress.currentDay, arcProgress.totalDays, arcOverallHealth])
 
   // Real pending counts
   const pendingTasks = useMemo(() => tasks.filter((t) => !t.is_completed), [tasks])
@@ -117,7 +161,7 @@ export function useHomeTelemetry() {
     )
   }
 
-  const isLoading = isBrainLoading || isTimerLoading || isTasksLoading || isHabitsLoading
+  const isLoading = isBrainLoading || isTimerLoading || isTasksLoading || isHabitsLoading || isArcLoading
 
   return {
     solarContext,
@@ -136,6 +180,17 @@ export function useHomeTelemetry() {
     totalPending,
     focusTimeDisplay,
     dateDisplay,
+    // Active Arc Telemetry Horizon Fields
+    hasActiveArc: arcSummary.hasActiveArc,
+    arcTitle: arcSummary.arcTitle,
+    arcCurrentDay: arcSummary.currentDay,
+    arcTotalDays: arcSummary.totalDays,
+    arcOverallHealth: arcSummary.overallHealth,
+    arcAccentColor: arcSummary.accentColor,
+    currentDay: arcSummary.currentDay,
+    totalDays: arcSummary.totalDays,
+    overallHealth: arcSummary.overallHealth,
+    arcSummary,
     isLoading,
   }
 }

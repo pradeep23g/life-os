@@ -40,9 +40,11 @@ export function LifeOsLogo({ className = 'h-6 w-6', size }: IconProps) {
 export function LifeOsBrandLockup({
   compact = false,
   className = '',
+  seasonalLabel,
 }: {
   compact?: boolean
   className?: string
+  seasonalLabel?: string
 }) {
   return (
     <div className={`flex items-center gap-3 select-none ${className}`}>
@@ -55,7 +57,7 @@ export function LifeOsBrandLockup({
             Life OS
           </span>
           <span className="font-mono text-[9px] uppercase tracking-widest text-text-tertiary mt-1">
-            Winter Arc 2026
+            {seasonalLabel ?? 'Life OS Arc'}
           </span>
         </div>
       )}

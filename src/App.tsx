@@ -12,6 +12,7 @@ import { LoadingView } from './components/LoadingView'
 import { useEnvironmentSystem } from './lib/useEnvironmentSystem'
 import GlobalTimerBar from './features/time-os/components/GlobalTimerBar'
 import SystemFeedbackToast from './features/system/components/SystemFeedbackToast'
+import { useActiveArcSeason } from './features/arc'
 
 // Route-level code splitting via React.lazy
 const AuthPage = lazy(() => import('./features/auth/AuthPage'))
@@ -75,8 +76,12 @@ function ProtectedRoute() {
 function AppShell() {
  useEnvironmentSystem()
 
- const location = useLocation()
- const shellTitle = useMemo(() => getShellTitle(location.pathname), [location.pathname])
+  const location = useLocation()
+  const { data: activeSeason } = useActiveArcSeason()
+  const shellTitle = useMemo(
+    () => getShellTitle(location.pathname, activeSeason?.title),
+    [location.pathname, activeSeason?.title],
+  )
 
  return (
  <div className="min-h-screen flex flex-col bg-background text-text-primary relative">

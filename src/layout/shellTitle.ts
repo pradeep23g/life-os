@@ -1,10 +1,10 @@
-export function getShellTitle(pathname: string): string {
+export function getShellTitle(pathname: string, arcTitle?: string): string {
   if (pathname === '/') {
     return 'Home'
   }
 
   if (pathname === '/arc' || pathname.startsWith('/arc/')) {
-    return 'Winter Arc'
+    return arcTitle || 'Arc'
   }
 
   if (pathname === '/system' || pathname === '/mission-control') {
