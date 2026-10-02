@@ -207,21 +207,30 @@ The Porch serves as the initial, serene threshold when stepping into Life OS. Bu
 
 ---
 
-## 11. Winter Arc
+## 11. Arc Engine (Seasonal Campaigns)
 
 **Route:** `/arc`  
-**Type:** 90-Day Developmental Campaign & Grand Hall  
+**Type:** Prescriptive Temporal Campaign Engine & Historical Archive  
 **Location:** `src/features/arc/`
 
 ### Responsibility
-The dedicated workspace for high-intensity seasonal developmental campaigns (ADR-012). Displays the 90-day countdown ledger, chapter milestones, seasonal vows, daily protocol execution, and unlocked capability crests.
+The dedicated workspace for high-intensity, prescriptive seasonal developmental campaigns (ADR-012, ADR-029). Holds the user accountable against self-declared seasonal commitments, tracks hybrid focus domains, evaluates deterministic strict linear pacing across 14 registered telemetry bindings, enforces mandatory amendment justification trails, supports early completion, and manages a two-stage completion and retrospective archival lifecycle.
 
 ### Key Components & Hooks
-- `ArcPage.tsx`: Grand Hall layout organizing seasonal progression into Three Epochs: Foundation (Days 1–14), Deep Arc (Days 15–75), and Harvest & Transition (Days 76–90).
-- `useSeasonData`: Reads active season from `public.life_seasons` where `start_date <= current_date AND end_date >= current_date`.
-- `SeasonLedger.tsx`: 90-day countdown progress bar, elapsed days counter, and daily integrity percentage.
-- `EpochRail.tsx`: Visual timeline indicating current developmental chapter and upcoming seasonal gates.
-- `VowsChecklist.tsx`: Interactive tracker for seasonal non-negotiables stored in `life_seasons.vows` jsonb array.
+- `ArcPage.tsx`: Top-level campaign coordinator. Dynamically routes between:
+  - **Active Campaign View:** Renders ChapterHero, FocusDomainsSection, ArcCountdownLedger, EpochHorizonRail, CheckpointLedger, and SeasonalMilestones, with quick actions to amend commitments or conclude the arc early.
+  - **Completed Campaign Banner:** When concluded, displays frozen campaign results with a prominent "Author Retrospective" action.
+  - **Historical Archive View (`ArcArchiveView.tsx`):** When idle, lists past campaigns with aggregated lifetime health badges and an "Initiate Seasonal Arc" hero button.
+- `useArcTelemetry.ts`: Authoritative runtime telemetry hook. Dynamically queries `public.life_seasons` for `status = 'active'`, bounds telemetry metrics between `start_date` and `completed_at ?? today`, resolves metrics using `telemetryRegistry.ts`, computes strict linear pace states via `paceEvaluator.ts`, and provides optimistic `toggleManualMilestone` mutations.
+- `ChapterHero.tsx`: Visual banner displaying dynamic campaign title, `{config.totalDays}-DAY` badge, seasonal icon (`ArcIcon.tsx`), and theme accent styling.
+- `FocusDomainsSection.tsx`: Renders qualitative thematic focus domain badges alongside bound live telemetry metrics.
+- `ArcCountdownLedger.tsx`: Dynamically tracks elapsed days, days remaining, and percentage complete without hardcoded duration assumptions.
+- `EpochHorizonRail.tsx`: Horizon visualization demarcating customizable multi-phase tracks (Day X–Y, phase focus, and active phase indicator ring).
+- `CheckpointLedger.tsx`: Generates midpoint-mapped weekly checkpoints across variable campaign durations.
+- `SeasonalMilestones.tsx`: Dynamic milestone ledger supporting both automated telemetry targets and interactive manual checkboxes, strict pace badges (`ON TRACK`, `AT RISK`, `BEHIND`, `COMPLETE`), and calculated daily recovery rates.
+- `CreateArcModal.tsx`: Zero-overhead ingestion modal featuring 1-click interrogation prompt copying, JSON textarea input with real-time Zod schema validation, visual preview cards, and 1-click activation.
+- `AmendArcModal.tsx`: Mid-campaign commitment amendment modal enforcing mandatory non-empty reason strings and appending diff logs to `life_seasons.amendments`.
+- `ArcRetrospectiveModal.tsx`: 5-question structured retrospective modal gating the transition from `COMPLETED` to immutable `ARCHIVED` status.
 
 ---
 

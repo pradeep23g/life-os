@@ -399,3 +399,99 @@ domain: "decisions"
   ]
 }
 ```
+
+---
+
+## ADR-029: Arc Engine: Prescriptive Seasonal Campaigns, Deterministic Strict Pacing & Two-Stage Lifecycle
+- **Status:** Accepted
+- **Context:** Life OS previously relied on a hardcoded "Winter Arc 2026" campaign (ADR-012, ADR-023, ADR-026) with static 90-day timeframes, hardcoded vows, and manual database insertions. Users need a repeatable, prescriptive temporal campaign engine that can run any seasonal arc (e.g., Spring Build, Autumn Velocity, Solitary Arc) with self-declared commitments, deterministic telemetry pacing, hybrid focus domains, zero-overhead AI ingestion, mandatory amendment auditing, and cross-OS ambient awareness.
+- **Decision:** Generalize the seasonal framework into the **Arc Engine**, backed by a 4-state lifecycle machine (`DRAFT → ACTIVE → COMPLETED → ARCHIVED`), strict linear pacing against `data_lab_daily_activity_90d`, zero-overhead prompt-interrogation ingestion, and a two-stage completion protocol.
+- **Core Pillars:**
+  1. **Lifecycle State Machine & Single Active Invariant:** Evolve `public.life_seasons` with columns `status` (`'draft'`, `'active'`, `'completed'`, `'archived'`), `original_config` (immutable baseline), `amendments` (audit trail), `milestone_progress` (manual checks), `retrospective` (closing debrief), `completed_at`, `archived_at`, and `planned_end_date`. Enforce that only one arc can be active at a time via a PostgreSQL partial unique index: `CREATE UNIQUE INDEX idx_life_seasons_single_active ON public.life_seasons (user_id) WHERE status = 'active'`.
+  2. **Two-Stage Completion Lifecycle:**
+     - **Stage 1 (`ACTIVE → COMPLETED`):** Triggered when scheduled duration reaches end date OR user intentionally completes early (via "Conclude Arc"). Sets `status = 'completed'` and records `completed_at = now()`. Crucially, telemetry queries and milestone evaluations freeze at `completed_at`, bounding the evaluated timeline and setting remaining days to 0. Early completion does NOT require an immediate retrospective; the UI displays a completed campaign banner with an "Author Retrospective" callout.
+     - **Stage 2 (`COMPLETED → ARCHIVED`):** Gated on answering 5 mandatory debrief questions (`wentWell`, `didntGoWell`, `whatChanged`, `whatLearned`, `whatCarriesForward`). Upon submission, transitions `status = 'archived'`, records `archived_at = now()`, and permanently renders the campaign immutable in the Arc Archive view.
+  3. **Zero-Overhead AI Authoring & Ingestion Protocol:** Replicating the proven pattern of Learning OS (`ImportCurriculumModal`, ADR-028), users copy a battle-tested interrogation prompt into an external LLM (Claude, ChatGPT, Gemini) with the persona of "Principal Life Strategist & Seasonal Campaign Architect". The user is interrogated on theme, non-negotiables, telemetry-bound focus domains, milestones, and phases. The resulting JSON is pasted into `CreateArcModal`, validated client-side with Zod (`seasonConfigSchema.ts`), previewed via interactive cards, and activated in 1 click.
+  4. **Deterministic Strict Linear Pace Engine:**
+     - Computes expected progress based on elapsed calendar days:
+       $$\text{expectedProgress} = \left(\frac{\text{elapsedDays}}{\text{totalDays}}\right) \times \text{targetValue}$$
+       $$\text{paceRatio} = \frac{\text{actualProgress}}{\text{expectedProgress}}$$
+     - Deterministic thresholds: $\ge \text{targetValue} \to \text{complete}$, $\ge 0.85 \to \text{on\_track}$, $\ge 0.60 \to \text{at\_risk}$, $< 0.60 \to \text{behind}$.
+     - Computes required daily recovery rate: $\text{paceRequired} = \frac{\text{targetValue} - \text{actualProgress}}{\text{remainingDays}}$.
+     - Overall health aggregates to the worst milestone status (`behind > at_risk > on_track > complete > pending`).
+     - *"Phased Rhythm" pacing was explicitly rejected* as scope creep and cognitive distortion: linear pacing maintains unwavering accountability without artificially inflating progress in early "ramp-up" phases.
+  5. **Direct Telemetry Registry (Zero Daemon Overhead):** Maps 14 registered telemetry binding keys directly onto existing PostgreSQL columns in `data_lab_daily_activity_90d` (e.g. `deep_work.hours`, `tasks.completed`, `habits.completion_rate`, `fitness.workouts`, `active_days.count`), eliminating redundant tables, cron daemons, or client-side calculation loops.
+  6. **Mandatory Amendment Auditing:** Commitments made in an active arc are serious. If targets, vows, or principles must be altered mid-campaign, a non-empty user justification string (`reason`) is strictly enforced. Every edit is diffed by milestone ID and appended to `life_seasons.amendments` with `{ timestamp, field, previousValue, newValue, reason }`. Baseline intentions remain frozen in `original_config`.
+  7. **Constrained Aesthetic Identity:** Enforces an approved 8-icon seasonal enum (`snowflake`, `sprout`, `sun`, `leaf`, `mountain`, `flame`, `wave`, `star`) and a curated 12-color hex palette, preventing visual dissonance across the OS.
+  8. **Cross-OS Ambient Penetration:** The active arc's identity, icon, and dynamic execution health glow (`emerald`/`cyan` for on-track, `amber` for at-risk, `rose` for behind) radiate across the Astrolabe Navigation Orb, shell titles, brand lockup, and the Home screen `AmbientHorizonBar`. When no arc is active, navigation cleanly falls back to a neutral archive trigger.
+- **Consequences:**
+  - Upgrades Life OS from a single-season test into a permanent, multi-year developmental operating system.
+  - Zero cognitive friction to spin up a new arc: no cumbersome 20-step form builder; authoring happens via conversational AI interrogation and copy-paste JSON.
+  - Absolute historical integrity: past arcs are frozen with exact start/end/completed timestamps, audit trails, and retrospectives.
+- **Canonical Arc Configuration JSON Schema Contract:**
+```json
+{
+  "$schema": "https://life-os.system/schemas/v1/arc-config.json",
+  "version": "1.0.0",
+  "title": "Spring Build 2027",
+  "tagline": "Uncompromising Engineering & Physical Fortitude",
+  "startDate": "2027-03-01",
+  "endDate": "2027-05-30",
+  "totalDays": 90,
+  "icon": "mountain",
+  "accentColor": "#10b981",
+  "vow": {
+    "headline": "Code, Iron, and Unwavering Execution",
+    "body": "Zero speculative abstractions. Ship daily. Train with ruthless consistency.",
+    "attribution": "Spring Directive"
+  },
+  "principles": [
+    "Deep work blocks before communication",
+    "Progressive overload in strength and intellect",
+    "Ruthless elimination of trivial commitments"
+  ],
+  "focusDomains": [
+    {
+      "id": "deep-engineering",
+      "name": "Deep Engineering Velocity",
+      "theme": "High-leverage architecture and systems focus",
+      "binding": { "source": "time_os", "metric": "deep_work_hours" }
+    },
+    {
+      "id": "kinetic-vitality",
+      "name": "Kinetic Vitality",
+      "theme": "Physical resilience and progressive volume",
+      "binding": { "source": "fitness_os", "metric": "workouts_completed" }
+    }
+  ],
+  "milestones": [
+    {
+      "id": "milestone-deep-work",
+      "title": "150 Hours Deep Focus",
+      "kind": "telemetry",
+      "binding": "deep_work.hours",
+      "targetValue": 150,
+      "unit": "hrs"
+    },
+    {
+      "id": "milestone-workouts",
+      "title": "45 Resistance Workouts",
+      "kind": "telemetry",
+      "binding": "fitness.workouts",
+      "targetValue": 45,
+      "unit": "sessions"
+    },
+    {
+      "id": "milestone-ship-engine",
+      "title": "Deploy Distributed Storage Engine v1",
+      "kind": "manual"
+    }
+  ],
+  "phases": [
+    { "name": "Foundational Velocity", "startDay": 1, "endDay": 21, "focus": "Cadence & Setup" },
+    { "name": "Deep Architecture", "startDay": 22, "endDay": 65, "focus": "Core Execution" },
+    { "name": "Shipment & Polish", "startDay": 66, "endDay": 90, "focus": "Hardening & Delivery" }
+  ]
+}
+```
+

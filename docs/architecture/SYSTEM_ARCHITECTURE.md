@@ -118,7 +118,7 @@ Life OS features 14 active client routes declared in [src/App.tsx](../../src/App
 / (ProtectedRoute: session auth check)
   / (AppShell: Astrolabe Orb, GlobalTimerBar, SystemFeedbackToast, CommandPalette)
     /                                  → HomePage ("The Porch" - Synchronous / Eager)
-    /arc                               → ArcPage (Winter Arc Grand Hall - React.lazy)
+    /arc                               → ArcPage (Arc Engine: Seasonal Campaigns & Archive - React.lazy)
     /system                            → MissionControl (Executive Command Center - React.lazy)
     /mission-control                   → Redirect to /system (<Navigate to="/system" replace />)
     /profile                           → ProfilePage (Biographical Dossier - React.lazy)
@@ -170,7 +170,7 @@ The historical static desktop sidebar and mobile drawer were retired in Winter A
    - **Central Core (64px trigger & Home launchpad):** When closed, displays user avatar encircled by a circular SVG momentum gauge (`strokeDasharray="289"`, `strokeDashoffset="100"`). When open, functions as direct "HOME" launchpad (`/`). When hovering any orbital item, projects clean, high-contrast monospace text directly inside the circular orb with a softened, non-blinding halo (`opacity-20 blur-xl`) and matching module border glow (zero unreadable oversaturation or rectangular badges).
    - **Two-Tier Bloom Navigation:** First Bloom (Central Orb click) blurs the viewport background (`backdrop-blur-md bg-background/80`) and deploys the 9 primary nodes with asynchronous organic drift physics (`animate-orb-float-1` to `4`). Secondary Bloom (Fanout parent click on Productivity & Time or Data & Reports) smoothly blooms 2 satellite child orbs in a mini-arc ($r + 54\text{px}$) while sibling orbs receive `filter: blur(3px) opacity(0.25)` to isolate attention on active child nodes.
    - **Admin & Session Governance Consolidation:** Administrative controls and session termination previously floating off-ring at `-top-4 -right-12` are consolidated into `/profile` under Room 05 System Operations (`ProfileSystemOperations.tsx`), housing direct Admin Console navigation and secure Session Sign Out (`signOut`).
-   - **Ring 1 (Inner Arc — Foundational Rhythm, 4 nodes):** Productivity & Time ($0^\circ$, fanout parent: `/productivity-hub` + `/time-os`), Mind OS (`/mind-os`, $30^\circ$), Winter Arc (`/arc`, $60^\circ$ — preserved as standalone primary node), Fitness OS (`/fitness-os`, $90^\circ$).
+   - **Ring 1 (Inner Arc — Foundational Rhythm, 4 nodes):** Productivity & Time ($0^\circ$, fanout parent: `/productivity-hub` + `/time-os`), Mind OS (`/mind-os`, $30^\circ$), Arc Engine (`/arc`, $60^\circ$ — standalone primary node reflecting dynamic campaign title, icon, and ambient pace health glow), Fitness OS (`/fitness-os`, $90^\circ$).
    - **Ring 2 (Outer Arc — Knowledge, Observability & Governance, 5 nodes):** Learning OS (`/learning-os`, $0^\circ$), Finance OS (`/finance-os`, $22.5^\circ$), Data & Reports ($45^\circ$, fanout parent: `/data-lab` + `/reports`), Mission Control (`/system`, $67.5^\circ$), Profile Dossier (`/profile`, $90^\circ$).
 
 3. **State, Kinetics, Theme Synchronization & Keyboard Shortcuts:**

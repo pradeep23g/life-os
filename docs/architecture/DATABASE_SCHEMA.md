@@ -467,19 +467,30 @@ Configuration weights for Data Lab cross-domain signal score calculations.
 ### 2.8 Winter Arc & System Extension Tables (6 Tables)
 
 #### `public.life_seasons`
-Dedicated multi-week and multi-month seasonal developmental arcs and vows (ADR-012).
+Dedicated multi-week and multi-month seasonal developmental campaigns, commitments, and retrospective debriefs (ADR-012, ADR-029).
 | Column | Type | Nullable | Default | Description |
 |---|---|---|---|---|
 | `id` | `uuid` | No | `gen_random_uuid()` | Primary Key |
 | `user_id` | `uuid` | No | — | Foreign Key $\rightarrow$ `auth.users(id) on delete cascade` |
-| `name` | `text` | No | — | Season name |
-| `start_date` | `date` | No | — | Season start date |
-| `end_date` | `date` | No | — | Season end date |
+| `name` | `text` | No | — | Season / Arc campaign name |
+| `start_date` | `date` | No | — | Arc start date |
+| `end_date` | `date` | No | — | Arc target / scheduled end date |
+| `planned_end_date`| `date` | Yes | `null` | Planned completion date from configuration |
+| `status` | `text` | No | `'draft'` | Lifecycle status (`'draft'`, `'active'`, `'completed'`, `'archived'`) |
 | `vows` | `jsonb` | No | `'[]'::jsonb` | Array of seasonal commitments and non-negotiables |
+| `original_config` | `jsonb` | Yes | `null` | Immutable baseline JSON configuration frozen at activation |
+| `amendments` | `jsonb` | Yes | `'[]'::jsonb` | Audit log of commitment changes with mandatory reason strings |
+| `milestone_progress`| `jsonb` | Yes | `'{}'::jsonb` | Manual milestone completion state map (`{ [id]: { completed, notes, completed_at } }`) |
+| `retrospective` | `jsonb` | Yes | `null` | 5-question closing debrief (`wentWell`, `didntGoWell`, `whatChanged`, etc.) |
+| `completed_at` | `timestamptz` | Yes | `null` | Actual completion timestamp (freezes telemetry bounds) |
+| `archived_at` | `timestamptz` | Yes | `null` | Historical archival timestamp following retrospective |
 | `created_at` | `timestamptz` | No | `now()` | Creation timestamp |
 | `updated_at` | `timestamptz` | No | `now()` | Update timestamp |
 
-*Row-Level Security:* Enabled. Policy `auth.uid() = user_id`.
+*Constraints & Indexes:*
+- Partial Unique Index `idx_life_seasons_single_active` on `(user_id) WHERE status = 'active'` (enforces exactly 1 active arc per user).
+- Check Constraint `chk_life_seasons_status` checking `status IN ('draft', 'active', 'completed', 'archived')`.
+- Row-Level Security: Enabled. Policy `auth.uid() = user_id`.
 
 #### `public.user_achievements`
 Gamified progression credentials and unlocked capability crests (ADR-016).
