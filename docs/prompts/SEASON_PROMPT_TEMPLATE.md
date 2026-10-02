@@ -1,6 +1,8 @@
 # Life OS — Seasonal Configuration & Vow Generation Prompt
 
-> **Protocol Invariant (ADR-026):** Generates structured seasonal configurations, principles, phase partitions, and milestone achievements for direct automated ingestion into Life OS Admin Control Plane.
+> **Protocol Invariant (ADR-026):** Generates structured seasonal configurations, principles, phase partitions, and milestone achievements for direct automated ingestion into Life OS Admin Control Plane (`/admin`).
+>
+> *Note:* For active Arc Engine seasonal campaign authoring (`/arc`), see the canonical [`ARC_PROMPT_TEMPLATE.md`](./ARC_PROMPT_TEMPLATE.md) (ADR-029).
 
 ---
 
