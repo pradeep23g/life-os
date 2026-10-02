@@ -976,6 +976,14 @@ export type Database = {
           updated_at: string
           user_id: string
           vows: Json
+          status: string
+          original_config: Json | null
+          amendments: Json
+          milestone_progress: Json
+          retrospective: Json | null
+          completed_at: string | null
+          archived_at: string | null
+          planned_end_date: string | null
         }
         Insert: {
           created_at?: string
@@ -986,6 +994,14 @@ export type Database = {
           updated_at?: string
           user_id: string
           vows?: Json
+          status?: string
+          original_config?: Json | null
+          amendments?: Json
+          milestone_progress?: Json
+          retrospective?: Json | null
+          completed_at?: string | null
+          archived_at?: string | null
+          planned_end_date?: string | null
         }
         Update: {
           created_at?: string
@@ -996,6 +1012,14 @@ export type Database = {
           updated_at?: string
           user_id?: string
           vows?: Json
+          status?: string
+          original_config?: Json | null
+          amendments?: Json
+          milestone_progress?: Json
+          retrospective?: Json | null
+          completed_at?: string | null
+          archived_at?: string | null
+          planned_end_date?: string | null
         }
         Relationships: []
       }
