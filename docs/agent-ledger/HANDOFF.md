@@ -2,9 +2,9 @@
 title: Agent Handoff — Active Context
 status: ACTIVE
 purpose: Current state summary for the next agent session
-last_updated_by: Antigravity (DeepMind Advanced Agentic Coding)
-last_updated: 2026-10-02T13:05:00+05:30
-last_session: Session 2026-10-02-001
+last_updated_by: Antigravity (Advanced Agentic Coding)
+last_updated: 2026-11-24T13:10:00+05:30
+last_session: Session 2026-11-24-u1f7
 ---
 
 # Active Handoff Context
@@ -13,45 +13,40 @@ last_session: Session 2026-10-02-001
 > of the last agent that worked on it. It is OVERWRITTEN (not appended) each session.
 
 ## Current Project State
-- **Git HEAD:** Working tree clean; Arc Engine 4-phase implementation, ADR-029, and documentation suite completed.
-- **Last Task:** Arc Engine & Ambient Campaigns Implementation, ADR-029 Documentation & Index Reconciliation (Session 2026-10-02-001)
-- **Build & Drift Status:** PASSING (11/11 checks passed on `scripts/verify-doc-drift.mjs` across 58 markdown files, 26/26 unit tests passed, 0 lint/tsc errors, production Vite build succeeds in ~10s).
+- **Git HEAD:** Working tree clean except untracked agent config files and skills roadmap; Track 1 (UI & Frontend Craft) execution and build optimization completed.
+- **Last Task:** Environment setup, agent tooling configuration, skills research, and Track 1 UI craft implementation (Session 2026-11-24-u1f7).
+- **Build & Drift Status:** PASSING (11/11 checks passed on `scripts/verify-doc-drift.mjs` across 61 markdown files, 0 lint errors, 0 tsc errors, production Vite build succeeds in ~3.95s).
 - **Open Findings:** 1 Open in `FINDINGS.md` (F-004: Finance static budget fallback).
 
 ## What Was Just Done
-Implemented and documented the **Arc Engine** (ADR-029):
-1. **Foundation & Telemetry Engine (Phase 1)**:
-   - Migration `202610010000_arc_engine_lifecycle_schema.sql` adding `status`, `original_config`, `amendments`, `milestone_progress`, `retrospective`, `completed_at`, `archived_at`, `planned_end_date`, and partial unique index `idx_life_seasons_single_active`.
-   - Constrained 8-icon seasonal set and curated 12-color hex palette in `src/features/arc/constants.ts`.
-   - Deterministic strict linear pace engine (`paceEvaluator.ts`) and zero-daemon telemetry registry (`telemetryRegistry.ts`) mapping 14 bindings to `data_lab_daily_activity_90d`.
-2. **Runtime Hook & UI Decoupling (Phase 2)**:
-   - Evolved `useArcTelemetry.ts` querying `status = 'active'` with zero fallback to `DEFAULT_SEASON` and optimistic `toggleManualMilestone` mutations.
-   - Decoupled `ChapterHero.tsx`, `FocusDomainsSection.tsx`, `ArcCountdownLedger.tsx`, `EpochHorizonRail.tsx`, `CheckpointLedger.tsx`, and `SeasonalMilestones.tsx`.
-   - Decoupled `shellTitle.ts`, `useModuleColors.ts`, and `ModuleIcons.tsx` (`LifeOsBrandLockup`).
-3. **Zero-Overhead Authoring & Ingestion Protocol (Phase 3)**:
-   - Authored canonical interrogation prompt `ARC_PROMPT_TEMPLATE` (`arcPromptTemplate.ts`, `docs/prompts/ARC_PROMPT_TEMPLATE.md`).
-   - Implemented `CreateArcModal.tsx` with 1-click prompt copy, real-time Zod schema validation, and visual preview cards.
-   - Implemented `ArcArchiveView.tsx` with lifetime health calculation and "Initiate Seasonal Arc" hero button.
-   - Implemented `AmendArcModal.tsx` with mandatory non-empty reason validation and ID-matched diffing (`amendmentAuditor.ts`).
-4. **Ambient Penetration & Two-Stage Completion (Phase 4)**:
-   - Integrated dynamic active title, icon, and health glow indicator (`on_track` = emerald/cyan, `at_risk` = amber, `behind` = rose) into `AstrolabeOrbNav.tsx`.
-   - Integrated active campaign ticker datum into `HomePage` `AmbientHorizonBar.tsx` via `useHomeTelemetry.ts`.
-   - Built two-stage lifecycle: Stage 1 (`ACTIVE → COMPLETED`) freezes milestone bounds and records `completed_at`; Stage 2 (`COMPLETED → ARCHIVED`) gates archival behind 5-question structured retrospective (`ArcRetrospectiveModal.tsx`).
-5. **Documentation & ADR Register**:
-   - Added `ADR-029: Arc Engine: Prescriptive Seasonal Campaigns, Deterministic Strict Pacing & Two-Stage Lifecycle` to `docs/decisions/ARCHITECTURE_DECISIONS.md`.
-   - Updated `docs/INDEX.md`, `docs/architecture/DATABASE_SCHEMA.md`, `docs/architecture/MODULE_GUIDE.md`, `docs/architecture/SYSTEM_ARCHITECTURE.md`, `docs/AGENT_QUICKSTART.md`, and `docs/operations/PROJECT_ROADMAP.md`.
+1. **Tooling & Environment Setup**:
+   - Verified Node.js 26.13.1 / npm 12.2.3 and Supabase environment variables.
+   - Authored agent-facing instruction files: `AGENTS.md`, `CLAUDE.md`, `.cursorrules`, and `.gemini/style-guide.md`.
+   - Installed `supabase-postgres-mastery` and `mcp-builder` skills in `~/.gemini/config/skills/`.
+   - Synthesized deep skills research into a 7-track engineering registry in `tasks/skills-roadmap.md`.
+2. **Performance & Build Optimization (Track 1)**:
+   - Configured Rollup `manualChunks` in `vite.config.ts` separating `vendor-react`, `vendor-supabase`, `vendor-query`, and `vendor-ui`.
+   - Accelerated production build time from 30.1s to 3.95s; completely eliminated chunk warnings; shrunk main app chunk from 712 kB to 360 kB.
+   - Synchronized `caniuse-lite` database via `npx update-browserslist-db@latest`.
+3. **UI & Frontend Craft Execution (Track 1)**:
+   - **Document PiP Hardening (`PiPTimer.tsx`, `useDocumentPiP.ts`)**: Independent wall-clock ticker anchored directly to `pipWindow` context to prevent background tab throttling. Dynamic stylesheet cloning via `MutationObserver` on `document.head` and circadian theme mirroring on `document.documentElement.className`.
+   - **OKLCH Solar Theme Calibration (`src/index.css`, `UI_SYSTEM.md`)**: Exposed master `--brand-h` CSS variable for dynamic solar hue shift. Calibrated true OLED black canvas (`0% 0 0`) with anti-smear elevated surfaces (`12%` / `16%`) in `.theme-midnight` to eliminate OLED pixel smearing during kinetic scroll.
+   - **Granular Suspense Boundaries (`src/App.tsx`, `LearningOSLayout.tsx`)**: Isolated `<Suspense>` boundaries per domain layout (`MindOsLayout`, `ProductivityHubLayout`, `FitnessOsLayout`, `LearningOSLayout`) with tailored `<LoadingView variant="page">` fallbacks.
+4. **Documentation**:
+   - Updated `docs/architecture/UI_SYSTEM.md` documenting `--brand-h` and hardened `PiPTimer` specifications.
+   - Checked off completed items in `tasks/skills-roadmap.md`.
 
 ## What Needs Attention Next
-- Client-side runtime smoke testing with `npm run dev` across all 4 arc states (`draft`, `active`, `completed`, `archived`).
-- Future Wave 4 (Knowledge Vault UI) or Wave 7 (Recovery OS) per `PROJECT_ROADMAP.md`.
+- Track 2 (SQL & Supabase Performance): Prepare additive migration for RLS InitPlan subquery caching `((SELECT auth.uid()) = user_id)` across core tables.
+- Track 3 (Clean Engineering): Evaluate Feature-Sliced Design ESLint rules for automated cognitive boundary enforcement.
+- Future Wave 2 (Native Android) and Wave 8 (MCP Server) per `PROJECT_ROADMAP.md`.
 
 ## Known Issues / Blockers
 - None. Ground truth parity confirmed across codebase, UI system docs, and verification gates.
 
 ## Context the Next Agent MUST Know
-> 1. Navigation is 100% Kinetic Astrolabe Orb (`src/layout/AstrolabeOrbNav.tsx`). The Arc node dynamically renders the active campaign's icon, title, and health glow.
-> 2. Pacing is strictly linear: expected = (elapsed / total) * target, with 0.85 (on track) and 0.60 (at risk) thresholds. Phased rhythm was explicitly rejected.
-> 3. Date calculations in `paceEvaluator.ts` MUST use `parseDateOnly` to slice the YYYY-MM-DD prefix and evaluate at UTC midnight. Never use raw ISO timestamp subtraction across mixed non-zero hours.
-> 4. Amendment diffs in `amendmentAuditor.ts` MUST match milestones on `milestone.id` rather than array index.
-> 5. Gate 4 enforces anchor validity and rejects `file:///` URIs across all markdown files in `docs/`.
-> 6. Always run `node scripts/verify-doc-drift.mjs` and log your session in `docs/agent-ledger/SESSION_LOG.md` before handing off.
+> 1. Navigation is 100% Kinetic Astrolabe Orb (`src/layout/AstrolabeOrbNav.tsx`). Sidebar was permanently retired in ADR-023.
+> 2. Document PiP timer now executes its ticker on the PiP window's window context (`pipWindow.setInterval`) and relies on wall-clock UTC timestamps, immune to host tab throttling.
+> 3. Solar themes in `src/index.css` derive from `--brand-h` and use OKLCH color space.
+> 4. All domain sub-routes are wrapped in localized `<Suspense>` boundaries with domain-specific loading copy.
+> 5. Always run `npm run verify:release` and log sessions in `docs/agent-ledger/SESSION_LOG.md` before handing off.

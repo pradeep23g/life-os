@@ -112,27 +112,31 @@ function AppShell() {
 
 function MindOsLayout() {
   return (
-  <section className="space-y-4">
-  <ModuleHeader title="Mind OS" icon={MindOsIcon}>
-  <LocalNavLink to="." label="Dashboard" />
-  <LocalNavLink to="habits" label="Habits" />
-  <LocalNavLink to="journal" label="Journal" />
-  </ModuleHeader>
-  <Outlet />
-  </section>
+    <section className="space-y-4">
+      <ModuleHeader title="Mind OS" icon={MindOsIcon}>
+        <LocalNavLink to="." label="Dashboard" />
+        <LocalNavLink to="habits" label="Habits" />
+        <LocalNavLink to="journal" label="Journal" />
+      </ModuleHeader>
+      <Suspense fallback={<LoadingView variant="page" label="Calibrating Mind Space" sublabel="Loading reflection telemetry..." />}>
+        <Outlet />
+      </Suspense>
+    </section>
   )
 }
 
 function ProductivityHubLayout() {
   return (
-  <section className="space-y-4">
-  <ModuleHeader title="Productivity Hub" icon={ProductivityIcon}>
-  <LocalNavLink to="." label="Dashboard" />
-  <LocalNavLink to="tasks" label="Tasks" />
-  <LocalNavLink to="planning" label="Planning" />
-  </ModuleHeader>
-  <Outlet />
-  </section>
+    <section className="space-y-4">
+      <ModuleHeader title="Productivity Hub" icon={ProductivityIcon}>
+        <LocalNavLink to="." label="Dashboard" />
+        <LocalNavLink to="tasks" label="Tasks" />
+        <LocalNavLink to="planning" label="Planning" />
+      </ModuleHeader>
+      <Suspense fallback={<LoadingView variant="page" label="Synchronizing Execution Ledger" sublabel="Loading tasks and planning horizon..." />}>
+        <Outlet />
+      </Suspense>
+    </section>
   )
 }
 
@@ -171,7 +175,9 @@ function FitnessOsLayout() {
         </div>
       </header>
       <div className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-8">
-        <Outlet />
+        <Suspense fallback={<LoadingView variant="page" label="Loading Kinetic Ledger" sublabel="Accessing workout records..." />}>
+          <Outlet />
+        </Suspense>
       </div>
     </section>
   )

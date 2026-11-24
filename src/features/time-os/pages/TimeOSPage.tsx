@@ -372,6 +372,7 @@ function TimeOSPage() {
         <PiPTimer
           pipWindow={pipWindow}
           bucket={activeTimer.bucket}
+          startTime={activeTimer.start_time}
           elapsedLabel={elapsedLabel}
           isPaused={isPipPaused}
           isStopping={isStopping}

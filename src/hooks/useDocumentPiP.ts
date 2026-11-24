@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 
 type DocumentPictureInPictureApi = {
   requestWindow: (options?: { width?: number; height?: number }) => Promise<Window>
+  window?: Window | null
 }
 
 type ExtendedWindow = Window & {
@@ -27,25 +28,47 @@ export function useDocumentPiP() {
     }
   }, [pipWindow])
 
-  const openPiP = useCallback(async (width = 300, height = 200) => {
+  const openPiP = useCallback(async (width = 340, height = 220) => {
     const hostWindow = window as ExtendedWindow
 
     if (!hostWindow.documentPictureInPicture) {
       return null
     }
 
-    const nextPiPWindow = await hostWindow.documentPictureInPicture.requestWindow({
-      width,
-      height,
-    })
+    // Reuse existing active PiP window if still open
+    if (pipWindow && !pipWindow.closed) {
+      pipWindow.focus()
+      return pipWindow
+    }
 
-    setPipWindow(nextPiPWindow)
-    return nextPiPWindow
-  }, [])
+    try {
+      const nextPiPWindow = await hostWindow.documentPictureInPicture.requestWindow({
+        width,
+        height,
+      })
+
+      setPipWindow(nextPiPWindow)
+      return nextPiPWindow
+    } catch {
+      return null
+    }
+  }, [pipWindow])
+
+  const closePiP = useCallback(() => {
+    if (pipWindow && !pipWindow.closed) {
+      pipWindow.close()
+      setPipWindow(null)
+    }
+  }, [pipWindow])
+
+  const isSupported = typeof window !== 'undefined' && 'documentPictureInPicture' in window
 
   return {
     pipWindow,
     openPiP,
+    closePiP,
+    isSupported,
   }
 }
+
 

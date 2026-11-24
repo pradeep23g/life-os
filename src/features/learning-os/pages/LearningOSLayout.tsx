@@ -1,7 +1,9 @@
+import { Suspense } from 'react'
 import { Outlet, Link, useLocation } from 'react-router-dom'
 import { Compass, BookOpen, BarChart2 } from 'lucide-react'
 import { useActiveTimer } from '../../time-os'
 import { LearningIcon } from '../../../components/icons'
+import { LoadingView } from '../../../components/LoadingView'
 
 export function LearningOSLayout() {
   const location = useLocation()
@@ -78,7 +80,9 @@ export function LearningOSLayout() {
       {/* Primary Room Viewport */}
       <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8 md:py-12">
         <div className="mx-auto max-w-7xl">
-          <Outlet />
+          <Suspense fallback={<LoadingView variant="page" label="Accessing Library Archives" sublabel="Loading roadmap telemetry..." />}>
+            <Outlet />
+          </Suspense>
         </div>
       </main>
     </div>

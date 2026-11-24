@@ -338,6 +338,49 @@ Each entry follows this exact structure:
 **Handoff notes for next agent:**
 > Arc Engine is 100% complete and documented under ADR-029. Invariant: only one arc can be active at a time (`idx_life_seasons_single_active`). Pacing is strictly linear with 0.85/0.60 thresholds. Archival requires submitting all 5 retrospective questions.
 
+---
+
+### Session 2026-11-24-u1f7 — Environment Setup, Tooling Parity & Track 1 UI Craft Hardening
+- **Agent:** Antigravity (Advanced Agentic Coding)
+- **Date:** 2026-11-24T13:10:00+05:30
+- **Duration:** ~45m
+- **Task:** Quickstart environment verification, agent configuration authoring, deep skills research, performance optimization, and Track 1 UI & Frontend Craft execution.
+- **Scope:** `vite.config.ts`, `src/index.css`, `src/App.tsx`, `src/hooks/useDocumentPiP.ts`, `src/features/time-os/components/PiPTimer.tsx`, `src/features/time-os/pages/TimeOSPage.tsx`, `src/features/learning-os/pages/LearningOSLayout.tsx`, `tasks/skills-roadmap.md`, `docs/architecture/UI_SYSTEM.md`, `AGENTS.md`, `CLAUDE.md`, `.cursorrules`, `.gemini/style-guide.md`
+
+**What was done:**
+- Environment & Tooling:
+  - Verified Node 26.13.1 / npm 12.2.3, `.env` Supabase credentials, installed dependencies.
+  - Authored canonical root agent configuration files: `AGENTS.md`, `CLAUDE.md`, `.cursorrules`, and `.gemini/style-guide.md`.
+  - Conducted 7-track skills research with live sources and authored `tasks/skills-roadmap.md`.
+  - Installed `supabase-postgres-mastery` and `mcp-builder` skills in global Antigravity config (`~/.gemini/config/skills/`).
+- Performance & Build Optimization (Track 1):
+  - Configured Rollup `manualChunks` in `vite.config.ts` separating React, Supabase, TanStack Query, and UI utilities. Accelerated build time from 30.1s to 3.9s; eliminated >500 kB chunk warning; shrunk primary chunk by 49.5%.
+  - Synchronized `caniuse-lite` database via `npx update-browserslist-db@latest`.
+- UI & Frontend Craft Hardening (Track 1):
+  - Document PiP Chronos Hardening: Updated `PiPTimer.tsx` and `useDocumentPiP.ts` to run an independent wall-clock ticker anchored directly to `pipWindow` context to eliminate background tab throttling; added `MutationObserver` on `document.head` and `document.documentElement` for dynamic stylesheet and circadian theme mirroring.
+  - OKLCH Solar Theme Calibration: Exposed master `--brand-h` CSS variable in `src/index.css`; calibrated true OLED black canvas (`0% 0 0`) with anti-smear elevated surfaces (`12%` / `16%`) in `.theme-midnight` to prevent OLED pixel smearing during kinetic scroll.
+  - Granular Suspense Boundaries: Isolated `<Suspense>` boundaries per domain layout (`MindOsLayout`, `ProductivityHubLayout`, `FitnessOsLayout`, `LearningOSLayout`) with tailored `<LoadingView variant="page">` fallbacks, preventing shell and orb unmounting on sub-route transitions.
+- Documentation & Verification:
+  - Updated `docs/architecture/UI_SYSTEM.md` with `--brand-h` and hardened `PiPTimer` specifications.
+  - Passed `npm run verify:release` (11/11 doc drift, 0 eslint errors, 0 tsc errors, clean vite production bundle).
+
+**What was NOT done (and why):**
+- Motion library (`motion/react`) dependency installation deferred pending formal ADR approval per Invariant 5 (No Speculative Rewrites).
+
+**Findings logged:** None
+**Mistakes logged:** None
+
+**Verification:**
+- [x] Documentation drift verification (`node scripts/verify-doc-drift.mjs`): 11/11 gates passed across 61 markdown files.
+- [x] `tsc -b` passes (0 errors).
+- [x] `eslint .` passes (0 errors, 0 warnings).
+- [x] `npm run build` succeeds (production bundle generated in ~3.95s).
+- [x] `npm run verify:release` succeeds.
+
+**Handoff notes for next agent:**
+> Track 1 (UI & Frontend Craft) optimizations are in place. Production build is split into small vendor chunks (`vendor-react`, `vendor-supabase`, `vendor-query`, `vendor-ui`). Document PiP runs independent wall-clock ticker on `pipWindow`. All 11 doc drift gates pass.
+
+
 
 
 

@@ -41,20 +41,21 @@ Life OS employs three distinct typographic voices, each assigned to an immutable
 Colors are specified using modern `oklch()` color spaces in `src/index.css` and mapped through Tailwind CSS variables:
 
 ### 3.1 Base Semantic Tokens
-- `--bg-canvas`: Deepest ground level (`oklch(0.05 0.005 260)` to `#000000`).
-- `--surface-panel`: Elevated component container (`oklch(0.12 0.008 260)`).
-- `--border-subtle`: Architectural bounding lines (`oklch(0.22 0.010 260)`).
-- `--text-primary`: Pure legible foreground (`oklch(0.95 0.005 260)`).
-- `--text-secondary`: Supporting context (`oklch(0.65 0.015 260)`).
-- `--text-tertiary`: Monospace telemetry metadata (`oklch(0.45 0.015 260)`).
+- `--brand-h`: Master solar hue channel (0–360) allowing dynamic runtime palette shifts via CSS variables.
+- `--bg-canvas`: Deepest ground level (`oklch(0% 0 0)` true OLED black in midnight, `oklch(14–18% ...)` in day/dawn).
+- `--surface-panel`: Elevated component container (`oklch(12–23% ...)` calibrated to eliminate OLED pixel smearing).
+- `--border-subtle`: Architectural bounding lines (`oklch(17–28% ...)`).
+- `--text-primary`: Pure legible foreground (`oklch(0.92–0.98% ...)`).
+- `--text-secondary`: Supporting context (`oklch(0.65–0.80% ...)`).
+- `--text-tertiary`: Monospace telemetry metadata (`oklch(0.45–0.60% ...)`).
 
 ### 3.2 Circadian Solar Themes
 The document root `<html class="theme-*">` dynamically switches based on local time or manual override:
-1. **`.theme-dawn` (05:00–08:00):** Soft rose/amber horizon highlights with gentle awakening contrast.
-2. **`.theme-day` (08:00–17:00):** High-contrast daylight clarity with crisp neutral surfaces.
-3. **`.theme-dusk` (17:00–21:00):** Warm copper and dusk-violet undertones encouraging cognitive down-regulation.
-4. **`.theme-midnight` (21:00–05:00):** True OLED obsidian black with dim neon accents to prevent melatonin suppression.
-5. **`.theme-recovery` (Sanctuary Mode, ADR-027):** Low-contrast sage and sepia tones eliminating urgency signals.
+1. **`.theme-dawn` (05:00–08:00):** Soft rose/amber horizon highlights with gentle awakening contrast (`--brand-h: 260`).
+2. **`.theme-day` (08:00–17:00):** High-contrast daylight clarity with crisp neutral surfaces (`--brand-h: 250`).
+3. **`.theme-dusk` (17:00–21:00):** Warm copper and dusk-violet undertones encouraging cognitive down-regulation (`--brand-h: 60`).
+4. **`.theme-midnight` (21:00–05:00):** True OLED obsidian black (`0% 0 0`) canvas with anti-smear elevated surfaces (`12%` / `16%`) and dim neon accents (`--brand-h: 270`).
+5. **`.theme-recovery` (Sanctuary Mode, ADR-027):** Low-contrast sage and sepia tones eliminating urgency signals (`--brand-h: 120`).
 
 ---
 
@@ -107,7 +108,7 @@ The document root `<html class="theme-*">` dynamically switches based on local t
 ### 5.3 Global Overlays & Floating Auxiliaries
 - `AstrolabeOrbNav`: Universal spherical navigation nexus.
 - `GlobalTimerBar`: Fixed floating timer bar when a focus session is actively running.
-- `PiPTimer`: Document Picture-in-Picture window supporting external timer controls.
+- `PiPTimer`: Hardened Document Picture-in-Picture window with independent wall-clock ticker, background-throttle resilience, MutationObserver stylesheet syncing, and circadian theme replication.
 - `SystemFeedbackToast`: Micro-interaction status toast.
 - `CommandPalette`: Keyboard shortcut modal (`Ctrl+K` / `Cmd+K`).
 - `TactileNumpad`: Custom collapsible touch pad for workout reps/weight entry without virtual keyboard layout shift.

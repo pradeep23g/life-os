@@ -1,0 +1,45 @@
+{
+  "project": "Life OS — Personal Intelligence Operating System",
+  "stack": {
+    "frontend": "React 19 + TypeScript 5.9 + Vite 7",
+    "styling": "Tailwind CSS v3 (OKLCH Solar Themes, true-black design system)",
+    "state": "TanStack React Query v5 (server) + Zustand v5 (event bus)",
+    "routing": "React Router v7 (14 lazy-loaded client routes)",
+    "backend": "Supabase JS v2 → PostgreSQL 15+ (33 tables, 15 SQL views, full RLS)",
+    "validation": "Zod v4",
+    "icons": "Lucide React",
+    "testing": "Playwright (E2E)",
+    "lint": "ESLint 9 with react-hooks and react-refresh plugins"
+  },
+  "conventions": {
+    "typescript": "Strict mode. No 'as any' except AdminConsolePage.tsx.",
+    "events": "Every DB mutation emits via logEventSafe() with constants from src/lib/eventTaxonomy.ts.",
+    "database_types": "src/types/database.types.ts is auto-generated. NEVER hand-edit.",
+    "navigation": "Astrolabe Orb kinetic navigation only. No sidebar (retired ADR-023).",
+    "cognitive_boundary": "Mind OS (reflection) and Productivity Hub (execution) never share UI.",
+    "sql_views": "All views use security_invoker = true. Rollups in SQL, not client-side.",
+    "timer": "Single active timer per user (partial unique index in time_logs)."
+  },
+  "key_files": {
+    "agent_quickstart": "docs/AGENT_QUICKSTART.md",
+    "event_taxonomy": "src/lib/eventTaxonomy.ts",
+    "database_types": "src/types/database.types.ts",
+    "navigation": "src/layout/AstrolabeOrbNav.tsx",
+    "brain_engine": "src/features/system/",
+    "migrations": "supabase/migrations/",
+    "architecture_decisions": "docs/decisions/ARCHITECTURE_DECISIONS.md"
+  },
+  "verification": {
+    "lint": "npm run lint",
+    "build": "npm run build",
+    "docs_drift": "npm run verify:docs",
+    "full_gate": "npm run verify:release"
+  },
+  "anti_patterns": [
+    "Never query: telemetry_events, focus_sessions, seasons (don't exist)",
+    "Never use column achievement_key (it's badge_id)",
+    "Never use Math.random() in React render paths",
+    "Never create Sidebar.tsx (Astrolabe Orb only)",
+    "Never refactor without an accepted ADR"
+  ]
+}
