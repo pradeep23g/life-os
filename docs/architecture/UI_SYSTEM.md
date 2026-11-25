@@ -19,7 +19,7 @@ Life OS is a **personal command center and cognitive sanctuary**. The visual lan
 - **True-Black & Monospace Grounding:** Pure OLED black (`#000000`) background with brutalist `#0a0a0a` surfaces and edge-to-edge content.
 - **Three-Tier Typographic Grammar:** Clear separation between contemplative editorial prose, tactical actions, and precision telemetry data.
 - **Solar & Circadian Harmonics:** Dynamic OKLCH color tokens adapting across natural solar transitions (`dawn`, `day`, `dusk`, `midnight`) plus sanctuary mode (`recovery`).
-- **Kinetic Astrolabe Orb Navigation:** Stripped out traditional sidebars in favor of a 2-ring orbital astrolabe with secondary bloom fanouts and a central telemetry HUD readout (see ADR-023).
+- **Kinetic Astrolabe Orb Navigation:** Stripped out traditional sidebars in favor of a 2-ring orbital astrolabe with secondary bloom fanouts and a central telemetry HUD readout (see ADR-023, ADR-030).
 - **Tactile Inputs:** Purpose-built tactical touch numpads, batch command parsing, and zero layout shift.
 
 ---

@@ -495,3 +495,29 @@ domain: "decisions"
 }
 ```
 
+---
+
+## ADR-030: Astrolabe Orb Kinetic Spring Physics with Motion
+- **Status:** Accepted
+- **Context:** ADR-023 introduced the Astrolabe Orb Navigation system, using standard CSS cubic-bezier transitions (`duration-500 ease-out`) for radial expansion and four asynchronous CSS keyframes (`animate-orb-float-1` to `4`) for ambient drift. While functional, linear/cubic-bezier radial bloom lacks the organic tactile response, velocity transfer, and overshoot characteristic of an executive personal OS command center. Users requested physics-based kinetic navigation with spring dynamics.
+- **Decision:** Evolve `AstrolabeOrbNav.tsx` to leverage `motion/react` spring physics while preserving strict DOM layer separation to avoid transform contention with continuous ambient drift and secondary bloom fanouts.
+- **Core Pillars:**
+  1. **Spring Physics Calibration:**
+     - Primary node expansion: `type: 'spring', stiffness: 280, damping: 22, mass: 0.8`. Provides crisp acceleration with subtle non-distracting organic overshoot.
+     - Staggered Radial Sequence: Orbits bloom outward with dynamic delay indexing (`delay: orbitIndex * 0.04 + index * 0.025s`).
+     - Satellite Fanout Bloom: `stiffness: 350, damping: 24, mass: 0.6` for snappier secondary satellite emergence.
+  2. **Decoupled DOM Architecture (Zero Transform Contention):**
+     - **Outer Layer (`motion.div`):** Governs discrete radial expansion, scale entrance, spring overshoot, and `AnimatePresence` unmounting. Writes hardware-accelerated Cartesian translation derived from polar coordinates: `translate3d(x, y, 0)`.
+     - **Inner Layer (`div`):** Retains independent CSS keyframe drift (`animate-orb-float-1` to `4`). Because the inner DOM node handles the sinusoidal floating loop, Motion's spring solver never fights or overwrites the ambient drift transform matrix.
+  3. **Secondary Bloom AnimatePresence Satellite Orchestration:**
+     - Satellite child nodes wrap in `<AnimatePresence>` for physics-driven exit animations when fanouts collapse or when navigation closes.
+     - Sibling orbs gracefully transition to dimmed/blurred focus mode via spring-smoothed filter attributes (`filter: blur(3px) opacity(0.25)`).
+  4. **Performance & Bundle Isolation:**
+     - Uses targeted `motion/react` imports.
+     - Rollup code-splitting allocates Motion to dedicated `'vendor-motion'` manual chunk in `vite.config.ts`, preserving sub-4s builds and zero chunk warnings.
+- **Consequences:**
+  - Delivers tactile, physical feedback when launching the command center navigation.
+  - Zero cumulative layout shift (CLS) or transform fighting during simultaneous spring bloom and ambient drift.
+  - Full backward compatibility with keyboard navigation (Escape handling), click-outside detection, dynamic Arc theme glows, and mobile radial radii.
+
+

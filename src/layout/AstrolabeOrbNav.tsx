@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { User } from 'lucide-react'
+import { motion, AnimatePresence } from 'motion/react'
 import {
   HomeIcon, ProductivityIcon, TimeOsIcon, MindOsIcon,
   WinterArcIcon, FitnessIcon, LearningIcon, FinanceIcon,
@@ -216,18 +217,25 @@ export function AstrolabeOrbNav() {
   return (
     <>
       {/* Backdrop blur (First Bloom) */}
-      <div 
-        onClick={() => {
-          if (activeFanout) {
-            setActiveFanout(null)
-          } else {
-            setIsOpen(false)
-          }
-        }}
-        className={`fixed inset-0 z-40 transition-all duration-500 md:duration-700
-          ${isOpen ? 'bg-background/80 backdrop-blur-md opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`} 
-        aria-hidden="true"
-      />
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div 
+            onClick={() => {
+              if (activeFanout) {
+                setActiveFanout(null)
+              } else {
+                setIsOpen(false)
+              }
+            }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="fixed inset-0 z-40 bg-background/80 backdrop-blur-md pointer-events-auto" 
+            aria-hidden="true"
+          />
+        )}
+      </AnimatePresence>
 
       <div 
         ref={navRef}
@@ -265,121 +273,158 @@ export function AstrolabeOrbNav() {
 
                 return (
                   <div key={item.id}>
-                    {/* Primary Orbital Node */}
-                    <button
-                      onClick={() => handleOrbClick(item)}
-                      onMouseEnter={() => {
-                        setHoveredModule(item.label)
-                        setHoveredColorKey(item.colorKey)
-                        setHoveredCustomColor(item.customColor ?? null)
+                    {/* Primary Orbital Node with Spring Physics */}
+                    <motion.div
+                      className="absolute bottom-2 left-2 z-20 flex h-12 w-12 items-center justify-center"
+                      initial={false}
+                      animate={
+                        isOpen
+                          ? {
+                              x,
+                              y,
+                              scale: 1,
+                              opacity: 1,
+                              filter: isDimmed ? 'blur(3px) opacity(0.25)' : 'blur(0px) opacity(1)',
+                              pointerEvents: isDimmed ? 'none' : 'auto',
+                            }
+                          : {
+                              x: 0,
+                              y: 0,
+                              scale: 0,
+                              opacity: 0,
+                              filter: 'blur(0px) opacity(0)',
+                              pointerEvents: 'none',
+                            }
+                      }
+                      transition={{
+                        type: 'spring',
+                        stiffness: 280,
+                        damping: 22,
+                        mass: 0.8,
+                        delay: isOpen ? (orbit.delayBase / 1000) + (index * 0.025) : 0,
                       }}
-                      onMouseLeave={() => {
-                        setHoveredModule(null)
-                        setHoveredColorKey(null)
-                        setHoveredCustomColor(null)
-                      }}
-                      aria-label={item.label}
-                      className={`absolute bottom-2 left-2 flex h-12 w-12 items-center justify-center rounded-full border shadow-lg transition-all duration-500 ease-out hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary group
-                        ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none scale-0'}
-                        ${isDimmed ? 'filter blur-[3px] opacity-25 pointer-events-none' : ''}
-                      `}
-                      style={{
-                        transform: isOpen ? `translate3d(${x}px, ${y}px, 0)` : 'translate3d(0, 0, 0)',
-                        transitionDelay: isOpen ? `${orbit.delayBase + (index * 35)}ms` : '0ms',
-                        backgroundColor: isItemActive ? moduleColor : 'oklch(var(--bg-surface) / 0.9)',
-                        borderColor: isItemActive || isHovered || isParentFanoutActive
-                          ? moduleColor
-                          : hasHealthGlow
-                          ? healthColor
-                          : 'oklch(var(--border-base))',
-                        color: isItemActive
-                          ? '#000'
-                          : (isHovered || isParentFanoutActive
+                    >
+                      <button
+                        onClick={() => handleOrbClick(item)}
+                        onMouseEnter={() => {
+                          setHoveredModule(item.label)
+                          setHoveredColorKey(item.colorKey)
+                          setHoveredCustomColor(item.customColor ?? null)
+                        }}
+                        onMouseLeave={() => {
+                          setHoveredModule(null)
+                          setHoveredColorKey(null)
+                          setHoveredCustomColor(null)
+                        }}
+                        aria-label={item.label}
+                        className="flex h-12 w-12 items-center justify-center rounded-full border shadow-lg transition-transform duration-200 ease-out hover:scale-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary group"
+                        style={{
+                          backgroundColor: isItemActive ? moduleColor : 'oklch(var(--bg-surface) / 0.9)',
+                          borderColor: isItemActive || isHovered || isParentFanoutActive
                             ? moduleColor
                             : hasHealthGlow
                             ? healthColor
-                            : 'oklch(var(--text-secondary))'),
-                        boxShadow: isItemActive || isHovered || isParentFanoutActive 
-                          ? `0 0 20px ${moduleColor}70` 
-                          : hasHealthGlow
-                          ? `0 0 16px ${healthColor}60, 0 4px 12px rgba(0,0,0,0.2)`
-                          : '0 4px 12px rgba(0,0,0,0.2)'
-                      }}
-                    >
-                      {/* Organic Drift Wrapper */}
-                      <div className={`flex h-full w-full items-center justify-center ${isOpen && !isDimmed ? floatClass(globalIndex) : ''}`}>
-                        <item.icon className="h-5 w-5" />
-                        {/* Ambient status indicator dot for active Arc */}
-                        {item.isArcNode && item.isArcActive && healthColor && (
-                          <span 
-                            className="absolute -top-0.5 -right-0.5 flex h-3 w-3 items-center justify-center rounded-full border-2 border-surface shadow-sm animate-pulse"
-                            style={{
-                              backgroundColor: healthColor,
-                              boxShadow: `0 0 8px ${healthColor}`
-                            }}
-                            title={`Arc Health: ${item.health?.replace('_', ' ').toUpperCase()}`}
-                          />
-                        )}
-                        {/* Sub-module fanout indicator badge */}
-                        {item.fanout && (
-                          <span 
-                            className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full border text-[8px] font-mono font-bold leading-none shadow-sm"
-                            style={{
-                              backgroundColor: isParentFanoutActive ? moduleColor : 'oklch(var(--bg-elevated))',
-                              borderColor: moduleColor,
-                              color: isParentFanoutActive ? '#000' : moduleColor
+                            : 'oklch(var(--border-base))',
+                          color: isItemActive
+                            ? '#000'
+                            : (isHovered || isParentFanoutActive
+                              ? moduleColor
+                              : hasHealthGlow
+                              ? healthColor
+                              : 'oklch(var(--text-secondary))'),
+                          boxShadow: isItemActive || isHovered || isParentFanoutActive 
+                            ? `0 0 20px ${moduleColor}70` 
+                            : hasHealthGlow
+                            ? `0 0 16px ${healthColor}60, 0 4px 12px rgba(0,0,0,0.2)`
+                            : '0 4px 12px rgba(0,0,0,0.2)'
+                        }}
+                      >
+                        {/* Organic Drift Wrapper */}
+                        <div className={`flex h-full w-full items-center justify-center ${isOpen && !isDimmed ? floatClass(globalIndex) : ''}`}>
+                          <item.icon className="h-5 w-5" />
+                          {/* Ambient status indicator dot for active Arc */}
+                          {item.isArcNode && item.isArcActive && healthColor && (
+                            <span 
+                              className="absolute -top-0.5 -right-0.5 flex h-3 w-3 items-center justify-center rounded-full border-2 border-surface shadow-sm animate-pulse"
+                              style={{
+                                backgroundColor: healthColor,
+                                boxShadow: `0 0 8px ${healthColor}`
+                              }}
+                              title={`Arc Health: ${item.health?.replace('_', ' ').toUpperCase()}`}
+                            />
+                          )}
+                          {/* Sub-module fanout indicator badge */}
+                          {item.fanout && (
+                            <span 
+                              className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full border text-[8px] font-mono font-bold leading-none shadow-sm"
+                              style={{
+                                backgroundColor: isParentFanoutActive ? moduleColor : 'oklch(var(--bg-elevated))',
+                                borderColor: moduleColor,
+                                color: isParentFanoutActive ? '#000' : moduleColor
+                              }}
+                            >
+                              +
+                            </span>
+                          )}
+                        </div>
+                      </button>
+                    </motion.div>
+
+                    {/* Secondary Bloom Satellite Child Orbs with Spring Physics & AnimatePresence */}
+                    <AnimatePresence>
+                      {isOpen && isParentFanoutActive && item.fanout && item.fanout.map((child, childIdx) => {
+                        const childPos = calculateChildPosition(angleRad, orbit.radius, childIdx, item.fanout!.length)
+                        const isChildActive = location.pathname === child.path || (child.path !== '/' && location.pathname.startsWith(child.path))
+                        const childColor = colors[child.colorKey] || '#ffffff'
+                        const isChildHovered = hoveredModule === child.label
+
+                        return (
+                          <motion.div
+                            key={child.path}
+                            className="absolute bottom-2 left-2 z-30 flex h-11 w-11 items-center justify-center"
+                            initial={{ x, y, scale: 0.3, opacity: 0 }}
+                            animate={{ x: childPos.x, y: childPos.y, scale: 1, opacity: 1 }}
+                            exit={{ x, y, scale: 0.3, opacity: 0 }}
+                            transition={{
+                              type: 'spring',
+                              stiffness: 350,
+                              damping: 24,
+                              mass: 0.6,
+                              delay: childIdx * 0.04,
                             }}
                           >
-                            +
-                          </span>
-                        )}
-                      </div>
-                    </button>
-
-                    {/* Secondary Bloom Satellite Child Orbs */}
-                    {item.fanout && item.fanout.map((child, childIdx) => {
-                      const childPos = calculateChildPosition(angleRad, orbit.radius, childIdx, item.fanout!.length)
-                      const isChildActive = location.pathname === child.path || (child.path !== '/' && location.pathname.startsWith(child.path))
-                      const childColor = colors[child.colorKey] || '#ffffff'
-                      const isChildHovered = hoveredModule === child.label
-
-                      return (
-                        <button
-                          key={child.path}
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            handleNavigate(child.path)
-                          }}
-                          onMouseEnter={() => {
-                            setHoveredModule(child.label)
-                            setHoveredColorKey(child.colorKey)
-                          }}
-                          onMouseLeave={() => {
-                            setHoveredModule(null)
-                            setHoveredColorKey(null)
-                          }}
-                          aria-label={child.label}
-                          className={`absolute bottom-2 left-2 z-30 flex h-11 w-11 items-center justify-center rounded-full border shadow-2xl transition-all duration-300 ease-out hover:scale-115 focus:outline-none focus:ring-2 focus:ring-primary group
-                            ${isParentFanoutActive && isOpen ? 'opacity-100 scale-100 pointer-events-auto' : 'opacity-0 scale-50 pointer-events-none'}
-                          `}
-                          style={{
-                            transform: isParentFanoutActive && isOpen
-                              ? `translate3d(${childPos.x}px, ${childPos.y}px, 0)`
-                              : `translate3d(${x}px, ${y}px, 0)`,
-                            backgroundColor: isChildActive ? childColor : 'oklch(var(--bg-surface) / 0.95)',
-                            borderColor: isChildActive || isChildHovered ? childColor : 'oklch(var(--border-base))',
-                            color: isChildActive ? '#000' : (isChildHovered ? childColor : 'oklch(var(--text-secondary))'),
-                            boxShadow: isChildActive || isChildHovered 
-                              ? `0 0 22px ${childColor}80` 
-                              : '0 6px 16px rgba(0,0,0,0.35)'
-                          }}
-                        >
-                          <div className={`flex h-full w-full items-center justify-center ${isParentFanoutActive ? floatClass(childIdx + 1) : ''}`}>
-                            <child.icon className="h-4 w-4" />
-                          </div>
-                        </button>
-                      )
-                    })}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleNavigate(child.path)
+                              }}
+                              onMouseEnter={() => {
+                                setHoveredModule(child.label)
+                                setHoveredColorKey(child.colorKey)
+                              }}
+                              onMouseLeave={() => {
+                                setHoveredModule(null)
+                                setHoveredColorKey(null)
+                              }}
+                              aria-label={child.label}
+                              className="flex h-11 w-11 items-center justify-center rounded-full border shadow-2xl transition-transform duration-200 ease-out hover:scale-115 active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary group"
+                              style={{
+                                backgroundColor: isChildActive ? childColor : 'oklch(var(--bg-surface) / 0.95)',
+                                borderColor: isChildActive || isChildHovered ? childColor : 'oklch(var(--border-base))',
+                                color: isChildActive ? '#000' : (isChildHovered ? childColor : 'oklch(var(--text-secondary))'),
+                                boxShadow: isChildActive || isChildHovered 
+                                  ? `0 0 22px ${childColor}80` 
+                                  : '0 6px 16px rgba(0,0,0,0.35)'
+                              }}
+                            >
+                              <div className={`flex h-full w-full items-center justify-center ${isParentFanoutActive ? floatClass(childIdx + 1) : ''}`}>
+                                <child.icon className="h-4 w-4" />
+                              </div>
+                            </button>
+                          </motion.div>
+                        )
+                      })}
+                    </AnimatePresence>
                   </div>
                 )
               })}
@@ -389,7 +434,8 @@ export function AstrolabeOrbNav() {
 
         {/* Central Orb Trigger & Home Launcher */}
         <div className="relative">
-          <button
+          <motion.button
+            whileTap={{ scale: 0.93 }}
             onClick={() => {
               if (!isOpen) {
                 setIsOpen(true)
@@ -398,8 +444,8 @@ export function AstrolabeOrbNav() {
                 handleNavigate('/')
               }
             }}
-            className={`relative z-50 flex h-16 w-16 items-center justify-center rounded-full border border-border/80 bg-surface shadow-2xl transition-all duration-500 focus:outline-none focus:ring-4 focus:ring-primary/20 overflow-hidden group
-              ${isOpen ? 'scale-95 bg-elevated border-primary/50 shadow-primary/25' : 'hover:scale-105 hover:shadow-primary/10 hover:border-primary/30'}
+            className={`relative z-50 flex h-16 w-16 items-center justify-center rounded-full border border-border/80 bg-surface shadow-2xl transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-primary/20 overflow-hidden group
+              ${isOpen ? 'scale-95 bg-elevated border-primary/50 shadow-primary/25' : 'hover:shadow-primary/10 hover:border-primary/30'}
             `}
             style={{
               borderColor: isOpen && hoveredColor ? hoveredColor : undefined,
@@ -461,7 +507,7 @@ export function AstrolabeOrbNav() {
                 </svg>
               </div>
             )}
-          </button>
+          </motion.button>
         </div>
       </div>
     </>

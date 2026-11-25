@@ -40,7 +40,7 @@ npm run verify:release   # Full composite gate
 
 ## Source-of-Truth (descending priority)
 
-1. `supabase/migrations/` → 2. `src/types/database.types.ts` (NEVER hand-edit) → 3. `docs/decisions/ARCHITECTURE_DECISIONS.md` → 4. Architecture docs → 5. Source code → 6. Module/event guides → 7. Operations docs
+1. `supabase/migrations/` → 2. `src/types/database.types.ts` (NEVER hand-edit) → 3. `docs/decisions/ARCHITECTURE_DECISIONS.md` (ADR-001 through ADR-030) → 4. Architecture docs → 5. Source code → 6. Module/event guides → 7. Operations docs
 
 ## Critical Anti-Patterns
 
@@ -61,7 +61,7 @@ After every session that modifies code:
 ## Full Documentation
 
 - **Agent Handbook:** [`docs/operations/AGENTS.md`](docs/operations/AGENTS.md) — operational boundaries & protocols
-- **Architecture Decisions:** [`docs/decisions/ARCHITECTURE_DECISIONS.md`](docs/decisions/ARCHITECTURE_DECISIONS.md) — ADR-001 through ADR-029
+- **Architecture Decisions:** [`docs/decisions/ARCHITECTURE_DECISIONS.md`](docs/decisions/ARCHITECTURE_DECISIONS.md) — ADR-001 through ADR-030
 - **Database Schema:** [`docs/architecture/DATABASE_SCHEMA.md`](docs/architecture/DATABASE_SCHEMA.md) — 33 tables, all columns
 - **Event Taxonomy:** [`docs/architecture/EVENT_TAXONOMY.md`](docs/architecture/EVENT_TAXONOMY.md) — canonical event constants
 - **Module Guide:** [`docs/architecture/MODULE_GUIDE.md`](docs/architecture/MODULE_GUIDE.md) — 14 domain modules

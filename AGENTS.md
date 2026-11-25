@@ -34,7 +34,7 @@ npm run build            # tsc -b && vite build
 
 1. `supabase/migrations/` and remote Supabase tables
 2. `src/types/database.types.ts` (generated — NEVER hand-edit)
-3. `docs/decisions/ARCHITECTURE_DECISIONS.md` (ADR-001 through ADR-029)
+3. `docs/decisions/ARCHITECTURE_DECISIONS.md` (ADR-001 through ADR-030)
 4. `docs/architecture/SYSTEM_ARCHITECTURE.md` and `docs/architecture/DATABASE_SCHEMA.md`
 5. Active implementations in `src/`
 6. `docs/architecture/MODULE_GUIDE.md` and `docs/architecture/EVENT_TAXONOMY.md`

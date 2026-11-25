@@ -19,8 +19,8 @@ The Life OS database runs on hosted PostgreSQL 15+ via Supabase.
 
 - **Total Base Tables:** **33 base tables** (32 active operational tables + 1 historical archive table).
 - **Total Views:** **15 active SQL aggregation views** (+ 4 planned views).
-- **Row Level Security (RLS):** Enabled and enforced on all 33 application tables. Every query executes under `auth.uid() = user_id`.
-- **Security Invoker Views:** All 15 SQL views run with `security_invoker = true`, ensuring view queries automatically execute under the authenticated user's RLS permissions.
+- **Row Level Security (RLS):** Enabled and enforced on all 33 application tables. All user-owned tables enforce `TO authenticated` with InitPlan scalar subquery caching `(SELECT auth.uid()) = user_id` (hardened in migrations `202609220000` and `202611250000`); `data_lab_signal_config` allows `SELECT TO authenticated USING (true)`.
+- **Security Invoker Views:** All 15 SQL views run with `security_invoker = true`, ensuring view queries automatically execute under the authenticated user's RLS permissions. Longitudinal views (`data_lab_daily_activity_90d`, `current_day_snapshot_history_14d`, `data_lab_module_consistency_30d`, `data_lab_weekly_system_score_12w`) use bounded IST window range scans and single-pass aggregation (`202611250000`).
 - **Timezone Standardization:** All behavioral day partitions, rolling windows, and aggregations are normalized to Indian Standard Time (`Asia/Kolkata`, IST, UTC+5:30).
 
 ---
@@ -663,6 +663,11 @@ The following 4 views were specified during Winter Arc architectural planning an
 | `progress_hub_archive` | `UNIQUE(user_id)` | Enforces single historical archive record per user. |
 | `events` | `idx_events_user_date_ist` (`(user_id, event_date_ist DESC)`) | Accelerates longitudinal telemetry queries. |
 | `transactions` | `idx_transactions_user_timestamp` (`(user_id, timestamp DESC)`) | Accelerates monthly and longitudinal finance aggregations. |
+| `exercise_logs` | `idx_exercise_logs_user_id` (`(user_id)`) | Un-predicated tenant B-tree index for RLS & non-filtered queries. |
+| `experiments` | `idx_experiments_user_id` (`(user_id)`) | Tenant B-tree index for RLS policy lookups. |
+| `knowledge_resources` | `idx_knowledge_resources_user_id` (`(user_id)`) | Tenant B-tree index for RLS policy lookups. |
+| `pulse_logs` | `idx_pulse_logs_user_timestamp` (`(user_id, timestamp DESC)`) | Tenant B-tree index & chronological Life Pulse lookups. |
+| `learning_session_logs` | `idx_learning_session_logs_user_logged_at_active` (`(user_id, logged_at DESC) WHERE deleted_at IS NULL`) | Accelerates bounded 7d/90d study log range scans. |
 | `data_lab_signal_config` | Primary Key (`signal_key`) | Global domain signal weighting configuration. |
 
 ---

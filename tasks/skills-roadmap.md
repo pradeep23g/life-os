@@ -31,26 +31,26 @@ Life OS is a multi-domain behavioral operating system designed to accumulate yea
 - [x] **OKLCH Solar Theme Dynamic Hue Rotation & True-Black Calibration**
   - Exposed master `--brand-h` CSS variable in `src/index.css` for dynamic solar hue shift.
   - Calibrated true OLED black (`0% 0 0`) canvas with anti-smear elevated surfaces (`12%` / `16%`) in `.theme-midnight` to prevent OLED pixel smearing during kinetic scroll.
-- [ ] **Physics-Based Kinetic Navigation with Motion (`motion/react`)**
-  - Future exploration: Evaluate spring physics (`stiffness`, `damping`, `mass`) for Astrolabe Orb navigation shell following formal ADR evaluation.
+- [x] **Physics-Based Kinetic Navigation with Motion (`motion/react`)**
+  - Codified under ADR-030 with spring dynamics (`stiffness: 280, damping: 22, mass: 0.8`).
+  - Decoupled DOM layers in `AstrolabeOrbNav.tsx` (outer `<motion.div>` for radial spring translation, inner `<div>` for organic float drift, `<AnimatePresence>` for satellite child bloom).
+  - Allocated Motion runtime to isolated `'vendor-motion'` manual chunk in `vite.config.ts`.
 
 ---
 
 ## Track 2: SQL & Supabase Performance
 **Priority: CRITICAL** | **Focus:** Sub-millisecond database queries, RLS tenant isolation, and view aggregations
 
-- [ ] **RLS Policy InitPlan Subquery Optimization (`(SELECT auth.uid())`)**
-  - Scope: Core tables (`habits`, `tasks`, `goals`, `time_logs`, `transactions`, `events`, etc.).
-  - Problem: Calling `auth.uid() = user_id` directly causes PostgreSQL to re-evaluate the function per row on sequential scans.
-  - Action: Author an additive migration rewriting all core RLS policies to use `USING ((SELECT auth.uid()) = user_id) WITH CHECK ((SELECT auth.uid()) = user_id)` (matching the pattern established in migration `202609220000_rls_policy_hardening.sql`).
-- [ ] **RLS Foreign Key & Tenant Index Audit**
-  - Verify all columns participating in RLS `USING` and `WITH CHECK` clauses have explicit B-tree indexes.
-  - Ensure foreign keys used in `security_invoker = true` views (e.g. `workout_id`, `roadmap_id`) are indexed to eliminate nested-loop sequential scans.
-- [ ] **Materialized Views for 90-Day Longitudinal Aggregations**
-  - Evaluate query execution plans (`EXPLAIN ANALYZE`) on `data_lab_daily_activity_90d` and `current_day_snapshot_history_14d`.
-  - If multi-table joins under `security_invoker` exceed acceptable latency at multi-year data scale, introduce scheduled materialized views refreshed via pg_cron or Evening Sync triggers.
-- [ ] **Role Scoping (`TO authenticated`) on Legacy Policies**
-  - Ensure every policy explicitly specifies `TO authenticated` to prevent policy evaluation during internal administrative operations.
+- [x] **RLS Policy InitPlan Subquery Optimization (`(SELECT auth.uid())`)**
+  - Scope: Rewrote all 99 remaining RLS policies across 26 tables (`habits`, `habit_logs`, `habit_streak_breaks`, `habit_streak_heals`, `journal_entries`, `tasks`, `goals`, `weekly_plans`, `weekly_plan_items`, `weekly_reviews`, `learning_*`, `fitness_exercises`, `workouts`, `exercise_logs`, `time_logs`, `transactions`, `events`, `system_event_queue`, `system_metrics`, `progress_hub_archive`) in `supabase/migrations/202611250000_track2_rls_index_view_optimization.sql` to use `((SELECT auth.uid()) = user_id)`, achieving 100% InitPlan parity across all 33 base tables.
+- [x] **RLS Foreign Key & Tenant Index Audit**
+  - Audited all 33 tables and 22 `public.*` foreign keys via `pg_indexes` and `pg_constraint` on local PostgreSQL 17.
+  - Confirmed all 22 `public.*` FK columns already had leading un-predicated B-tree indexes, and added missing un-predicated leading `user_id` indexes on `exercise_logs` (`idx_exercise_logs_user_id`), `experiments` (`idx_experiments_user_id`), `knowledge_resources` (`idx_knowledge_resources_user_id`), `pulse_logs` (`idx_pulse_logs_user_timestamp`), plus `idx_learning_session_logs_user_logged_at_active` for bounded study log range scans.
+- [x] **Materialized Views for 90-Day Longitudinal Aggregations**
+  - Evaluated `EXPLAIN (ANALYZE, BUFFERS)` on `data_lab_daily_activity_90d` and `current_day_snapshot_history_14d` under synthetic 3-year (~100k rows) and 10-year (~350k rows) multi-user datasets.
+  - Eliminated 7x/8x redundant view scans in `data_lab_module_consistency_30d` / `data_lab_weekly_system_score_12w`, unified `events` scans, and added `(SELECT auth.uid())` + IST `timestamptz` / `date` window bounds to all CTEs. Execution dropped to ~1.2–4.4 ms (`current_day_snapshot_history_14d`) and ~3.5 ms at 10-year scale (`data_lab_daily_activity_90d`, 119 buffers vs 2,651 baseline buffers), keeping `security_invoker = true` live views fast without introducing stale materialized views or `pg_cron` dependencies.
+- [x] **Role Scoping (`TO authenticated`) on Legacy Policies**
+  - Replaced legacy `{public}` role scoping on `habits`, `habit_logs`, `habit_streak_breaks`, `habit_streak_heals`, and `journal_entries` (`UPDATE`/`DELETE`) with explicit `TO authenticated`. Verified `0` policies in `pg_policies` lack `TO authenticated` or `(SELECT auth.uid())`.
 
 ---
 

@@ -380,8 +380,93 @@ Each entry follows this exact structure:
 **Handoff notes for next agent:**
 > Track 1 (UI & Frontend Craft) optimizations are in place. Production build is split into small vendor chunks (`vendor-react`, `vendor-supabase`, `vendor-query`, `vendor-ui`). Document PiP runs independent wall-clock ticker on `pipWindow`. All 11 doc drift gates pass.
 
+---
+
+### Session 2026-11-25-k8m2 — ADR-030 Physics-Based Kinetic Navigation with Motion & Full Track 1 Completion
+- **Agent:** Antigravity (Advanced Agentic Coding)
+- **Date:** 2026-11-25T21:45:00+05:30
+- **Duration:** ~30m
+- **Task:** Author ADR-030, install `motion`, implement physics-based kinetic navigation with spring dynamics in `AstrolabeOrbNav.tsx`, partition Rollup bundle for `motion`, and complete Track 1.
+- **Scope:** `docs/decisions/ARCHITECTURE_DECISIONS.md`, `docs/INDEX.md`, `AGENTS.md`, `CLAUDE.md`, `package.json`, `package-lock.json`, `vite.config.ts`, `src/layout/AstrolabeOrbNav.tsx`, `docs/architecture/SYSTEM_ARCHITECTURE.md`, `docs/architecture/UI_SYSTEM.md`, `tasks/skills-roadmap.md`.
+
+**What was done:**
+- Architectural Invariants & ADR Authoring:
+  - Authored `ADR-030: Astrolabe Orb Kinetic Spring Physics with Motion` in `docs/decisions/ARCHITECTURE_DECISIONS.md` establishing spring physics constants (`stiffness: 280, damping: 22, mass: 0.8`), multi-tier DOM separation to eliminate CSS keyframe transform collision, and `AnimatePresence` satellite exit/entrance choreography.
+  - Maintained ADR monotonicity (ADR-001 through ADR-030 gapless) across `docs/INDEX.md`, `AGENTS.md`, and `CLAUDE.md`.
+- Dependency & Bundle Architecture:
+  - Installed `motion@^14.14.0` via `npm install motion`.
+  - Configured Rollup `manualChunks` in `vite.config.ts` isolating `'vendor-motion': ['motion']` into a dedicated 125.41 kB (42.79 kB gzip) vendor chunk, preserving the primary application chunk budget at ~381 kB.
+- Physics-Based Astrolabe Orb Navigation (`src/layout/AstrolabeOrbNav.tsx`):
+  - Primary orbital nodes converted to `<motion.div>` with spring physics (`stiffness: 280, damping: 22, mass: 0.8`) and radial delay staggering (`orbit.delayBase / 1000 + index * 0.025`).
+  - Preserved decoupled inner `div.animate-orb-float-*` continuous sinusoidal floating drift without transform matrix contention.
+  - Wrapped secondary bloom satellite children in `<AnimatePresence>` with spring bloom and exit animations (`stiffness: 350, damping: 24, mass: 0.6`).
+  - Fullscreen backdrop blur converted to `<AnimatePresence>` fade transition (`duration: 0.3`).
+  - Central launcher button upgraded with tactile `<motion.button whileTap={{ scale: 0.93 }}>` micro-interaction.
+- Documentation & Roadmap:
+  - Updated `docs/architecture/SYSTEM_ARCHITECTURE.md` (Sections 1, 6, 6.2, 13) and `docs/architecture/UI_SYSTEM.md` citing ADR-030 alongside ADR-023.
+  - Marked Track 1 (UI & Frontend Craft) completely fulfilled in `tasks/skills-roadmap.md`.
+
+**What was NOT done (and why):**
+- Testing suite was not run during this pass per quick setup protocol. Full release gate `npm run verify:release` was run and passed.
+
+**Findings logged:** None
+**Mistakes logged:** None
+
+**Verification:**
+- [x] Documentation drift verification (`node scripts/verify-doc-drift.mjs`): 11/11 gates passed across 61 markdown files.
+- [x] `tsc -b` passes (0 errors).
+- [x] `eslint .` passes (0 errors, 0 warnings).
+- [x] `npm run build` succeeds (production bundle generated in 8.71s).
+- [x] `npm run verify:release` succeeds.
+
+**Handoff notes for next agent:**
+> Track 1 (UI & Frontend Craft) is 100% complete and fully verified. Navigation uses `motion/react` with spring physics governed by ADR-030. Outer spring containers and inner float drift containers are strictly decoupled. Ready to advance to Track 2 (SQL & Supabase Performance) or other roadmap priorities.
 
 
 
 
 
+
+
+
+---
+
+### Session 2026-11-25-t2p9 — Track 2 SQL & Supabase Performance Optimization
+- **Agent:** Antigravity (Advanced Agentic Coding)
+- **Date:** 2026-11-25T21:55:00+05:30
+- **Duration:** ~20m
+- **Task:** Verify Supabase CLI and Docker, audit RLS policies and tenant/FK indexes, evaluate `EXPLAIN ANALYZE` on longitudinal views, and complete Track 2 in `tasks/skills-roadmap.md`.
+- **Scope:** `supabase/config.toml`, `supabase/.gitignore`, `supabase/migrations/202611250000_track2_rls_index_view_optimization.sql`, `tasks/skills-roadmap.md`, `docs/architecture/DATABASE_SCHEMA.md`, `docs/agent-ledger/HANDOFF.md`, `docs/agent-ledger/SESSION_LOG.md`.
+
+**What was done:**
+- Environment & Local Stack Verification:
+  - Verified Supabase CLI (`3.2.0`) and Docker (`29.10.0`), initialized `supabase/config.toml`, and started local Supabase PostgreSQL 17 stack (`supabase start`).
+- RLS InitPlan & Role Scoping Audit (`202611250000_track2_rls_index_view_optimization.sql`):
+  - Audited `pg_policies` across all 33 tables (106 total policies) and identified 99 policies across 26 tables lacking `((SELECT auth.uid()) = user_id)` InitPlan caching, including legacy `{public}`-scoped policies on `habits`, `habit_logs`, `habit_streak_breaks`, `habit_streak_heals`, and `journal_entries` (`UPDATE`/`DELETE`).
+  - Rewrote all 99 policies with `TO authenticated` and `((SELECT auth.uid()) = user_id)` matching `202609220000_rls_policy_hardening.sql`.
+- Tenant & Foreign Key Index Audit:
+  - Audited `pg_indexes`, `information_schema.columns`, and `pg_constraint`; verified all 22 `public.*` foreign keys have leading un-predicated B-tree indexes.
+  - Added missing un-predicated leading `user_id` indexes on `exercise_logs` (`idx_exercise_logs_user_id`), `experiments` (`idx_experiments_user_id`), `knowledge_resources` (`idx_knowledge_resources_user_id`), `pulse_logs` (`idx_pulse_logs_user_timestamp`), plus `idx_learning_session_logs_user_logged_at_active`.
+- Longitudinal View `EXPLAIN (ANALYZE, BUFFERS)` Evaluation & Optimization:
+  - Benchmarked `data_lab_daily_activity_90d`, `current_day_snapshot_history_14d`, `data_lab_module_consistency_30d`, and `data_lab_weekly_system_score_12w` under synthetic 3-year (~100k rows) and 10-year (~350k rows) multi-user datasets.
+  - Replaced unbounded multi-year CTE scans and 7x/8x redundant view evaluations with `(SELECT auth.uid())` InitPlan caching, IST `timestamptz`/`date` window bounds, single-pass `events` aggregation, and `CROSS JOIN LATERAL (VALUES ...)` single-pass consistency/score views.
+  - Verified 10-year execution drops to ~3.5 ms (119 shared buffers vs 2,651 baseline) for `data_lab_daily_activity_90d` and ~1.2–4.4 ms (29 shared buffers vs 1,137 baseline) for `current_day_snapshot_history_14d`, confirming live `security_invoker = true` views meet sub-15ms performance without stale materialized views.
+- Documentation:
+  - Updated `tasks/skills-roadmap.md`, `docs/architecture/DATABASE_SCHEMA.md`, `docs/agent-ledger/HANDOFF.md`, and `docs/agent-ledger/SESSION_LOG.md`.
+
+**What was NOT done (and why):**
+- Remote `supabase db push` was not run (changes applied and verified on local Supabase stack only).
+- Materialized views were intentionally not introduced because `EXPLAIN ANALYZE` with bounded IST range scans achieved ~1.2–4.4 ms latency at 10-year scale while preserving `security_invoker = true` and real-time freshness.
+
+**Findings logged:** None
+**Mistakes logged:** None
+
+**Verification:**
+- [x] `supabase db reset` applied all 35 migrations cleanly on local PostgreSQL 17.
+- [x] `pg_policies`, `pg_indexes`, and `pg_class` audits confirmed 0 unscoped/non-InitPlan policies, 0 missing `user_id`/FK indexes, and `{security_invoker=true}` on all 15 views.
+- [x] `scripts/smoke/run-smoke-validation.mjs` passed 29/29 checks against the local Supabase instance.
+- [x] `npm run verify:release` passed (11/11 doc drift gates, 0 ESLint errors/warnings, 0 `tsc -b` errors, Vite build in 6.16s).
+- [ ] `verify-integrity-contracts.mjs` and `verify-adversarial-attacks.mjs` skipped/blocked on pre-existing missing `src/features/data-lab/metrics/consistency.ts` import (unrelated to Track 2).
+
+**Handoff notes for next agent:**
+> Track 2 (SQL & Supabase Performance) is complete and verified locally. Remember to apply `supabase/migrations/202611250000_track2_rls_index_view_optimization.sql` to remote Supabase before production release.

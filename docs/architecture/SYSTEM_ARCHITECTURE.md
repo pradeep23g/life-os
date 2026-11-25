@@ -30,7 +30,7 @@ Browser Client (SPA)
   ├── TailwindCSS v3 (True-black high-contrast design system + OKLCH Solar Themes)
   ├── TanStack React Query v5 (Exclusive server state manager & cache)
   ├── Zustand v5 (Transient operational event bus & UI state)
-  ├── Astrolabe Orb Navigation (2-ring kinetic orb shell with secondary bloom fanouts, ADR-023)
+  ├── Astrolabe Orb Navigation (2-ring kinetic orb shell with secondary bloom fanouts, ADR-023, ADR-030)
   ├── Lucide React (Iconography)
   └── Supabase JS v2 Client (@supabase/supabase-js)
         ↓
@@ -109,7 +109,7 @@ Presenting execution pressure (e.g. overdue tasks, urgent deadlines, backlog cou
 
 ## 6. Routing & Navigation Architecture
 
-Life OS features 14 active client routes declared in [src/App.tsx](../../src/App.tsx) with route-level code splitting via `React.lazy()` and `<Suspense>` fallbacks (`PageLoadingFallback`). The primary user interface is anchored by the 2-ring Kinetic Astrolabe Orb navigation shell (ADR-023).
+Life OS features 14 active client routes declared in [src/App.tsx](../../src/App.tsx) with route-level code splitting via `React.lazy()` and `<Suspense>` fallbacks (`PageLoadingFallback`). The primary user interface is anchored by the 2-ring Kinetic Astrolabe Orb navigation shell (ADR-023, ADR-030).
 
 ### 6.1 Client Route Tree & Layout Hierarchy
 
@@ -153,7 +153,7 @@ Life OS features 14 active client routes declared in [src/App.tsx](../../src/App
 - **Instant Redirects:** Legacy `/mission-control` redirects seamlessly to `/system`. Direct visits to `/fitness-os` index redirect immediately to `/fitness-os/workouts`.
 - **Wildcard Recovery:** Any unknown route (`/*`) is captured and redirected to `/` (which cascades to `/auth` if unauthenticated).
 
-### 6.2 Astrolabe Orb Navigation Shell (ADR-023)
+### 6.2 Astrolabe Orb Navigation Shell (ADR-023, ADR-030)
 
 The historical static desktop sidebar and mobile drawer were retired in Winter Arc 2.0. Navigation is driven exclusively by the **Kinetic Astrolabe Orb Navigation** (`src/layout/AstrolabeOrbNav.tsx`):
 
@@ -340,7 +340,7 @@ Learning OS (`src/features/learning-os/`) provides structured skill curriculum m
 
 ## 13. Shared Infrastructure & App Shell
 
-- **Astrolabe Orb Navigation:** Edge-anchored 2-ring kinetic orb shell with secondary bloom fanouts, dual-role Central Orb Home launcher, organic drift physics, and consolidated profile operations (see Section 6.2 & ADR-023).
+- **Astrolabe Orb Navigation:** Edge-anchored 2-ring kinetic orb shell with secondary bloom fanouts, dual-role Central Orb Home launcher, organic drift physics, and consolidated profile operations (see Section 6.2 & ADR-023, ADR-030).
 - **Living Horizon Header:** Contextual mobile top navigation bar (`md:hidden`) synchronizing domain branding and shell title (`src/layout/shellTitle.ts`).
 - **Global Overlays:**
   - `GlobalTimerBar`: Sticky floating timer bar for running focus sessions.
