@@ -1,15 +1,13 @@
 import { useMemo } from 'react'
 import { useEventsAnalytics } from '../../../lib/useEventsAnalytics'
-import { useFitnessWeeklySummary } from '../../fitness-os/api/useFitness'
-import { useHabitWorkspace } from '../../mind-os/api/useHabits'
-import { useJournal } from '../../mind-os/api/useJournal'
-import { useRoadmaps } from '../../learning-os/api/useLearningOS'
-import { useTasks } from '../../productivity-hub/api/useTasks'
-import { useSystemStatus } from '../../system/api/useSystemStatus'
-import { useTimeAnalytics } from '../../time-os/api/useTimeAnalytics'
-import { useTransactions } from '../../finance-os/api/useFinance'
+import { useFitnessWeeklySummary } from '../../fitness-os'
+import { useHabitWorkspace, useJournal } from '../../mind-os'
+import { useRoadmaps } from '../../learning-os'
+import { useTasks } from '../../productivity-hub'
+import { useSystemStatus, usePendingEventsCount } from '../../system'
+import { useTimeAnalytics } from '../../time-os'
+import { useTransactions } from '../../finance-os'
 import { useEventBus } from '../../../store/useEventBus'
-import { usePendingEventsCount } from '../../system/api/useEveningSync'
 
 import {
   evaluateSystemThreats,

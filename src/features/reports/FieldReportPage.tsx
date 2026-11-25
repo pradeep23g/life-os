@@ -1,28 +1,26 @@
 import { useState, useMemo } from 'react'
-import { getWeekStartDateISO, useWeeklyReview } from '../productivity-hub/api/usePlanning'
-import { useTasks } from '../productivity-hub/api/useTasks'
-import { useHabitWorkspace } from '../mind-os/api/useHabits'
-import { useJournal } from '../mind-os/api/useJournal'
-import { useAllExerciseLogs, useFitnessExercises } from '../fitness-os/api/useFitness'
+import { getWeekStartDateISO, useWeeklyReview, useTasks } from '../productivity-hub'
+import { useHabitWorkspace, useJournal } from '../mind-os'
+import { useAllExerciseLogs, useFitnessExercises } from '../fitness-os'
 import { toIndiaDateKey } from '../../lib/events'
 import { ReportsIcon } from '../../components/icons'
 import { LoadingView } from '../../components/LoadingView'
 
 function parseISODate(dateStr: string): Date {
-  const [y, m, d] = dateStr.split('-').map(Number)
+  const [y = 1970, m = 1, d = 1] = dateStr.split('-').map(Number)
   return new Date(y, m - 1, d)
 }
 
-function getPreviousWeek(dateISO: string) {
+function getPreviousWeek(dateISO: string): string {
   const d = new Date(`${dateISO}T12:00:00Z`)
   d.setUTCDate(d.getUTCDate() - 7)
-  return d.toISOString().split('T')[0]
+  return d.toISOString().split('T')[0] ?? dateISO
 }
 
-function getNextWeek(dateISO: string) {
+function getNextWeek(dateISO: string): string {
   const d = new Date(`${dateISO}T12:00:00Z`)
   d.setUTCDate(d.getUTCDate() + 7)
-  return d.toISOString().split('T')[0]
+  return d.toISOString().split('T')[0] ?? dateISO
 }
 
 function joinBulletItems(items: string | null): string[] {

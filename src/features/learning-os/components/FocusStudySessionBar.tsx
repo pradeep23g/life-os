@@ -18,7 +18,7 @@ export function FocusStudySessionBar({ roadmaps, onOpenLogModal }: FocusStudySes
   const [elapsedMinutes, setElapsedMinutes] = useState(0)
 
   const activeRoadmaps = roadmaps.filter((r) => r.status === 'active')
-  const effectiveSelectedId = selectedRoadmapId || (activeRoadmaps.length > 0 ? activeRoadmaps[0].id : '')
+  const effectiveSelectedId = selectedRoadmapId || (activeRoadmaps[0]?.id ?? '')
 
   const isLearningTimer = activeTimer && activeTimer.bucket === 'Learning'
 

@@ -1,7 +1,7 @@
 import { Avatar } from '../../../components/Avatar'
 import { ArcIcon } from './ArcIcon'
 import type { ArcSeasonConfig } from '../types'
-import type { LifeState } from '../../mission-control/types/snapshot'
+import type { LifeState } from '../../mission-control'
 
 interface ChapterHeroProps {
   config: ArcSeasonConfig
@@ -32,7 +32,7 @@ export function ChapterHero({ config, lifeState, momentumScore }: ChapterHeroPro
               className="flex items-center justify-center w-6 h-6 rounded-md bg-surface border border-border/80 shadow-sm transition-colors"
               style={{ color: accentColor }}
             >
-              <ArcIcon name={config.icon} className="h-3.5 w-3.5" />
+              <ArcIcon name={config.icon ?? null} className="h-3.5 w-3.5" />
             </div>
             <p className="font-mono text-xs uppercase tracking-wider text-text-tertiary">
               {config.chapter} • ARCHIVE {config.year}

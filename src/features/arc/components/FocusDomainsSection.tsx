@@ -1,5 +1,5 @@
 import type { ArcFocusDomain } from '../types'
-import type { DataLabDailyActivity } from '../../data-lab/api/useDataLab'
+import type { DataLabDailyActivity } from '../../data-lab'
 import { resolveBinding } from '../utils/telemetryRegistry'
 import { TELEMETRY_BINDING_REGISTRY, type TelemetryBindingKey } from '../constants'
 import { Activity, Target } from 'lucide-react'

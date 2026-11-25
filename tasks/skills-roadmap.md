@@ -57,43 +57,31 @@ Life OS is a multi-domain behavioral operating system designed to accumulate yea
 ## Track 3: Clean Engineering & Architecture
 **Priority: CRITICAL** | **Focus:** Domain isolation, cognitive boundaries, and preventing codebase entropy
 
-- [ ] **Feature-Sliced Design (FSD) Layering Enforcement**
-  - Enforce strict downward dependency boundaries (`app → pages → widgets → features → entities → shared`) to guarantee domain isolation.
-  - Add ESLint rule (`@feature-sliced/eslint-plugin` or custom import boundary rules) preventing horizontal cross-imports between `features/mind-os` and `features/productivity-hub` (enforcing Invariant 1: Cognitive Boundary).
-- [ ] **Public API Barrel Contracts (`index.ts`)**
-  - Standardize all 14 domain directories to export public hooks, components, and types exclusively via domain `index.ts` files, making internals private and refactorable.
-- [ ] **Discriminated Unions for Complex UI States**
-  - Eliminate boolean state combinations (`isLoading && !isError && isSyncing`) across query consumers.
-  - Standardize domain state machines to explicit discriminated unions:
-    ```typescript
-    type AsyncState<T> =
-      | { status: 'idle' }
-      | { status: 'loading' }
-      | { status: 'success'; data: T }
-      | { status: 'error'; error: Error }
-    ```
-- [ ] **Rich Domain Logic as Pure Functions**
-  - Keep domain calculations (`analyzeMomentum.ts`, `paceEvaluator.ts`, `amendmentAuditor.ts`) strictly framework-agnostic and free of side-effects.
-- [ ] **Strict Compiler Hardening in `tsconfig.json`**
-  - Incrementally enable `noUncheckedIndexedAccess` and `exactOptionalPropertyTypes` to catch potential runtime undefined errors across the 33-table schema.
+- [x] **Feature-Sliced Design (FSD) Layering Enforcement**
+  - Enforced downward dependency boundaries (`lib`, `store`, `types`, `hooks`, `components` cannot import `features` or `layout`) and barrel-only cross-feature imports in `eslint.config.js` via `no-restricted-imports`, preserving the `src/features/<domain>/` topology that maps 1:1 to Android `:feature:*` / `:core:*` modules.
+  - Added explicit Cognitive Boundary ESLint rules preventing horizontal cross-imports between `features/mind-os` and `features/productivity-hub` (Invariant 1), and moved `CommandPalette.tsx` from `src/components/` to `src/layout/`.
+- [x] **Public API Barrel Contracts (`index.ts`)**
+  - Added `index.ts` barrels for `admin`, `home`, `profile`, and `reports` (all 15 feature directories now expose public `index.ts` contracts) and migrated cross-feature and `layout/` imports to domain barrels.
+- [x] **Discriminated Unions for Complex UI States**
+  - Standardized `AsyncState<T>` discriminated union and `toAsyncState()` query adapter in `src/types/asyncState.ts` (`idle | loading | success | error`).
+- [x] **Rich Domain Logic as Pure Functions**
+  - Audited `analyzeMomentum.ts`, `paceEvaluator.ts`, and `amendmentAuditor.ts` as strictly framework-agnostic pure functions (zero React/Supabase/side-effect imports) and hardened under strict TypeScript indexing rules.
+- [x] **Strict Compiler Hardening in `tsconfig.json`**
+  - Enabled `noUncheckedIndexedAccess` and `exactOptionalPropertyTypes` in `tsconfig.app.json` and resolved all 94 resulting compiler diagnostics cleanly.
 
 ---
 
 ## Track 4: TypeScript 5.9 Advanced Patterns
 **Priority: HIGH** | **Focus:** Zero-cost type-level verification and contract enforcement
 
-- [ ] **Template Literal Types for Canonical Event Taxonomy**
-  - Refactor `src/lib/eventTaxonomy.ts` to construct event strings using template literals:
-    ```typescript
-    type Domain = 'mind' | 'productivity' | 'learning' | 'fitness' | 'time' | 'finance' | 'system'
-    type EventKey<D extends Domain, A extends string> = `${D}.${A}`
-    ```
-- [ ] **Branded ID Types for Entity Keys**
-  - Introduce branded types (`type HabitId = string & { readonly __brand: unique symbol }`) to prevent passing a `taskId` into habit operations at compile time.
-- [ ] **`satisfies` Operator for Route, Shell, and Color Configurations**
-  - Use `satisfies` across `DEFAULT_MODULE_COLORS`, `ROUTES`, and icon registries to preserve narrow literal inference while validating against interface contracts.
-- [ ] **Zod v4 Schema Optimization**
-  - Leverage native `z.toJSONSchema()` for future tool definitions and `zod/mini` for tree-shaking parser imports.
+- [x] **Template Literal Types for Canonical Event Taxonomy**
+  - Refactored `src/lib/eventTaxonomy.ts` with `EventDomain` and `EventKey<D extends EventDomain, A extends string> = \`\${D}.\${A}\`` validated via `as const satisfies Record<string, EventKey<EventDomain, string>>`.
+- [x] **Branded ID Types for Entity Keys**
+  - Introduced `src/types/branded.ts` (`Brand<T, B>`, `HabitId`, `HabitLogId`, `HabitBreakId`, `TaskId`, `TimeLogId`, `TransactionId`, `UserId`, etc. with boundary constructors) and wired across `useHabits.ts`, `useTasks.ts`, `useTimeLogs.ts`, `useFinance.ts`, and UI callers.
+- [x] **`satisfies` Operator for Route, Shell, and Color Configurations**
+  - Applied `satisfies` across `DEFAULT_MODULE_COLORS` (`src/lib/useModuleColors.ts`), `EVENT_TYPES` (`src/lib/eventTaxonomy.ts`), and `ORBIT_1` / `ORBIT_2` (`src/layout/AstrolabeOrbNav.tsx`).
+- [x] **Zod v4 Schema Optimization**
+  - Preserved Zod v4 chainable schemas and added native `z.toJSONSchema()` exports (`getArcConfigJsonSchema()` in `src/lib/schemas/seasonConfigSchema.ts`, `getCurriculumJsonSchema()` in `src/lib/schemas/curriculumSchema.ts`).
 
 ---
 

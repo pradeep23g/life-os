@@ -347,7 +347,7 @@ export function translateEventToChronicle(event: RawEventLike): ChronicleEvent {
     domain,
     rawType,
     headline,
-    detail,
-    metadataSummary,
+    ...(detail !== undefined ? { detail } : {}),
+    ...(metadataSummary !== undefined ? { metadataSummary } : {}),
   }
 }

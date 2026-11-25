@@ -16,8 +16,7 @@ import {
   TIME_SESSION_LOGGED,
 } from '../../../lib/eventTaxonomy'
 import { supabase } from '../../../lib/supabase'
-import { emitSystemFeedback } from '../../system/feedback'
-import { systemStatusQueryKey } from '../../system/api/useSystemStatus'
+import { emitSystemFeedback, systemStatusQueryKey } from '../../system'
 import { useEventBus } from '../../../store/useEventBus'
 
 export const fitnessExercisesQueryKey = ['fitness-os', 'exercises'] as const
@@ -538,12 +537,15 @@ function buildHeatmapDays(workouts: Workout[]): FitnessDayInsight[] {
 function groupWorkoutsByDate(workouts: Workout[]): Record<string, Workout[]> {
   const grouped: Record<string, Workout[]> = {}
   for (const workout of workouts) {
-    grouped[workout.workout_date] ??= []
-    grouped[workout.workout_date].push(workout)
+    const bucket = (grouped[workout.workout_date] ??= [])
+    bucket.push(workout)
   }
 
   for (const dateKey of Object.keys(grouped)) {
-    grouped[dateKey] = grouped[dateKey].sort((left, right) => (left.created_at < right.created_at ? 1 : -1))
+    const list = grouped[dateKey]
+    if (list) {
+      grouped[dateKey] = list.sort((left, right) => (left.created_at < right.created_at ? 1 : -1))
+    }
   }
 
   return grouped
@@ -998,9 +1000,10 @@ async function addExerciseLog(input: ExerciseLogInput): Promise<void> {
 }
 
 async function addExerciseLogsBatch(inputs: ExerciseLogInput[]): Promise<void> {
-  if (inputs.length === 0) return
+  const firstInput = inputs[0]
+  if (!firstInput) return
   const userId = await requireUserId()
-  const workoutId = inputs[0].workoutId
+  const workoutId = firstInput.workoutId
   const startingOrderIndex = await resolveLogOrderIndex(userId, workoutId)
 
   const rows = inputs.map((input, idx) => ({

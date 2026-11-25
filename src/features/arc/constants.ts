@@ -3,35 +3,23 @@
  * Constrains icons, color palette, telemetry bindings, and pace evaluation thresholds.
  */
 
-export const ARC_ICONS = [
-  'snowflake',
-  'sprout',
-  'sun',
-  'leaf',
-  'mountain',
-  'flame',
-  'wave',
-  'star',
-] as const
+import {
+  ARC_ICONS,
+  ARC_ACCENT_COLORS,
+  TELEMETRY_BINDING_KEYS,
+  type ArcIconName,
+  type ArcAccentColor,
+  type TelemetryBindingKey,
+} from '../../lib/arcConstants'
 
-export type ArcIconName = (typeof ARC_ICONS)[number]
-
-export const ARC_ACCENT_COLORS = [
-  '#22d3ee', // Cyan (Default Winter Arc)
-  '#10b981', // Emerald
-  '#f59e0b', // Amber
-  '#8b5cf6', // Violet
-  '#f43f5e', // Rose
-  '#6366f1', // Indigo
-  '#0ea5e9', // Sky
-  '#84cc16', // Lime
-  '#f97316', // Orange
-  '#14b8a6', // Teal
-  '#71717a', // Zinc
-  '#94a3b8', // Slate
-] as const
-
-export type ArcAccentColor = (typeof ARC_ACCENT_COLORS)[number]
+export {
+  ARC_ICONS,
+  ARC_ACCENT_COLORS,
+  TELEMETRY_BINDING_KEYS,
+  type ArcIconName,
+  type ArcAccentColor,
+  type TelemetryBindingKey,
+}
 
 export const DEFAULT_ARC_ACCENT_COLOR: ArcAccentColor = '#22d3ee'
 export const DEFAULT_ARC_ICON: ArcIconName = 'snowflake'
@@ -56,24 +44,7 @@ export function getArcHealthColor(health?: string | null): string {
   return (ARC_HEALTH_COLORS as Record<string, string>)[health] || '#22d3ee'
 }
 
-export const TELEMETRY_BINDING_KEYS = [
-  'deep_work.total_minutes',
-  'deep_work.total_hours',
-  'focus.total_minutes',
-  'focus.session_count',
-  'tasks.completed_count',
-  'tasks.created_count',
-  'habits.completed_count',
-  'habits.active_days',
-  'fitness.session_count',
-  'fitness.total_minutes',
-  'fitness.active_days',
-  'journal.entry_count',
-  'learning.session_count',
-  'active_days.total',
-] as const
 
-export type TelemetryBindingKey = (typeof TELEMETRY_BINDING_KEYS)[number]
 
 export interface TelemetryBindingMetadata {
   key: TelemetryBindingKey

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { emitSystemFeedback } from '../../system/feedback'
+import { emitSystemFeedback } from '../../system'
 import { TimeOsIcon } from '../../../components/icons'
 import { useDocumentPiP } from '../../../hooks/useDocumentPiP'
 import PiPTimer from '../components/PiPTimer'
@@ -352,7 +352,7 @@ function TimeOSPage() {
               )}
 
               <button
-                onClick={() => createManualLog({ bucket: manualBucket, startTime: manualStart, endTime: manualEnd, description: manualDescription.trim() || undefined }, { 
+                onClick={() => createManualLog({ bucket: manualBucket, startTime: manualStart, endTime: manualEnd, ...(manualDescription.trim() ? { description: manualDescription.trim() } : {}) }, { 
                   onSuccess: () => {
                     setIsLogModalOpen(false)
                     setManualDescription('')

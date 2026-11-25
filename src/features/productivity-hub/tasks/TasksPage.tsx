@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 
-import { useActiveTimer, useStartTimer, TIME_BUCKETS } from '../../time-os/api/useTimeLogs'
-import type { TimeBucket } from '../../time-os/api/useTimeLogs'
+import { asTaskId } from '../../../types/branded'
+import { useActiveTimer, useStartTimer, TIME_BUCKETS, type TimeBucket } from '../../time-os'
 import {
   type Task,
   type TaskDeadlineType,
@@ -150,7 +150,7 @@ function TasksPage() {
   const handleStartFocus = (taskId: string) => {
     startTimer(
       {
-        taskId,
+        taskId: asTaskId(taskId),
         bucket: focusBucket,
         description: focusDescription,
       },

@@ -45,8 +45,8 @@ export default function RoadmapDashboard() {
     }
     setActiveLogTarget({
       roadmapId: targetId,
-      sessionId,
-      sessionTitle,
+      ...(sessionId !== undefined ? { sessionId } : {}),
+      ...(sessionTitle !== undefined ? { sessionTitle } : {}),
     })
     setIsLogModalOpen(true)
   }
@@ -160,8 +160,8 @@ export default function RoadmapDashboard() {
           isOpen={isLogModalOpen}
           onClose={handleCloseLogModal}
           roadmapId={activeLogTarget.roadmapId}
-          sessionId={activeLogTarget.sessionId}
-          sessionTitle={activeLogTarget.sessionTitle}
+          {...(activeLogTarget.sessionId !== undefined ? { sessionId: activeLogTarget.sessionId } : {})}
+          {...(activeLogTarget.sessionTitle !== undefined ? { sessionTitle: activeLogTarget.sessionTitle } : {})}
         />
       )}
     </div>

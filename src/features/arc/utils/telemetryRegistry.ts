@@ -1,4 +1,4 @@
-import type { DataLabDailyActivity } from '../../data-lab/api/useDataLab'
+import type { DataLabDailyActivity } from '../../data-lab'
 import type { TelemetryBindingKey } from '../constants.ts'
 
 /**

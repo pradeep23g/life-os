@@ -1,4 +1,6 @@
 export { default as SystemFeedbackToast } from './components/SystemFeedbackToast'
+export { default as BrainEngineHero } from './components/BrainEngineHero'
 export * from './feedback'
 export * from './api/useSystemStatus'
 export * from './api/useEveningSync'
+export type { SystemStatus } from './engine/types'

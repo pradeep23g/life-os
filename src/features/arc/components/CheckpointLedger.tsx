@@ -79,7 +79,7 @@ export function CheckpointLedger({
                   )}
                 </div>
                 <span className="font-mono text-[10px] text-text-tertiary tabular-nums">
-                  {firstCp.startDate} — {lastCp.endDate}
+                  {firstCp?.startDate} — {lastCp?.endDate}
                 </span>
               </div>
 

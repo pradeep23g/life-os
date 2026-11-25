@@ -25,7 +25,7 @@ function getReadableErrorMessage(error: unknown): string {
 }
 
 function formatSelectedDateLabel(selectedDate: string): string {
-  const [year, month, day] = selectedDate.split('-').map(Number)
+  const [year = 1970, month = 1, day = 1] = selectedDate.split('-').map(Number)
   const date = new Date(Date.UTC(year, month - 1, day, 12))
   return new Intl.DateTimeFormat('en-IN', {
     month: 'long',

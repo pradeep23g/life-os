@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 
 import type { FinanceTransactionType } from '../api/useFinance'
-import { emitSystemFeedback } from '../../system/feedback'
+import { emitSystemFeedback } from '../../system'
 
 const expenseCategories = ['Need', 'Want'] as const
 const incomeSources = ['Pocket Money', 'Gift', 'Rollover'] as const

@@ -3,8 +3,8 @@ title: Agent Handoff — Active Context
 status: ACTIVE
 purpose: Current state summary for the next agent session
 last_updated_by: Antigravity (Advanced Agentic Coding)
-last_updated: 2026-11-25T21:55:00+05:30
-last_session: Session 2026-11-25-t2p9
+last_updated: 2026-11-25T23:05:00+05:30
+last_session: Session 2026-11-25-t34a
 ---
 
 # Active Handoff Context
@@ -13,30 +13,32 @@ last_session: Session 2026-11-25-t2p9
 > of the last agent that worked on it. It is OVERWRITTEN (not appended) each session.
 
 ## Current Project State
-- **Git HEAD:** Track 2 (SQL & Supabase Performance) completed with additive migration `supabase/migrations/202611250000_track2_rls_index_view_optimization.sql` and local Supabase CLI/Docker setup (`supabase/config.toml`).
-- **Last Task:** Track 2 SQL & Supabase Performance execution: RLS InitPlan optimization, legacy `TO authenticated` role scoping, tenant/FK index audit, and `EXPLAIN ANALYZE` view optimization (Session 2026-11-25-t2p9).
-- **Build & Drift Status:** Verified against local Supabase PostgreSQL 17 (`supabase db reset`, 29/29 smoke checks passing locally) and release gates (`npm run verify:release`).
+- **Git HEAD:** Tracks 1, 2, 3, and 4 in `tasks/skills-roadmap.md` are complete; Track 2 migration (`202611250000_track2_rls_index_view_optimization.sql`) is pushed to remote production (`qxypqmobhhfbxrhyvraa`).
+- **Last Task:** Track 3 (Clean Engineering & Architecture) & Track 4 (TypeScript 5.9 Advanced Patterns) execution (Session 2026-11-25-t34a).
+- **Build & Drift Status:** `npm run verify:release` passing (11/11 doc drift gates, 0 ESLint errors/warnings with FSD & Cognitive Boundary rules, 0 `tsc -b` errors with `noUncheckedIndexedAccess` and `exactOptionalPropertyTypes` enabled).
 - **Open Findings:** 1 Open in `FINDINGS.md` (F-004: Finance static budget fallback).
 
 ## What Was Just Done
-1. **Local Supabase Environment Verification**:
-   - Verified Supabase CLI (`3.2.0`) and Docker (`29.10.0`), initialized `supabase/config.toml`, started local Supabase stack, and verified all 35 migrations apply cleanly via `supabase db reset`.
-2. **Track 2 Migration (`202611250000_track2_rls_index_view_optimization.sql`)**:
-   - Rewrote all 99 remaining RLS policies across 26 tables to use `((SELECT auth.uid()) = user_id)` InitPlan subquery caching and explicit `TO authenticated` role scoping (fixing legacy `{public}` policies on `habits`, `habit_logs`, `habit_streak_breaks`, `habit_streak_heals`, and `journal_entries`).
-   - Added missing un-predicated leading `user_id` indexes (`idx_exercise_logs_user_id`, `idx_experiments_user_id`, `idx_knowledge_resources_user_id`, `idx_pulse_logs_user_timestamp`) and `idx_learning_session_logs_user_logged_at_active`.
-   - Benchmarked `data_lab_daily_activity_90d` and `current_day_snapshot_history_14d` via `EXPLAIN (ANALYZE, BUFFERS)` at 3-year and 10-year synthetic multi-user scale. Eliminated 7x/8x redundant view evaluations in `data_lab_module_consistency_30d` and `data_lab_weekly_system_score_12w`, unified `events` scans, and bounded all view CTEs to IST window range scans (reducing 10-year `data_lab_daily_activity_90d` to ~3.5 ms / 119 buffers and `current_day_snapshot_history_14d` to ~1.2–4.4 ms / 29 buffers, avoiding stale materialized views).
-3. **Documentation**:
-   - Updated `tasks/skills-roadmap.md` (checked off all 4 Track 2 items), `docs/architecture/DATABASE_SCHEMA.md`, and `docs/agent-ledger/SESSION_LOG.md`.
+1. **Track 3 — Clean Engineering & Architecture**:
+   - Added ESLint `no-restricted-imports` rules in `eslint.config.js` enforcing Invariant 1 (`mind-os` ↔ `productivity-hub` isolation), downward FSD layering (`lib`/`store`/`types`/`hooks`/`components` cannot import `features`/`layout`), and barrel-only cross-feature imports.
+   - Moved `CommandPalette.tsx` from `src/components/` to `src/layout/CommandPalette.tsx` and extracted shared Arc schema constants to `src/lib/arcConstants.ts`.
+   - Added `index.ts` public barrels for `admin`, `home`, `profile`, and `reports` (15/15 feature directories) and updated cross-feature imports to use domain barrels.
+   - Added `AsyncState<T>` discriminated union and `toAsyncState()` in `src/types/asyncState.ts`.
+   - Enabled `noUncheckedIndexedAccess` and `exactOptionalPropertyTypes` in `tsconfig.app.json` and resolved all 94 strict compiler errors.
+2. **Track 4 — TypeScript 5.9 Advanced Patterns**:
+   - Added template literal types (`EventDomain`, `EventKey<D, A>`) + `satisfies` in `src/lib/eventTaxonomy.ts`.
+   - Created branded ID types (`src/types/branded.ts`) and wired `HabitId`, `HabitLogId`, `HabitBreakId`, `TaskId`, `TimeLogId`, `TransactionId`, and `UserId` across core hooks (`useHabits.ts`, `useTasks.ts`, `useTimeLogs.ts`, `useFinance.ts`) and UI callers.
+   - Applied `satisfies` to `DEFAULT_MODULE_COLORS` (`src/lib/useModuleColors.ts`), `EVENT_TYPES`, and `ORBIT_1` / `ORBIT_2` (`src/layout/AstrolabeOrbNav.tsx`).
+   - Added `z.toJSONSchema()` exports (`getArcConfigJsonSchema()`, `getCurriculumJsonSchema()`) in `src/lib/schemas/`.
 
 ## What Needs Attention Next
-- Push/apply `supabase/migrations/202611250000_track2_rls_index_view_optimization.sql` to the remote Supabase project when deploying.
-- Track 3 (Clean Engineering & Architecture) or Track 4 (TypeScript 5.9 Advanced Patterns) in `tasks/skills-roadmap.md`.
+- Track 5 (Wave 8 — MCP Server), Track 6 (Wave 2 — Native Android Companion), or Track 7 (Shared Cross-Platform API & Data Governance) in `tasks/skills-roadmap.md`.
 
 ## Known Issues / Blockers
-- None. Note: the new migration is applied to the local Supabase Docker stack; the remote hosted Supabase instance will need `supabase db push` (or manual SQL execution) if deploying to production.
+- None.
 
 ## Context the Next Agent MUST Know
-> 1. Navigation is 100% Kinetic Astrolabe Orb (`src/layout/AstrolabeOrbNav.tsx`). Sidebar was permanently retired in ADR-023 (with ADR-030 spring physics).
-> 2. All 33 tables now enforce `TO authenticated` and `(SELECT auth.uid()) = user_id` InitPlan RLS policies (with `data_lab_signal_config` `SELECT TO authenticated USING (true)`).
-> 3. All 15 views retain `security_invoker = true`; `data_lab_daily_activity_90d` and `current_day_snapshot_history_14d` remain live views with bounded IST range scans (~1–4 ms) rather than stale materialized views.
+> 1. `tsconfig.app.json` now enforces `noUncheckedIndexedAccess: true` and `exactOptionalPropertyTypes: true`. Use conditional spread `{ ...(val !== undefined ? { prop: val } : {}) }` for optional properties.
+> 2. `eslint.config.js` enforces FSD downward layering, Cognitive Boundary (`mind-os` ↔ `productivity-hub`), and barrel-only cross-feature imports (`../../<domain>`).
+> 3. Core entity IDs in `useHabits.ts`, `useTasks.ts`, `useTimeLogs.ts`, and `useFinance.ts` use nominal branded types from `src/types/branded.ts`.
 > 4. Always run `npm run verify:release` and log sessions in `docs/agent-ledger/SESSION_LOG.md` before handing off.

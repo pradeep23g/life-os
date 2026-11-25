@@ -1,5 +1,13 @@
 import { useEffect, useRef } from 'react'
 
+import {
+  asHabitBreakId,
+  asHabitId,
+  asHabitLogId,
+  type HabitBreakId,
+  type HabitId,
+  type HabitLogId,
+} from '../../../types/branded'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { logEventSafe } from '../../../lib/events'
@@ -12,8 +20,7 @@ import {
   MIND_HABIT_BREAK_HEALED,
 } from '../../../lib/eventTaxonomy'
 import { supabase } from '../../../lib/supabase'
-import { emitSystemFeedback } from '../../system/feedback'
-import { systemStatusQueryKey } from '../../system/api/useSystemStatus'
+import { emitSystemFeedback, systemStatusQueryKey } from '../../system'
 import { useEventBus } from '../../../store/useEventBus'
 import {
   addDays,
@@ -30,7 +37,7 @@ export const mindOsHabitWorkspaceQueryKey = ['mind-os', 'habits', 'workspace'] a
 export type HabitType = 'binary' | 'target'
 
 export type Habit = {
-  id: string
+  id: HabitId
   title: string
   target_value: number
   unit: string | null
@@ -39,8 +46,8 @@ export type Habit = {
 }
 
 export type HabitLog = {
-  id: string
-  habit_id: string
+  id: HabitLogId
+  habit_id: HabitId
   value: number
   log_date: string
   struggle_note: string | null
@@ -48,8 +55,8 @@ export type HabitLog = {
 }
 
 export type HabitStreakBreak = {
-  id: string
-  habit_id: string
+  id: HabitBreakId
+  habit_id: HabitId
   break_date: string
   reason: string | null
   recovery_commitment: string | null
@@ -59,8 +66,8 @@ export type HabitStreakBreak = {
 
 export type HabitStreakHeal = {
   id: string
-  habit_id: string
-  break_id: string
+  habit_id: HabitId
+  break_id: HabitBreakId
   reason: string | null
   created_at: string
 }
@@ -92,7 +99,7 @@ export type HabitWorkspaceData = {
   mistakes: HabitMistake[]
   healHistory: HabitHealHistory[]
   longestHabitStreak: {
-    habitId: string
+    habitId: HabitId
     title: string
     streak: number
   } | null
@@ -102,17 +109,17 @@ export type HabitWorkspaceData = {
   healTokensRemaining: number
   lowHealTokenWarning: boolean
   bestHabitThisWeek: {
-    habitId: string
+    habitId: HabitId
     title: string
     count: number
   } | null
   mostHealedHabit: {
-    habitId: string
+    habitId: HabitId
     title: string
     count: number
   } | null
   mostBrokenHabit: {
-    habitId: string
+    habitId: HabitId
     title: string
     count: number
   } | null
@@ -126,7 +133,7 @@ type CreateHabitInput = {
 }
 
 type MarkHabitDoneInput = {
-  habitId: string
+  habitId: HabitId
   habitType: HabitType
   targetValue: number
   currentValue?: number
@@ -134,42 +141,42 @@ type MarkHabitDoneInput = {
 }
 
 type MarkHabitNotDoneInput = {
-  habitId: string
+  habitId: HabitId
 }
 
 type AdjustHabitCountInput = {
-  habitId: string
+  habitId: HabitId
   delta: number
   struggleNote?: string
 }
 
 type SetHabitCountForTodayInput = {
-  habitId: string
+  habitId: HabitId
   value: number
 }
 
 type UpdateHabitBreakReasonInput = {
-  breakId: string
+  breakId: HabitBreakId
   reason: string
 }
 
 type UpdateRecoveryCommitmentInput = {
-  breakId: string
+  breakId: HabitBreakId
   recoveryCommitment: string
 }
 
 type HealHabitBreakInput = {
-  breakId: string
-  habitId: string
+  breakId: HabitBreakId
+  habitId: HabitId
   reason: string
 }
 
 type DeleteHabitInput = {
-  habitId: string
+  habitId: HabitId
 }
 
 type HabitCounter = {
-  habitId: string
+  habitId: HabitId
   count: number
 }
 
@@ -295,6 +302,7 @@ async function fetchHabits(): Promise<Habit[]> {
 
   return (data ?? []).map((habit) => ({
     ...habit,
+    id: asHabitId(habit.id),
     habit_type: normalizeHabitType(habit.habit_type),
   }))
 }
@@ -347,15 +355,26 @@ async function fetchHabitWorkspaceData(): Promise<HabitWorkspaceData> {
 
   const breaks: HabitStreakBreak[] = (breaksResult.data ?? []).map((row) => ({
     ...row,
+    id: asHabitBreakId(row.id),
+    habit_id: asHabitId(row.habit_id),
     recovery_commitment: null,
   }))
 
   const habits: Habit[] = (habitsResult.data ?? []).map((habit) => ({
     ...habit,
+    id: asHabitId(habit.id),
     habit_type: normalizeHabitType(habit.habit_type),
   }))
-  const logs: HabitLog[] = logsResult.data ?? []
-  const heals: HabitStreakHeal[] = healsResult.data ?? []
+  const logs: HabitLog[] = (logsResult.data ?? []).map((row) => ({
+    ...row,
+    id: asHabitLogId(row.id),
+    habit_id: asHabitId(row.habit_id),
+  }))
+  const heals: HabitStreakHeal[] = (healsResult.data ?? []).map((row) => ({
+    ...row,
+    habit_id: asHabitId(row.habit_id),
+    break_id: asHabitBreakId(row.break_id),
+  }))
 
   const healedBreakIds = new Set(heals.map((item) => item.break_id))
   const habitTitleById = new Map(habits.map((habit) => [habit.id, habit.title]))
@@ -450,11 +469,11 @@ async function fetchHabitWorkspaceData(): Promise<HabitWorkspaceData> {
   }
 
   const mostBrokenHabit = getCounterWinner(
-    [...breakCounters.entries()].map(([habitId, count]) => ({ habitId, count })),
+    [...breakCounters.entries()].map(([habitId, count]) => ({ habitId: asHabitId(habitId), count })),
     habitTitleById,
   )
   const mostHealedHabit = getCounterWinner(
-    [...healCounters.entries()].map(([habitId, count]) => ({ habitId, count })),
+    [...healCounters.entries()].map(([habitId, count]) => ({ habitId: asHabitId(habitId), count })),
     habitTitleById,
   )
   const bestHabitThisWeek = getCounterWinner(weeklyCounters, habitTitleById)
@@ -524,6 +543,9 @@ async function syncMissingHabitBreaks(data: HabitWorkspaceData): Promise<number>
 
     const completionSet = new Set(completionDates)
     let cursor = completionDates[0]
+    if (!cursor) {
+      continue
+    }
 
     while (cursor <= yesterday) {
       const breakKey = `${habit.id}:${cursor}`
@@ -984,7 +1006,7 @@ export function useCreateHabit() {
 
 function updateOptimisticWorkspaceHabit(
   old: HabitWorkspaceData,
-  habitId: string,
+  habitId: HabitId,
   logDate: string,
   value: number,
   struggleNote?: string,
@@ -1001,16 +1023,17 @@ function updateOptimisticWorkspaceHabit(
     const existingIndex = nextLogs.findIndex(
       (l) => l.habit_id === habitId && l.log_date === logDate,
     )
-    if (existingIndex >= 0) {
+    const existingLog = existingIndex >= 0 ? nextLogs[existingIndex] : undefined
+    if (existingLog) {
       nextLogs[existingIndex] = {
-        ...nextLogs[existingIndex],
+        ...existingLog,
         value,
-        struggle_note: cleanedNote !== undefined ? cleanedNote : nextLogs[existingIndex].struggle_note,
+        struggle_note: cleanedNote !== undefined ? cleanedNote : existingLog.struggle_note,
       }
     } else {
       nextLogs = [
         {
-          id: `optimistic-${Date.now()}`,
+          id: asHabitLogId(`optimistic-${Date.now()}`),
           habit_id: habitId,
           value,
           log_date: logDate,

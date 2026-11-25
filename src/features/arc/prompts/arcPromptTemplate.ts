@@ -181,6 +181,6 @@ When the user approves the campaign plan, output ONLY the JSON object below conf
  */
 export function extractCanonicalExampleFromPrompt(): string {
   const match = ARC_PROMPT_TEMPLATE.match(/```json\s*([\s\S]*?)\s*```/)
-  if (!match) throw new Error('Could not find canonical JSON in ARC_PROMPT_TEMPLATE')
+  if (!match || match[1] === undefined) throw new Error('Could not find canonical JSON in ARC_PROMPT_TEMPLATE')
   return match[1]
 }

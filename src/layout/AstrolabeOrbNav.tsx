@@ -7,10 +7,7 @@ import {
   WinterArcIcon, FitnessIcon, LearningIcon, FinanceIcon,
   DataLabIcon, ReportsIcon, SystemIcon
 } from '../components/icons/ModuleIcons'
-import { ArcIcon } from '../features/arc/components/ArcIcon'
-import { getArcHealthColor } from '../features/arc/constants'
-import { useArcTelemetry } from '../features/arc/hooks/useArcTelemetry'
-import type { ArcPaceStatus } from '../features/arc/types'
+import { ArcIcon, getArcHealthColor, useArcTelemetry, type ArcPaceStatus } from '../features/arc'
 import { useAuth } from '../lib/AuthContext'
 import { useModuleColors } from '../lib/useModuleColors'
 
@@ -34,7 +31,7 @@ export interface NavOrbItem {
   health?: ArcPaceStatus
 }
 
-const ORBIT_1: NavOrbItem[] = [
+const ORBIT_1 = [
   {
     id: 'productivity-time',
     label: 'Productivity & Time',
@@ -48,9 +45,9 @@ const ORBIT_1: NavOrbItem[] = [
   { id: 'mind-os', path: '/mind-os', label: 'Mind OS', icon: MindOsIcon, colorKey: 'Mind OS' },
   { id: 'winter-arc', path: '/arc', label: 'Winter Arc', icon: WinterArcIcon, colorKey: 'Winter Arc' },
   { id: 'fitness-os', path: '/fitness-os', label: 'Fitness OS', icon: FitnessIcon, colorKey: 'Fitness OS' }
-]
+] satisfies readonly NavOrbItem[]
 
-const ORBIT_2: NavOrbItem[] = [
+const ORBIT_2 = [
   { id: 'learning-os', path: '/learning-os', label: 'Learning OS', icon: LearningIcon, colorKey: 'Learning OS' },
   { id: 'finance-os', path: '/finance-os', label: 'Finance OS', icon: FinanceIcon, colorKey: 'Finance OS' },
   {
@@ -65,7 +62,7 @@ const ORBIT_2: NavOrbItem[] = [
   },
   { id: 'system', path: '/system', label: 'Mission Control', icon: SystemIcon, colorKey: 'Mission Control' },
   { id: 'profile', path: '/profile', label: 'Profile Dossier', icon: User, colorKey: 'Profile' }
-]
+] satisfies readonly NavOrbItem[]
 
 export function AstrolabeOrbNav() {
   const [isOpen, setIsOpen] = useState(false)
@@ -97,7 +94,9 @@ export function AstrolabeOrbNav() {
         return {
           ...item,
           label: title,
-          icon: ({ className }: { className?: string }) => <ArcIcon name={iconName} className={className} />,
+          icon: ({ className }: { className?: string }) => (
+            <ArcIcon name={iconName ?? null} {...(className ? { className } : {})} />
+          ),
           colorKey: isArcActive ? 'Arc' : 'Profile',
           customColor,
           isArcNode: true,
@@ -248,10 +247,12 @@ export function AstrolabeOrbNav() {
           role="menu"
         >
           {/* Rendering the 2 Concentric Orbits */}
-          {[
-            { items: orbit1Items, radius: radius1, delayBase: 0 },
-            { items: ORBIT_2, radius: radius2, delayBase: orbit1Items.length * 35 }
-          ].map((orbit, orbitIndex) => (
+          {(
+            [
+              { items: orbit1Items, radius: radius1, delayBase: 0 },
+              { items: ORBIT_2, radius: radius2, delayBase: orbit1Items.length * 35 },
+            ] as Array<{ items: readonly NavOrbItem[]; radius: number; delayBase: number }>
+          ).map((orbit, orbitIndex) => (
             <div key={`orbit-${orbitIndex}`}>
               {orbit.items.map((item, index) => {
                 const { x, y, angleRad } = calculatePosition(index, orbit.items.length, orbit.radius)
@@ -261,7 +262,7 @@ export function AstrolabeOrbNav() {
                   ? (location.pathname === item.path || (item.path !== '/' && location.pathname.startsWith(item.path)))
                   : (item.fanout?.some(child => location.pathname === child.path || (child.path !== '/' && location.pathname.startsWith(child.path))) ?? false)
 
-                const moduleColor = item.customColor || colors[item.colorKey] || '#ffffff'
+                const moduleColor = ('customColor' in item && item.customColor) || colors[item.colorKey] || '#ffffff'
                 const isHovered = hoveredModule === item.label
                 const isParentFanoutActive = activeFanout === item.id
                 // Secondary bloom sibling dimming: Dim if another fanout is active

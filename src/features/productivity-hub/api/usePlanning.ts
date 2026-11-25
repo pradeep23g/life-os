@@ -11,7 +11,7 @@ import {
   PRODUCTIVITY_WEEKLY_REVIEW_UPSERTED,
 } from '../../../lib/eventTaxonomy'
 import { supabase } from '../../../lib/supabase'
-import { emitSystemFeedback } from '../../system/feedback'
+import { emitSystemFeedback } from '../../system'
 
 export const productivityPlanningQueryKey = ['productivity-hub', 'planning'] as const
 export const productivityGoalsQueryKey = ['productivity-hub', 'planning', 'goals'] as const

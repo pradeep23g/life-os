@@ -1,6 +1,22 @@
 import { useSyncExternalStore } from 'react'
 
-export const DEFAULT_MODULE_COLORS: Record<string, string> = {
+export type ModuleColorKey =
+  | 'Home'
+  | 'Productivity'
+  | 'Time OS'
+  | 'Mind OS'
+  | 'Arc'
+  | 'Winter Arc'
+  | 'Fitness OS'
+  | 'Learning OS'
+  | 'Finance OS'
+  | 'Data Lab'
+  | 'Reports'
+  | 'Mission Control'
+  | 'Profile'
+  | 'Admin'
+
+export const DEFAULT_MODULE_COLORS = {
   'Home': '#ffffff',
   'Productivity': '#3b82f6',
   'Time OS': '#f59e0b',
@@ -15,7 +31,7 @@ export const DEFAULT_MODULE_COLORS: Record<string, string> = {
   'Mission Control': '#ec4899',
   'Profile': '#e2e8f0',
   'Admin': '#8b5cf6'
-}
+} as const satisfies Record<ModuleColorKey, `#${string}`>
 
 function loadInitialColors(): Record<string, string> {
   try {

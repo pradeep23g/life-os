@@ -2,13 +2,11 @@ import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { useEnvironmentSystem } from '../../../lib/useEnvironmentSystem'
-import { useMissionControlSnapshot } from '../../mission-control/api/useMissionControlSnapshot'
-import { useActiveTimer, useStartTimer } from '../../time-os/api/useTimeLogs'
-import { useTasks } from '../../productivity-hub/api/useTasks'
-import { useHabitWorkspace } from '../../mind-os/api/useHabits'
-import { useTimeAnalytics } from '../../time-os/api/useTimeAnalytics'
-import { useArcTelemetry } from '../../arc/hooks/useArcTelemetry'
-import type { ArcPaceStatus } from '../../arc/types'
+import { useMissionControlSnapshot } from '../../mission-control'
+import { useActiveTimer, useStartTimer, useTimeAnalytics } from '../../time-os'
+import { useTasks } from '../../productivity-hub'
+import { useHabitWorkspace } from '../../mind-os'
+import { useArcTelemetry, type ArcPaceStatus } from '../../arc'
 
 export interface ArcHomeSummary {
   hasActiveArc: boolean

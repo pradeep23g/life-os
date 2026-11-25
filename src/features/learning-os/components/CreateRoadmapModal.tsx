@@ -97,10 +97,10 @@ export function CreateRoadmapModal({ isOpen, onClose, onSuccess, onOpenImportMod
     try {
       await createRoadmap({
         title: title.trim(),
-        description: description.trim() || undefined,
-        color: color || undefined,
-        startDate: startDate || undefined,
-        targetEndDate: targetEndDate || undefined,
+        ...(description.trim() ? { description: description.trim() } : {}),
+        ...(color ? { color } : {}),
+        ...(startDate ? { startDate } : {}),
+        ...(targetEndDate ? { targetEndDate } : {}),
       })
 
       handleClose()

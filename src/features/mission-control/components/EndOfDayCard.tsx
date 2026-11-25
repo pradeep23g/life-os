@@ -1,3 +1,4 @@
+import type { HabitId } from '../../../types/branded'
 import { useMemo, useState } from 'react'
 
 import { useQueryClient } from '@tanstack/react-query'
@@ -7,10 +8,10 @@ import {
  useHabitWorkspace,
  useHabits,
  useMarkHabitDone,
-} from '../../mind-os/api/useHabits'
-import { useCreateJournalEntry, useJournalEntries } from '../../mind-os/api/useJournal'
-import { systemStatusQueryKey } from '../../system/api/useSystemStatus'
-import { useEveningSync, usePendingEventsCount } from '../../system/api/useEveningSync'
+ useCreateJournalEntry,
+ useJournalEntries,
+} from '../../mind-os'
+import { systemStatusQueryKey, useEveningSync, usePendingEventsCount } from '../../system'
 
 function toIndiaDateKey(value: string | Date): string {
  const date = typeof value === 'string' ? new Date(value) : value
@@ -23,7 +24,7 @@ function toIndiaDateKey(value: string | Date): string {
 }
 
 function addDays(dateKey: string, days: number): string {
- const [year, month, day] = dateKey.split('-').map(Number)
+ const [year = 1970, month = 1, day = 1] = dateKey.split('-').map(Number)
  const base = new Date(Date.UTC(year, month - 1, day, 12, 0, 0))
  base.setUTCDate(base.getUTCDate() + days)
  const y = base.getUTCFullYear()
@@ -100,7 +101,7 @@ export default function EndOfDayCard() {
  return new Set(journals.map((entry) => toIndiaDateKey(entry.created_at)))
  }, [journals])
 
- async function handleMarkDone(habitId: string, habitType: 'binary' | 'target', targetValue: number) {
+ async function handleMarkDone(habitId: HabitId, habitType: 'binary' | 'target', targetValue: number) {
  await markHabitDone({
  habitId,
  habitType,

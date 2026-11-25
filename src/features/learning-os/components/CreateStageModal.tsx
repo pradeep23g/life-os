@@ -100,10 +100,10 @@ export function CreateStageModal({
       await createStage({
         roadmapId,
         title: title.trim(),
-        subtitle: subtitle.trim() || undefined,
-        note: note.trim() || undefined,
-        color: color || undefined,
-        orderIndex,
+        ...(subtitle.trim() ? { subtitle: subtitle.trim() } : {}),
+        ...(note.trim() ? { note: note.trim() } : {}),
+        ...(color ? { color } : {}),
+        ...(orderIndex !== undefined ? { orderIndex } : {}),
       })
 
       setIsSuccess(true)

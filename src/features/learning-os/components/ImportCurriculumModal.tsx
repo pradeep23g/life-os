@@ -186,7 +186,7 @@ export function ImportCurriculumModal({ isOpen, onClose, onSuccess }: ImportCurr
 
       // 2. Insert Stages
       const stageInsertPayloads = validData.stages.map((stage, idx) => ({
-        id: stageIds[idx],
+        id: stageIds[idx] ?? crypto.randomUUID(),
         user_id: user.id,
         roadmap_id: createdRoadmapId!,
         order_index: stage.orderIndex ?? (idx + 1),
@@ -223,7 +223,7 @@ export function ImportCurriculumModal({ isOpen, onClose, onSuccess }: ImportCurr
       }> = []
 
       validData.stages.forEach((stage, sIdx) => {
-        const stageId = stageIds[sIdx]
+        const stageId = stageIds[sIdx] ?? ''
 
         stage.sessions.forEach((sess, sessIdx) => {
           sessionInsertPayloads.push({
@@ -257,12 +257,14 @@ export function ImportCurriculumModal({ isOpen, onClose, onSuccess }: ImportCurr
         const milestonePayloads = validData.milestones.map(m => {
           let stageId: string | null = null
           if (typeof m.stageIndex === 'number') {
-            if (stageIds[m.stageIndex]) {
+            const zeroIdxStage = stageIds[m.stageIndex]
+            const oneIdxStage = m.stageIndex >= 1 ? stageIds[m.stageIndex - 1] : undefined
+            if (zeroIdxStage) {
               // 0-indexed mapping
-              stageId = stageIds[m.stageIndex]
-            } else if (m.stageIndex >= 1 && stageIds[m.stageIndex - 1]) {
+              stageId = zeroIdxStage
+            } else if (oneIdxStage) {
               // 1-indexed fallback
-              stageId = stageIds[m.stageIndex - 1]
+              stageId = oneIdxStage
             }
           }
 

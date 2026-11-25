@@ -98,7 +98,11 @@ export function LogSessionModal({
     }
 
     setValidationError(null)
-    return { isValid: true, parsedDuration, parsedMetrics }
+    return {
+      isValid: true,
+      parsedDuration,
+      ...(parsedMetrics !== undefined ? { parsedMetrics } : {}),
+    }
   }
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -114,10 +118,10 @@ export function LogSessionModal({
     try {
       await logSession({
         roadmapId,
-        sessionId: sessionId || undefined,
+        ...(sessionId ? { sessionId } : {}),
         durationMinutes: parsedDuration,
-        notes: notes.trim() || undefined,
-        metrics: parsedMetrics,
+        ...(notes.trim() ? { notes: notes.trim() } : {}),
+        ...(parsedMetrics !== undefined ? { metrics: parsedMetrics } : {}),
       })
 
       setIsSuccess(true)

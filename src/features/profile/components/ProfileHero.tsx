@@ -1,5 +1,5 @@
 import { Avatar } from '../../../components/Avatar'
-import type { LifeState } from '../../mission-control/types/snapshot'
+import type { LifeState } from '../../mission-control'
 import { useActiveArcSeason } from '../../arc'
 
 interface ProfileHeroProps {

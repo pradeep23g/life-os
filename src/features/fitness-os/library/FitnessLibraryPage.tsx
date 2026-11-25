@@ -357,7 +357,7 @@ function FitnessLibraryPage() {
                     {/* Visual Aid: Wireframe Anatomy SVG */}
                     <div className="absolute top-2 right-2 opacity-40 group-hover:opacity-100 transition-all pointer-events-none group-hover:scale-105">
                       <AnatomyWireframe
-                        muscle={exercise.primary_muscle || exercise.target_muscles?.[0]}
+                        muscle={exercise.primary_muscle || exercise.target_muscles?.[0] || null}
                         pattern={exercise.movement_pattern}
                         width={46}
                         height={58}

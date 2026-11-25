@@ -1,5 +1,5 @@
 import type { ThreatCard, SystemStatus, SystemStatusLevel } from '../types/snapshot'
-import type { SystemStatus as BrainSystemStatus } from '../../system/engine/types'
+import type { SystemStatus as BrainSystemStatus } from '../../system'
 import { toIndiaDateKey } from '../../../lib/events'
 
 export interface DomainPresenceInput {

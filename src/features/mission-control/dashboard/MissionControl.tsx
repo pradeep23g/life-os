@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useMissionControlSnapshot } from '../api/useMissionControlSnapshot'
-import BrainEngineHero from '../../system/components/BrainEngineHero'
+import { BrainEngineHero } from '../../system'
 import EndOfDayCard from '../components/EndOfDayCard'
 import { toIndiaDateKey } from '../../../lib/events'
 import { Avatar } from '../../../components/Avatar'

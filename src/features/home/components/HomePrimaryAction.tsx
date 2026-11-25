@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import type { TimeLog } from '../../time-os/api/useTimeLogs'
+import type { TimeLog } from '../../time-os'
 
 interface HomePrimaryActionProps {
   label: string

@@ -5,7 +5,7 @@ import { calculateTemporalHorizon } from './utils/paceEvaluator.ts'
  * Parses YYYY-MM-DD string to UTC midnight timestamp in milliseconds.
  */
 function parseDateKeyUtc(dateKey: string): number {
-  const [year, month, day] = dateKey.split('-').map(Number)
+  const [year = 1970, month = 1, day = 1] = dateKey.split('-').map(Number)
   return Date.UTC(year, month - 1, day)
 }
 

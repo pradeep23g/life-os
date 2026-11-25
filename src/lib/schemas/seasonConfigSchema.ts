@@ -4,7 +4,7 @@ import {
   ARC_ACCENT_COLORS,
   ARC_ICONS,
   TELEMETRY_BINDING_KEYS,
-} from '../../features/arc/constants.ts'
+} from '../arcConstants.ts'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Canonical Arc Engine Schemas (ADR-030)
@@ -110,11 +110,14 @@ export const arcConfigSchema = z
       if (!data.phases || data.phases.length === 0) return true
       // Verify phases are contiguous, no gaps, no overlaps
       const sorted = [...data.phases].sort((a, b) => a.startDay - b.startDay)
-      if (sorted[0].startDay !== 1) return false
+      const firstPhase = sorted[0]
+      if (!firstPhase || firstPhase.startDay !== 1) return false
 
       for (let i = 0; i < sorted.length; i++) {
-        if (sorted[i].endDay < sorted[i].startDay) return false
-        if (i > 0 && sorted[i].startDay !== sorted[i - 1].endDay + 1) {
+        const current = sorted[i]
+        if (!current || current.endDay < current.startDay) return false
+        const previous = i > 0 ? sorted[i - 1] : undefined
+        if (previous && current.startDay !== previous.endDay + 1) {
           return false
         }
       }
@@ -350,4 +353,9 @@ export function parseAndValidateAdminPayload(raw: string | unknown): AdminValida
       'Unrecognized payload format. Expected canonical Season Config ({ season: {...}, achievements: [...] }) or raw entity table payload ({ entity: "...", data: [...] }).',
     ],
   }
+}
+
+/** Exports the canonical Arc Engine config schema as JSON Schema for tool definitions & admin docs. */
+export function getArcConfigJsonSchema() {
+  return z.toJSONSchema(arcConfigSchema, { unrepresentable: 'any' })
 }

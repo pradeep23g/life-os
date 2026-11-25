@@ -1,3 +1,4 @@
+import { asTaskId } from '../../../types/branded'
 import { useMemo, useRef, useState } from 'react'
 import {
   useCreateTask,
@@ -16,7 +17,7 @@ import {
   useActiveTimer,
   useStartTimer,
   useStopTimer,
-} from '../../time-os/api/useTimeLogs'
+} from '../../time-os'
 import { toIndiaDateKey } from '../../../lib/date'
 import { ExecutionHeader } from './components/ExecutionHeader'
 import { ExecutionQuickEntry } from './components/ExecutionQuickEntry'
@@ -161,7 +162,7 @@ export default function ProductivityHubDashboard() {
   }
 
   const handleDeleteTask = (taskId: string) => {
-    deleteTask({ id: taskId })
+    deleteTask({ id: asTaskId(taskId) })
   }
 
   // ─── Keyboard-first Navigation ───
@@ -264,7 +265,7 @@ export default function ProductivityHubDashboard() {
             selectedIndex={selectedIndex}
             onSelectIndex={setSelectedIndex}
             onToggleTask={(taskId, currentCompleted) => {
-              toggleCompletion({ id: taskId, isCompleted: currentCompleted })
+              toggleCompletion({ id: asTaskId(taskId), isCompleted: currentCompleted })
             }}
             onStartFocus={handleStartFocusCurrent}
             onStopFocus={handleStopFocus}
@@ -279,7 +280,7 @@ export default function ProductivityHubDashboard() {
       {/* ─── Sprint Alignment & Objectives (Asymmetric Swiss Datum) ─── */}
       <ExecutionSprintContext
         currentWeekStart={currentWeekStart}
-        focusText={existingPlan?.focus_text}
+        focusText={existingPlan?.focus_text ?? null}
         weeklyItems={weeklyItems}
       />
     </div>

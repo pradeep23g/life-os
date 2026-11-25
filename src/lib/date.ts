@@ -158,7 +158,10 @@ export function getLongestStreak(dateKeys: Set<string>): number {
   let running = 1
 
   for (let index = 1; index < sorted.length; index += 1) {
-    const isConsecutive = diffDays(sorted[index], sorted[index - 1]) === 1
+    const current = sorted[index]
+    const previous = sorted[index - 1]
+    if (!current || !previous) continue
+    const isConsecutive = diffDays(current, previous) === 1
 
     if (isConsecutive) {
       running += 1

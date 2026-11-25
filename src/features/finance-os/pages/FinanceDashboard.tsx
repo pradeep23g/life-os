@@ -38,8 +38,8 @@ export default function FinanceDashboard() {
     }
 
     const type = match[1] === '+' ? 'INCOME' : 'EXPENSE'
-    const amount = parseFloat(match[2])
-    const category = match[3].trim()
+    const amount = parseFloat(match[2] ?? '')
+    const category = (match[3] ?? '').trim()
 
     if (isNaN(amount) || amount <= 0) {
       setParseError("Amount must be greater than 0.")

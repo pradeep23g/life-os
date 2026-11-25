@@ -248,7 +248,7 @@ export default function AdminConsolePage() {
           name: season.name,
           start_date: season.startDate,
           end_date: season.endDate,
-          vows: season.vows as unknown as Database['public']['Tables']['life_seasons']['Insert']['vows'],
+          vows: season.vows as unknown as NonNullable<Database['public']['Tables']['life_seasons']['Insert']['vows']>,
           updated_at: new Date().toISOString()
         }
 
@@ -272,7 +272,7 @@ export default function AdminConsolePage() {
               description: ach.description,
               tier: ach.tier,
               criteria: ach.criteria,
-            } as unknown as Database['public']['Tables']['user_achievements']['Insert']['metadata'],
+            } as unknown as NonNullable<Database['public']['Tables']['user_achievements']['Insert']['metadata']>,
           }))
 
           const { error: achErr } = await supabase

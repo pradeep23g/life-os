@@ -1,3 +1,4 @@
+import { asHabitId, type HabitId } from '../../../types/branded'
 import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link } from 'react-router-dom'
@@ -199,7 +200,7 @@ function HabitsPage() {
         title,
         habitType,
         targetValue: Number.isNaN(parsedTargetValue) ? 1 : parsedTargetValue,
-        unit: unit.trim() || undefined,
+        ...(unit.trim() ? { unit: unit.trim() } : {}),
       },
       {
         onSuccess: () => {
@@ -233,7 +234,7 @@ function HabitsPage() {
     )
   }
 
-  const handleMarkNotDone = (habitId: string) => {
+  const handleMarkNotDone = (habitId: HabitId) => {
     markHabitNotDone(
       { habitId },
       {
@@ -257,7 +258,7 @@ function HabitsPage() {
   const handleUndo = () => {
     if (!undoToast) return
     undoHabitDone(
-      { habitId: undoToast.habitId },
+      { habitId: asHabitId(undoToast.habitId) },
       {
         onSuccess: () => {
           setUndoToast(null)
@@ -266,7 +267,7 @@ function HabitsPage() {
     )
   }
 
-  const handleAdjustCount = (habitId: string, delta: number) => {
+  const handleAdjustCount = (habitId: HabitId, delta: number) => {
     adjustHabitCount({
       habitId,
       delta,

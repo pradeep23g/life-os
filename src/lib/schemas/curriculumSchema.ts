@@ -9,7 +9,7 @@ export function cleanJsonString(input: string): string {
 
   // 1. If wrapped in markdown code fence (with or without surrounding text)
   const fenceMatch = cleaned.match(/```(?:json)?\s*([\s\S]*?)\s*```/)
-  if (fenceMatch) {
+  if (fenceMatch && fenceMatch[1] !== undefined) {
     return fenceMatch[1].trim()
   }
 
@@ -155,4 +155,9 @@ export function parseAndValidateCurriculum(raw: string | unknown): CurriculumVal
   }
 
   return { success: true, data: result.data }
+}
+
+/** Exports the Learning OS curriculum ingestion schema as JSON Schema for tool definitions & admin docs. */
+export function getCurriculumJsonSchema() {
+  return z.toJSONSchema(curriculumSchema, { unrepresentable: 'any' })
 }

@@ -128,6 +128,11 @@ export function evaluateMilestonePace(
   const isManual = milestone.kind === 'manual'
   const isManuallyCompleted = Boolean(manualProgress?.[milestone.id]?.completedAt)
 
+  const optionalFields = {
+    ...(milestone.description !== undefined ? { description: milestone.description } : {}),
+    ...(milestone.binding !== undefined ? { binding: milestone.binding } : {}),
+  }
+
   if (isManual) {
     const targetValue = milestone.targetValue ?? 1
     const currentValue = isManuallyCompleted ? targetValue : 0
@@ -135,15 +140,19 @@ export function evaluateMilestonePace(
       id: milestone.id,
       title: milestone.title,
       kind: 'manual',
-      description: milestone.description,
+      ...optionalFields,
       targetValue,
       currentValue,
       unit: milestone.unit ?? 'CONFIRMATION',
       status: isManuallyCompleted ? 'complete' : 'pending',
       completionPercent: isManuallyCompleted ? 100 : 0,
       isAchieved: isManuallyCompleted,
-      binding: milestone.binding,
     }
+  }
+
+  const optionalTelemetryFields = {
+    ...optionalFields,
+    ...(milestone.unit !== undefined ? { unit: milestone.unit } : {}),
   }
 
   // Telemetry milestone
@@ -158,15 +167,13 @@ export function evaluateMilestonePace(
       id: milestone.id,
       title: milestone.title,
       kind: 'telemetry',
-      description: milestone.description,
+      ...optionalTelemetryFields,
       targetValue,
       currentValue,
-      unit: milestone.unit,
       status: 'complete',
       completionPercent: 100,
       paceRequired: 0,
       isAchieved: true,
-      binding: milestone.binding,
     }
   }
 
@@ -177,15 +184,13 @@ export function evaluateMilestonePace(
       id: milestone.id,
       title: milestone.title,
       kind: 'telemetry',
-      description: milestone.description,
+      ...optionalTelemetryFields,
       targetValue,
       currentValue,
-      unit: milestone.unit,
       status: 'pending',
       completionPercent,
       paceRequired,
       isAchieved: false,
-      binding: milestone.binding,
     }
   }
 
@@ -195,15 +200,13 @@ export function evaluateMilestonePace(
       id: milestone.id,
       title: milestone.title,
       kind: 'telemetry',
-      description: milestone.description,
+      ...optionalTelemetryFields,
       targetValue,
       currentValue,
-      unit: milestone.unit,
       status: 'behind',
       completionPercent,
       paceRequired: 0,
       isAchieved: false,
-      binding: milestone.binding,
     }
   }
 
@@ -226,15 +229,13 @@ export function evaluateMilestonePace(
     id: milestone.id,
     title: milestone.title,
     kind: 'telemetry',
-    description: milestone.description,
+    ...optionalTelemetryFields,
     targetValue,
     currentValue,
-    unit: milestone.unit,
     status,
     completionPercent,
     paceRequired,
     isAchieved: false,
-    binding: milestone.binding,
   }
 }
 

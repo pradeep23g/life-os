@@ -1,3 +1,4 @@
+import { asTaskId, asTimeLogId, asUserId, type TaskId, type TimeLogId, type UserId } from '../../../types/branded'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { supabase } from '../../../lib/supabase'
@@ -8,8 +9,7 @@ import {
   TIME_SESSION_LOGGED,
   TIME_TIME_LOG_STARTED,
 } from '../../../lib/eventTaxonomy'
-import { emitSystemFeedback } from '../../system/feedback'
-import { systemStatusQueryKey } from '../../system/api/useSystemStatus'
+import { emitSystemFeedback, systemStatusQueryKey } from '../../system'
 import { useEventBus } from '../../../store/useEventBus'
 
 export const TIME_BUCKETS = ['Academics', 'Deep Work', 'Admin', 'Fitness', 'Learning'] as const
@@ -25,9 +25,9 @@ export const TIME_BUCKET_COLORS: Record<TimeBucket, string> = {
 }
 
 export type TimeLog = {
-  id: string
-  user_id: string
-  task_id: string | null
+  id: TimeLogId
+  user_id: UserId
+  task_id: TaskId | null
   bucket: TimeBucket
   description: string | null
   start_time: string
@@ -42,13 +42,13 @@ export type CompletedTimeLog = TimeLog & {
 }
 
 type StartTimerInput = {
-  taskId?: string | null
+  taskId?: TaskId | null
   bucket: TimeBucket
   description?: string
 }
 
 type ManualLogInput = {
-  taskId?: string | null
+  taskId?: TaskId | null
   bucket: TimeBucket
   description?: string
   startTime: string
@@ -57,14 +57,14 @@ type ManualLogInput = {
 
 type TimeLoggedEventPayload = {
   userId: string
-  logId: string
-  taskId: string | null
+  logId: TimeLogId
+  taskId: TaskId | null
   bucket: TimeBucket
   durationMinutes: number
 }
 
 type DeleteTimeLogInput = {
-  id: string
+  id: TimeLogId
 }
 
 const timeLogsBaseQueryKey = ['time-os', 'time-logs'] as const
@@ -183,9 +183,9 @@ async function fetchCompletedTimeLogs(): Promise<CompletedTimeLog[]> {
     const taskTitle = Array.isArray(taskRelation) ? taskRelation[0]?.title ?? null : taskRelation?.title ?? null
 
     return {
-      id: row.id,
-      user_id: row.user_id,
-      task_id: row.task_id,
+      id: asTimeLogId(row.id),
+      user_id: asUserId(row.user_id),
+      task_id: row.task_id ? asTaskId(row.task_id) : null,
       bucket: row.bucket as TimeBucket,
       description: row.description,
       start_time: row.start_time,
@@ -223,9 +223,9 @@ async function fetchTimeHistoryLogs(): Promise<CompletedTimeLog[]> {
     const taskTitle = Array.isArray(taskRelation) ? taskRelation[0]?.title ?? null : taskRelation?.title ?? null
 
     return {
-      id: row.id,
-      user_id: row.user_id,
-      task_id: row.task_id,
+      id: asTimeLogId(row.id),
+      user_id: asUserId(row.user_id),
+      task_id: row.task_id ? asTaskId(row.task_id) : null,
       bucket: row.bucket as TimeBucket,
       description: row.description,
       start_time: row.start_time,
@@ -392,7 +392,7 @@ async function createManualLog({ taskId, bucket, description, startTime, endTime
 
   return {
     userId,
-    logId: data.id,
+    logId: asTimeLogId(data.id),
     taskId: taskId ?? null,
     bucket,
     durationMinutes,

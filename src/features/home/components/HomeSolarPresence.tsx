@@ -1,6 +1,6 @@
 import { Avatar } from '../../../components/Avatar'
 import type { SolarContextInfo } from '../hooks/useHomeTelemetry'
-import type { LifeState } from '../../mission-control/types/snapshot'
+import type { LifeState } from '../../mission-control'
 
 interface HomeSolarPresenceProps {
   solarContext: SolarContextInfo

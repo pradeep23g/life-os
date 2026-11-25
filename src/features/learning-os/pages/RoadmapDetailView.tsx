@@ -132,7 +132,9 @@ export function RoadmapDetailView() {
   }
 
   const handleOpenLogSession = (sessionId?: string, sessionTitle?: string) => {
-    setSelectedSessionForLog(sessionId ? { id: sessionId, title: sessionTitle } : undefined)
+    setSelectedSessionForLog(
+      sessionId ? { id: sessionId, ...(sessionTitle !== undefined ? { title: sessionTitle } : {}) } : undefined,
+    )
     setIsLogSessionModalOpen(true)
   }
 
@@ -640,8 +642,8 @@ export function RoadmapDetailView() {
         onClose={handleCloseLogSession}
         onSuccess={() => void refetch()}
         roadmapId={roadmap.id}
-        sessionId={selectedSessionForLog?.id}
-        sessionTitle={selectedSessionForLog?.title}
+        {...(selectedSessionForLog?.id !== undefined ? { sessionId: selectedSessionForLog.id } : {})}
+        {...(selectedSessionForLog?.title !== undefined ? { sessionTitle: selectedSessionForLog.title } : {})}
       />
     </div>
   )

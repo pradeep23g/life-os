@@ -18,7 +18,7 @@ import {
 import { supabase } from '../../../lib/supabase'
 import { ArcIcon } from './ArcIcon'
 import type { ArcLifecycleStatus, ArcMilestoneConfig, ArcPaceStatus, MilestoneProgressMap } from '../types'
-import { useDataLabDailyActivity } from '../../data-lab/api/useDataLab'
+import { useDataLabDailyActivity } from '../../data-lab'
 import {
   calculateOverallHealth,
   calculateTemporalHorizon,
@@ -228,7 +228,7 @@ export function ArcArchiveView({ onInitiateArc, hideHero = false }: ArcArchiveVi
                           className="flex items-center justify-center w-6 h-6 rounded bg-surface border border-border/80 shadow-sm"
                           style={{ color: accentColor }}
                         >
-                          <ArcIcon name={iconName} className="h-3.5 w-3.5" />
+                          <ArcIcon name={iconName ?? null} className="h-3.5 w-3.5" />
                         </div>
                         <h3 className="font-serif text-lg text-text-primary leading-tight font-medium">
                           {title}

@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import type { BrainState, ThreatSeverity } from '../../mission-control/types/snapshot'
+import type { BrainState, ThreatSeverity } from '../../mission-control'
 import DailyBriefing from './DailyBriefing'
 import { Brain, Clock, Zap } from 'lucide-react'
 

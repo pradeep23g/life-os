@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { useAddTransaction } from '../features/finance-os/api/useFinance'
-import { useCreateTask } from '../features/productivity-hub/api/useTasks'
-import { emitSystemFeedback } from '../features/system/feedback'
+import { useAddTransaction } from '../features/finance-os'
+import { useCreateTask } from '../features/productivity-hub'
+import { emitSystemFeedback } from '../features/system'
 
 type ParsedCommand =
  | {
@@ -48,7 +48,7 @@ function parseCommand(rawInput: string): ParsedCommand {
  const financeMatch = input.match(/^\/f\s+(\d+(?:\.\d{1,2})?)\s+(want|need)\s*(.*)$/i)
  if (financeMatch) {
  const amount = Number(financeMatch[1])
- const spendType = financeMatch[2].toLowerCase()
+ const spendType = (financeMatch[2] ?? '').toLowerCase()
  const note = financeMatch[3]?.trim() ?? ''
 
  if (!Number.isFinite(amount) || amount <= 0) {
@@ -67,7 +67,7 @@ function parseCommand(rawInput: string): ParsedCommand {
 
  const taskMatch = input.match(/^\/t\s+(.+)$/i)
  if (taskMatch) {
- const title = taskMatch[1].trim()
+ const title = (taskMatch[1] ?? '').trim()
  if (!title) {
  return { kind: 'invalid', reason: 'Task title is required.' }
  }

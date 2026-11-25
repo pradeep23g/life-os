@@ -78,7 +78,7 @@ export default function ActiveWorkoutPanel({ activeWorkout, exercises, onEndWork
 
     const match = commandInput.match(/^([A-Za-z ]+?)(?:\s+(\d+)x(\d+)(?:@(\d+(?:\.\d+)?))?)?$/)
     if (match) {
-      const [, exerciseName, sets, reps, weight] = match
+      const [, exerciseName = '', sets, reps, weight] = match
       const matchedExercise = exercises.find(ex => ex.name.toLowerCase().includes(exerciseName.trim().toLowerCase()))
       
       if (matchedExercise) {
@@ -91,8 +91,8 @@ export default function ActiveWorkoutPanel({ activeWorkout, exercises, onEndWork
             exerciseId: matchedExercise.id,
             sets: 1,
             repsTotal: parseInt(reps, 10),
-            weightKg: weight ? parseFloat(weight) : undefined,
-            rpe: draftRpe ? parseFloat(draftRpe) : undefined,
+            weightKg: weight ? parseFloat(weight) : null,
+            rpe: draftRpe ? parseFloat(draftRpe) : null,
           }))
           addExerciseLogsBatch(logsToCreate)
         }
@@ -109,8 +109,8 @@ export default function ActiveWorkoutPanel({ activeWorkout, exercises, onEndWork
       exerciseId: focusedExerciseId,
       sets: 1,
       repsTotal: parseInt(draftReps, 10),
-      weightKg: draftWeight ? parseFloat(draftWeight) : undefined,
-      rpe: draftRpe ? parseFloat(draftRpe) : undefined
+      weightKg: draftWeight ? parseFloat(draftWeight) : null,
+      rpe: draftRpe ? parseFloat(draftRpe) : null
     }, {
       onSuccess: () => {
         setDraftReps('')

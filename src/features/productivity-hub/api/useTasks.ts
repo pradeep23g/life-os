@@ -1,18 +1,18 @@
+import { asTaskId, asUserId, type TaskId, type UserId } from '../../../types/branded'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { logEventSafe } from '../../../lib/events'
 import { PRODUCTIVITY_TASK_CREATED, PRODUCTIVITY_TASK_STATUS_CHANGED } from '../../../lib/eventTaxonomy'
 import { supabase } from '../../../lib/supabase'
-import { systemStatusQueryKey } from '../../system/api/useSystemStatus'
-import { emitSystemFeedback } from '../../system/feedback'
+import { emitSystemFeedback, systemStatusQueryKey } from '../../system'
 
 export const productivityTasksQueryKey = ['productivity-hub', 'tasks'] as const
 
 export type TaskDeadlineType = 'same_day' | 'no_deadline' | 'specific_date'
 
 export type Task = {
-  id: string
-  user_id: string
+  id: TaskId
+  user_id: UserId
   title: string
   deadline_type: TaskDeadlineType
   deadline_date: string | null
@@ -29,12 +29,12 @@ type CreateTaskInput = {
 }
 
 type ToggleTaskCompletionInput = {
-  id: string
+  id: TaskId
   isCompleted: boolean
 }
 
 type DeleteTaskInput = {
-  id: string
+  id: TaskId
 }
 
 function extractErrorMessage(error: unknown): string {
@@ -79,6 +79,8 @@ async function fetchTasks(): Promise<Task[]> {
 
   return (data ?? []).map((row) => ({
     ...row,
+    id: asTaskId(row.id),
+    user_id: asUserId(row.user_id),
     deadline_type: row.deadline_type as TaskDeadlineType,
   }))
 }

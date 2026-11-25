@@ -2,7 +2,7 @@ import { lazy, Suspense, useMemo } from 'react'
 import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation, NavLink } from 'react-router-dom'
 
 import AppErrorBoundary from './components/AppErrorBoundary'
-import CommandPalette from './components/CommandPalette'
+import CommandPalette from './layout/CommandPalette'
 import { AstrolabeOrbNav } from './layout/AstrolabeOrbNav'
 import { LocalNavLink, ModuleHeader } from './layout/ModuleHeader'
 import { getShellTitle } from './layout/shellTitle'

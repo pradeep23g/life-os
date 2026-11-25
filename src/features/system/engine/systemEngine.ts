@@ -52,7 +52,7 @@ export function getSystemStatus(
 ): SystemStatus {
   const momentum = analyzeMomentum(history, snapshot?.deep_work_minutes_today ?? 0, recentEvents)
   const directiveResult = generateDirectives(snapshot)
-  const latestHistoryDate = history.length ? history[history.length - 1].snapshot_date : null
+  const latestHistoryDate = history[history.length - 1]?.snapshot_date ?? null
 
   return {
     momentum,

@@ -3,8 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { logEventSafe } from '../../../lib/events'
 import { MIND_JOURNAL_ENTRY_DELETED, MIND_JOURNAL_ENTRY_CREATED } from '../../../lib/eventTaxonomy'
 import { supabase } from '../../../lib/supabase'
-import { systemStatusQueryKey } from '../../system/api/useSystemStatus'
-import { emitSystemFeedback } from '../../system/feedback'
+import { emitSystemFeedback, systemStatusQueryKey } from '../../system'
 import { getCurrentStreak, toIndiaDateKey } from '../utils/date'
 
 export const mindOsJournalsQueryKey = ['mind-os', 'journals'] as const

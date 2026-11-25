@@ -250,7 +250,7 @@ export default function ArcPage() {
           milestones={milestones}
           activeDays={totals.activeDays}
           accentColor={accentColor}
-          onToggleManualMilestone={isCompleted ? undefined : toggleManualMilestone}
+          {...(!isCompleted ? { onToggleManualMilestone: toggleManualMilestone } : {})}
         />
 
         <CheckpointLedger

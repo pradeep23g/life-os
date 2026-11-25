@@ -115,9 +115,9 @@ export function CreateSessionModal({
     setValidationError(null)
     return {
       isValid: true,
-      parsedEstimatedMinutes,
-      parsedOrderIndex,
-      parsedTags: parsedTags.length > 0 ? parsedTags : undefined,
+      ...(parsedEstimatedMinutes !== undefined ? { parsedEstimatedMinutes } : {}),
+      ...(parsedOrderIndex !== undefined ? { parsedOrderIndex } : {}),
+      ...(parsedTags.length > 0 ? { parsedTags } : {}),
     }
   }
 
@@ -136,12 +136,12 @@ export function CreateSessionModal({
         roadmapId,
         stageId,
         title: title.trim(),
-        description: description.trim() || undefined,
-        slot: slot.trim() || undefined,
-        estimatedMinutes: parsedEstimatedMinutes,
-        tags: parsedTags,
-        orderIndex: parsedOrderIndex,
-        targetDate: targetDate.trim() || undefined,
+        ...(description.trim() ? { description: description.trim() } : {}),
+        ...(slot.trim() ? { slot: slot.trim() } : {}),
+        ...(parsedEstimatedMinutes !== undefined ? { estimatedMinutes: parsedEstimatedMinutes } : {}),
+        ...(parsedTags !== undefined ? { tags: parsedTags } : {}),
+        ...(parsedOrderIndex !== undefined ? { orderIndex: parsedOrderIndex } : {}),
+        ...(targetDate.trim() ? { targetDate: targetDate.trim() } : {}),
       })
 
       setIsSuccess(true)

@@ -77,10 +77,10 @@ export function analyzeMomentum(
   const dailyValues = sortedHistory.map((historyDay) => getDailyActivityValue(historyDay))
   const emaSeries: number[] = []
 
-  let previousMomentum = dailyValues[0]
+  let previousMomentum = dailyValues[0] ?? 0
 
   for (let index = 0; index < dailyValues.length; index += 1) {
-    const currentValue = dailyValues[index]
+    const currentValue = dailyValues[index] ?? 0
     const currentMomentum = index === 0
       ? currentValue
       : currentValue * MOMENTUM_ALPHA + previousMomentum * (1 - MOMENTUM_ALPHA)
@@ -89,8 +89,8 @@ export function analyzeMomentum(
     previousMomentum = currentMomentum
   }
 
-  const latestMomentum = emaSeries[emaSeries.length - 1]
-  const previousDayMomentum = emaSeries.length > 1 ? emaSeries[emaSeries.length - 2] : latestMomentum
+  const latestMomentum = emaSeries[emaSeries.length - 1] ?? 0
+  const previousDayMomentum = emaSeries.length > 1 ? (emaSeries[emaSeries.length - 2] ?? latestMomentum) : latestMomentum
   const rawDelta = latestMomentum - previousDayMomentum
 
   const trend: MomentumAnalysis['trend'] = rawDelta > 2 ? 'rising' : rawDelta < -2 ? 'falling' : 'stable'

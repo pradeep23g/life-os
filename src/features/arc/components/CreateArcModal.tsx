@@ -314,7 +314,7 @@ export function CreateArcModal({ isOpen, onClose, onSuccess }: CreateArcModalPro
                           className="flex items-center justify-center w-6 h-6 rounded bg-surface border border-border/80"
                           style={{ color: accent }}
                         >
-                          <ArcIcon name={validData.icon} className="h-3.5 w-3.5" />
+                          <ArcIcon name={validData.icon ?? null} className="h-3.5 w-3.5" />
                         </div>
                         <h3 className="font-serif text-lg font-light text-text-primary leading-tight">
                           {validData.title}

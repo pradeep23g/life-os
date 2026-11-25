@@ -439,9 +439,9 @@ export function useLogSession() {
           roadmap_id: roadmapId,
           session_id: sessionId || null,
           time_log_id: timeLogId || null,
-          duration_minutes: durationMinutes,
+          duration_minutes: durationMinutes ?? null,
           metrics: (metrics || {}) as unknown as Json,
-          notes
+          notes: notes ?? null,
         })
         .select('id')
         .single()

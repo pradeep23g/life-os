@@ -1,3 +1,4 @@
+import { asTransactionId, asUserId, type TransactionId, type UserId } from '../../../types/branded'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { logEventSafe } from '../../../lib/events'
@@ -19,8 +20,8 @@ type TransactionInsertAttempt = {
 export type FinanceTransactionType = 'INCOME' | 'EXPENSE'
 
 export type FinanceTransaction = {
-  id: string
-  user_id: string
+  id: TransactionId
+  user_id: UserId
   amount: number
   category: string
   transaction_type: FinanceTransactionType
@@ -48,7 +49,7 @@ type AddTransactionInput = {
 }
 
 type DeleteTransactionInput = {
-  id: string
+  id: TransactionId
 }
 
 function getErrorMessage(error: unknown): string {
@@ -139,8 +140,8 @@ function normalizeTransaction(row: TransactionRow): FinanceTransaction | null {
   }
 
   return {
-    id,
-    user_id: userId,
+    id: asTransactionId(id),
+    user_id: asUserId(userId),
     amount: Math.max(0, numericAmount),
     category: getStringValue(row, 'category') ?? 'Uncategorized',
     transaction_type: normalizeTransactionType(row),
@@ -244,7 +245,7 @@ async function insertTransactionAttempt(attempt: TransactionInsertAttempt): Prom
       type: attempt.payload.type === 'income' ? 'income' : 'expense',
       user_id: String(attempt.payload.user_id ?? ''),
       is_need: attempt.payload.is_need as boolean | null,
-      timestamp: attempt.payload.timestamp as string | undefined,
+      ...(typeof attempt.payload.timestamp === 'string' ? { timestamp: attempt.payload.timestamp } : {}),
     })
     .select('id')
     .single()

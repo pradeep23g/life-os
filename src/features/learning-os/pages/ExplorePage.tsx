@@ -164,6 +164,7 @@ export function ExplorePage() {
       // 2. Sequentially add stages
       for (let i = 0; i < track.stages.length; i++) {
         const stage = track.stages[i]
+        if (!stage) continue
         await createStage({
           roadmapId: roadmapResult.id,
           title: stage.title,

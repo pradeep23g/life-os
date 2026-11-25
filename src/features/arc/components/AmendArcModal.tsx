@@ -140,9 +140,9 @@ export function AmendArcModal({ isOpen, onClose, config, onAmend }: AmendArcModa
         : principles
 
       // Ensure all milestone target values are clamped to at least 1
-      const finalMilestones = milestones.map((m) => ({
-        ...m,
-        targetValue: typeof m.targetValue === 'number' ? Math.max(1, m.targetValue || 1) : m.targetValue,
+      const finalMilestones = milestones.map(({ targetValue, ...rest }) => ({
+        ...rest,
+        ...(typeof targetValue === 'number' ? { targetValue: Math.max(1, targetValue || 1) } : {}),
       }))
 
       await onAmend(

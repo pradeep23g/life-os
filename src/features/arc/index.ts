@@ -1,4 +1,5 @@
 export { default as ArcPage } from './pages/ArcPage'
+export { ArcIcon } from './components/ArcIcon'
 export { CreateArcModal } from './components/CreateArcModal'
 export { AmendArcModal } from './components/AmendArcModal'
 export { ArcRetrospectiveModal } from './components/ArcRetrospectiveModal'
@@ -19,5 +20,6 @@ export type {
   ArcFocusDomain,
   ArcPhase,
   ArcLifecycleStatus,
+  ArcPaceStatus,
 } from './types'
 

@@ -19,8 +19,8 @@ import type {
 import { computeAmendmentDiffs } from '../utils/amendmentAuditor'
 import { resolveBinding } from '../utils/telemetryRegistry'
 import { calculateOverallHealth, calculateTemporalHorizon, evaluateMilestonePace } from '../utils/paceEvaluator'
-import { useDataLabDailyActivity } from '../../data-lab/api/useDataLab'
-import { useMissionControlSnapshot } from '../../mission-control/api/useMissionControlSnapshot'
+import { useDataLabDailyActivity } from '../../data-lab'
+import { useMissionControlSnapshot } from '../../mission-control'
 import { useModuleColors } from '../../../lib/useModuleColors'
 
 export function useActiveArcSeason() {
@@ -154,6 +154,8 @@ export function useActiveArcSeason() {
             },
           ]
 
+      const resolvedTagline = (vowsObj.tagline as string | undefined) || rawConfig.tagline
+
       return {
         id: data.id,
         title: rawConfig.title || data.name || 'Arc',
@@ -162,17 +164,17 @@ export function useActiveArcSeason() {
         startDate,
         endDate,
         totalDays,
-        tagline: vowsObj.tagline as string | undefined || rawConfig.tagline,
+        ...(resolvedTagline !== undefined ? { tagline: resolvedTagline } : {}),
         accentColor: (vowsObj.accentColor as string | undefined) || rawConfig.accentColor || '#22d3ee',
         icon: (vowsObj.icon as string | undefined) || rawConfig.icon || 'snowflake',
         vow,
         principles,
-        phases,
+        ...(phases !== undefined ? { phases } : {}),
         focusDomains,
         milestones,
         status: data.status as ArcLifecycleStatus,
         completedAt: data.completed_at,
-        plannedEndDate: data.planned_end_date || data.end_date || rawConfig.endDate,
+        plannedEndDate: data.planned_end_date || data.end_date || rawConfig.endDate || null,
         milestoneProgress: (data.milestone_progress || {}) as MilestoneProgressMap,
         amendments: (Array.isArray(data.amendments) ? ((data.amendments as unknown) as ArcAmendment[]) : []),
         originalConfig: (data.original_config && typeof data.original_config === 'object'
@@ -383,7 +385,7 @@ export function useArcTelemetry() {
       const previousSnapshot = {
         vow: config.vow,
         principles: config.principles,
-        milestones: config.milestones,
+        ...(config.milestones !== undefined ? { milestones: config.milestones } : {}),
       }
 
       const diffs = computeAmendmentDiffs(previousSnapshot, newCommitments, trimmedReason)

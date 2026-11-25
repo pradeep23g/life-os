@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom'
-import { getArcHealthColor } from '../../arc/constants'
-import type { ArcPaceStatus } from '../../arc/types'
+import { getArcHealthColor, type ArcPaceStatus } from '../../arc'
 
 interface AmbientHorizonBarProps {
   dateDisplay: string

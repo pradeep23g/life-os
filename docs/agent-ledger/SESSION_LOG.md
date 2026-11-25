@@ -470,3 +470,33 @@ Each entry follows this exact structure:
 
 **Handoff notes for next agent:**
 > Track 2 (SQL & Supabase Performance) is complete and verified locally. Remember to apply `supabase/migrations/202611250000_track2_rls_index_view_optimization.sql` to remote Supabase before production release.
+
+---
+
+### Session 2026-11-25-t34a — Track 3 Clean Engineering & Track 4 TypeScript 5.9 Patterns
+- **Agent:** Antigravity (Advanced Agentic Coding)
+- **Date:** 2026-11-25T23:05:00+05:30
+- **Duration:** ~25m
+- **Task:** Complete Track 3 (Clean Engineering & Architecture) and Track 4 (TypeScript 5.9 Advanced Patterns) in `tasks/skills-roadmap.md`, plus push Track 2 migration to remote Supabase (`qxypqmobhhfbxrhyvraa`).
+- **Scope:** `eslint.config.js`, `tsconfig.app.json`, `src/App.tsx`, `src/layout/AstrolabeOrbNav.tsx`, `src/layout/CommandPalette.tsx`, `src/lib/arcConstants.ts`, `src/lib/eventTaxonomy.ts`, `src/lib/useModuleColors.ts`, `src/lib/date.ts`, `src/lib/schemas/seasonConfigSchema.ts`, `src/lib/schemas/curriculumSchema.ts`, `src/types/branded.ts`, `src/types/asyncState.ts`, domain barrels (`admin`, `arc`, `home`, `mission-control`, `profile`, `reports`, `system`, `time-os`), core API hooks and strict TS fixes across `src/features/`.
+
+**What was done:**
+- Remote Migration Push:
+  - Pushed `202611250000_track2_rls_index_view_optimization.sql` to `Life OS (qxypqmobhhfbxrhyvraa) · production` via `supabase db push --remote=qxypqmobhhfbxrhyvraa --yes`; verified 35/35 migrations synced.
+- Track 3 — Clean Engineering & Architecture:
+  - Enforced FSD downward layering, Invariant 1 Cognitive Boundary (`mind-os` ↔ `productivity-hub`), and barrel-only cross-feature imports in `eslint.config.js`.
+  - Moved `CommandPalette.tsx` to `src/layout/CommandPalette.tsx` and extracted `src/lib/arcConstants.ts` so lower layers never import `features/`.
+  - Added `index.ts` barrels for `admin`, `home`, `profile`, and `reports` (all 15 feature directories covered) and updated cross-feature imports to use domain barrels.
+  - Added `AsyncState<T>` and `toAsyncState()` in `src/types/asyncState.ts`.
+  - Enabled `noUncheckedIndexedAccess` and `exactOptionalPropertyTypes` in `tsconfig.app.json` and fixed all 94 resulting TypeScript errors.
+- Track 4 — TypeScript 5.9 Advanced Patterns:
+  - Added `EventDomain` and `EventKey<D, A>` template literal types with `satisfies` in `src/lib/eventTaxonomy.ts`.
+  - Created `src/types/branded.ts` and wired `HabitId`, `HabitLogId`, `HabitBreakId`, `TaskId`, `TimeLogId`, `TransactionId`, and `UserId` across `useHabits.ts`, `useTasks.ts`, `useTimeLogs.ts`, `useFinance.ts`, and callers.
+  - Applied `satisfies` to `DEFAULT_MODULE_COLORS` (`src/lib/useModuleColors.ts`), `EVENT_TYPES`, and `ORBIT_1` / `ORBIT_2` (`src/layout/AstrolabeOrbNav.tsx`).
+  - Added `z.toJSONSchema()` exports (`getArcConfigJsonSchema()`, `getCurriculumJsonSchema()`).
+
+**Verification:**
+- [x] `npm run verify:release` passed (11/11 doc drift checks, 0 ESLint errors/warnings, 0 `tsc -b` errors under strict flags, clean Vite production build).
+
+**Handoff notes for next agent:**
+> Tracks 1–4 are complete and verified. Next priorities in `tasks/skills-roadmap.md` are Track 5 (Wave 8 MCP Server), Track 6 (Wave 2 Native Android Companion), and Track 7 (Shared Cross-Platform API & Data Governance).

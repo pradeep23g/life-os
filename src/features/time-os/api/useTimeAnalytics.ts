@@ -94,7 +94,7 @@ function getWeekKeys(todayDateKey: string): string[] {
 }
 
 function formatDayLabel(dateKey: string): string {
- const [year, month, day] = dateKey.split('-').map(Number)
+ const [year = 1970, month = 1, day = 1] = dateKey.split('-').map(Number)
  const date = new Date(Date.UTC(year, month - 1, day, 12, 0, 0))
  return new Intl.DateTimeFormat('en-US', {
  timeZone: 'Asia/Kolkata',
@@ -113,7 +113,7 @@ function normalizeMinutes(value: number | null | undefined): number {
 async function fetchTimeAnalytics(): Promise<TimeAnalytics> {
  const todayDateKey = toIndiaDateKey(new Date())
  const weekKeys = getWeekKeys(todayDateKey)
- const earliestWeekDateKey = weekKeys[0]
+ const earliestWeekDateKey = weekKeys[0] ?? todayDateKey
 
  const { data, error } = await supabase
  .from('time_logs')

@@ -1,3 +1,14 @@
+export type EventDomain =
+  | 'mind'
+  | 'productivity'
+  | 'learning'
+  | 'fitness'
+  | 'time'
+  | 'finance'
+  | 'system'
+
+export type EventKey<D extends EventDomain, A extends string> = `${D}.${A}`
+
 export const EVENT_TYPES = {
   MIND_HABIT_CREATED: 'mind.habit.created',
   MIND_HABIT_COMPLETED: 'mind.habit.completed',
@@ -50,7 +61,7 @@ export const EVENT_TYPES = {
   FINANCE_TRANSACTION_DELETED: 'finance.transaction.deleted',
 
   SYSTEM_EVENING_SYNC_COMPLETED: 'system.evening_sync.completed',
-} as const
+} as const satisfies Record<string, EventKey<EventDomain, string>>
 
 export const {
   MIND_HABIT_CREATED,

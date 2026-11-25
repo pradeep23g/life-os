@@ -132,7 +132,7 @@ export default function MindOsDashboard() {
         title: trimmedTitle,
         habitType: newHabitType,
         targetValue: targetVal,
-        unit: newHabitUnit.trim() || undefined,
+        ...(newHabitUnit.trim() ? { unit: newHabitUnit.trim() } : {}),
       },
       {
         onSuccess: () => {

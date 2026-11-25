@@ -295,9 +295,9 @@ function PlanningPage() {
         title: trimmedTitle,
         priority: itemPriority,
         status: itemStatus,
-        goalId: itemGoalId || undefined,
-        linkedTaskId: itemTaskId || undefined,
-        linkedHabitId: itemHabitId || undefined,
+        ...(itemGoalId ? { goalId: itemGoalId } : {}),
+        ...(itemTaskId ? { linkedTaskId: itemTaskId } : {}),
+        ...(itemHabitId ? { linkedHabitId: itemHabitId } : {}),
         notes: itemNotes,
       },
       {
@@ -380,13 +380,13 @@ function PlanningPage() {
             label="Weekly Plan"
             isActive={activeTab === 'plan'}
             onClick={() => setActiveTab('plan')}
-            badge={weeklyItems.length > 0 ? String(weeklyItems.length) : undefined}
+            {...(weeklyItems.length > 0 ? { badge: String(weeklyItems.length) } : {})}
           />
           <TabButton
             label="Goals"
             isActive={activeTab === 'goals'}
             onClick={() => setActiveTab('goals')}
-            badge={goals.length > 0 ? String(goals.length) : undefined}
+            {...(goals.length > 0 ? { badge: String(goals.length) } : {})}
           />
           <TabButton
             label="Review"
