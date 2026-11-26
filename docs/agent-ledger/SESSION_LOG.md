@@ -500,3 +500,29 @@ Each entry follows this exact structure:
 
 **Handoff notes for next agent:**
 > Tracks 1–4 are complete and verified. Next priorities in `tasks/skills-roadmap.md` are Track 5 (Wave 8 MCP Server), Track 6 (Wave 2 Native Android Companion), and Track 7 (Shared Cross-Platform API & Data Governance).
+
+---
+
+### Session 2026-11-26-001 — Expand Curriculum Notes in Learning OS
+- **Agent:** Antigravity (Gemini 3.8 Flash)
+- **Date:** 2026-11-26T09:47:00+05:30
+- **Duration:** ~5m
+- **Task:** Quick fix on Learning OS module notes where curriculum notes were permanently truncated with `line-clamp-1`. Make the notes space always expanded.
+- **Scope:** `src/features/learning-os/pages/RoadmapDetailView.tsx`, `src/features/learning-os/components/SpatialKnowledgeMap.tsx`.
+
+**What was done:**
+- Removed `line-clamp-1` from curriculum session notes (`session.description`) in both `RoadmapDetailView.tsx` and `SpatialKnowledgeMap.tsx`.
+- Added `whitespace-pre-wrap leading-relaxed break-words` to allow multiline notes to wrap cleanly.
+- Adjusted parent row container alignment from `sm:items-center` to `sm:items-start` with `flex-1 min-w-0` on the content column, keeping action buttons neatly aligned at the top right when notes expand.
+
+**What was NOT done (and why):**
+- No database changes or ADRs needed (pure UI styling fix).
+
+**Findings logged:** None
+**Mistakes logged:** None
+
+**Verification:**
+- [x] `npm run verify:release` passed (11/11 doc drift checks, 0 ESLint errors/warnings, 0 `tsc -b` errors, clean Vite production build).
+
+**Handoff notes for next agent:**
+- Curriculum notes now fully expand across all stations and maps in Learning OS.

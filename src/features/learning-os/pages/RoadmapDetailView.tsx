@@ -416,27 +416,27 @@ export function RoadmapDetailView() {
                           {stageSessions.map((session, sIdx) => (
                             <div
                               key={session.id}
-                              className="group flex flex-col sm:flex-row sm:items-center justify-between p-4 gap-3 hover:bg-elevated/50 transition-colors"
+                              className="group flex flex-col sm:flex-row sm:items-start justify-between p-4 gap-4 hover:bg-elevated/50 transition-colors"
                             >
-                              <div className="flex items-start gap-3">
+                              <div className="flex items-start gap-3 flex-1 min-w-0">
                                 <span className="text-xs font-mono tabular-nums text-text-tertiary w-6 shrink-0 mt-0.5">
                                   {String(session.order_index || sIdx + 1).padStart(2, '0')}
                                 </span>
-                                <div>
+                                <div className="flex-1 min-w-0">
                                   <span className={`text-sm font-medium ${session.is_skipped ? 'line-through text-text-tertiary' : 'text-text-primary'}`}>
                                     {session.title}
                                   </span>
                                   {session.description && (
-                                    <p className="text-xs font-serif text-text-secondary mt-0.5 line-clamp-1">
+                                    <p className="text-xs font-serif text-text-secondary mt-1 whitespace-pre-wrap leading-relaxed break-words">
                                       {session.description}
                                     </p>
                                   )}
                                   {session.tags && session.tags.length > 0 && (
-                                    <div className="flex items-center gap-1.5 mt-1.5">
+                                    <div className="flex items-center gap-1.5 mt-2 flex-wrap">
                                       {session.tags.map((t) => (
                                         <span
                                           key={t}
-                                          className="text-[10px] font-mono text-text-tertiary border border-border-subtle px-1.5 py-0.2 rounded"
+                                          className="text-[10px] font-mono text-text-tertiary border border-border-subtle px-1.5 py-0.5 rounded"
                                         >
                                           #{t}
                                         </span>
@@ -446,7 +446,7 @@ export function RoadmapDetailView() {
                                 </div>
                               </div>
 
-                              <div className="flex items-center gap-3 shrink-0 self-end sm:self-auto">
+                              <div className="flex items-center gap-3 shrink-0 self-end sm:self-auto sm:pt-0.5">
                                 {session.estimated_minutes && (
                                   <span className="text-xs font-mono tabular-nums text-text-tertiary flex items-center gap-1">
                                     <Clock size={11} />

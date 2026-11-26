@@ -177,39 +177,39 @@ export function SpatialKnowledgeMap({
  {stageSessions.length > 0 && (
  <div className="mt-6 divide-y divide-border-subtle border-t border-border-subtle">
  {stageSessions.map((session, mIdx) => (
- <div
- key={session.id}
- className="group py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-colors hover:bg-elevated/40 px-2"
- >
- <div className="flex items-start gap-3">
- <span className="text-xs font-mono tabular-nums text-text-tertiary w-6 shrink-0 mt-0.5">
- {String(mIdx + 1).padStart(2, '0')}
- </span>
- <div>
- <span className={`text-sm ${session.is_skipped ? 'line-through text-text-tertiary' : 'text-text-primary'}`}>
- {session.title}
- </span>
- {session.description && (
- <p className="text-xs font-serif text-text-tertiary mt-0.5 line-clamp-1">
- {session.description}
- </p>
- )}
- {session.tags && session.tags.length > 0 && (
- <div className="flex items-center gap-1.5 mt-1.5">
- {session.tags.map((t) => (
- <span
- key={t}
- className="text-[10px] font-mono text-text-tertiary border border-border-subtle px-1.5 py-0.5 rounded"
- >
- #{t}
- </span>
- ))}
- </div>
- )}
- </div>
- </div>
+                  <div
+                    key={session.id}
+                    className="group py-3 flex flex-col sm:flex-row sm:items-start justify-between gap-3 transition-colors hover:bg-elevated/40 px-2"
+                  >
+                    <div className="flex items-start gap-3 flex-1 min-w-0">
+                      <span className="text-xs font-mono tabular-nums text-text-tertiary w-6 shrink-0 mt-0.5">
+                        {String(mIdx + 1).padStart(2, '0')}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <span className={`text-sm ${session.is_skipped ? 'line-through text-text-tertiary' : 'text-text-primary'}`}>
+                          {session.title}
+                        </span>
+                        {session.description && (
+                          <p className="text-xs font-serif text-text-tertiary mt-1 whitespace-pre-wrap leading-relaxed break-words">
+                            {session.description}
+                          </p>
+                        )}
+                        {session.tags && session.tags.length > 0 && (
+                          <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                            {session.tags.map((t) => (
+                              <span
+                                key={t}
+                                className="text-[10px] font-mono text-text-tertiary border border-border-subtle px-1.5 py-0.5 rounded"
+                              >
+                                #{t}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
 
- <div className="flex items-center gap-3 shrink-0 self-end sm:self-auto">
+                    <div className="flex items-center gap-3 shrink-0 self-end sm:self-auto sm:pt-0.5">
  {session.estimated_minutes && (
  <span className="text-xs font-mono tabular-nums text-text-tertiary flex items-center gap-1">
  <Clock size={12} />
