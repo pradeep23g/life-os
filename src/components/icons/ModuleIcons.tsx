@@ -23,13 +23,18 @@ export function LifeOsLogo({ className = 'h-6 w-6', size }: IconProps) {
       aria-hidden="true"
     >
       {/* Outer Horizon Ring */}
-      <circle cx="12" cy="12" r="9.5" />
-      {/* Dynamic Orbital Ellipse */}
-      <ellipse cx="12" cy="12" rx="9.5" ry="3.8" transform="rotate(-30 12 12)" strokeDasharray="1 1.5" />
-      {/* Singular Core Diamond */}
-      <polygon points="12,6.5 16,12 12,17.5 8,12" />
-      {/* Focal Singularity */}
-      <circle cx="12" cy="12" r="1.2" fill="currentColor" />
+      <circle cx="12" cy="12" r="9.25" strokeOpacity="0.85" />
+      {/* Back Orbital Arc (behind diamond) */}
+      <path d="M 3.7 16.4 A 9.5 3.5 -28 0 1 20.3 7.6" strokeOpacity="0.35" strokeWidth="1.1" strokeDasharray="1.2 1.6" />
+      {/* Faceted Diamond Core */}
+      <polygon points="12,5.2 16.4,12 12,18.8 7.6,12" fill="var(--bg-canvas, #000000)" />
+      <polygon points="12,5.2 12,18.8 7.6,12" fill="currentColor" fillOpacity="0.16" stroke="none" />
+      {/* Front Interlocking Velocity Arc */}
+      <path d="M 20.3 7.6 A 9.5 3.5 -28 0 1 3.7 16.4" stroke="var(--bg-canvas, #000000)" strokeWidth="2.8" />
+      <path d="M 20.3 7.6 A 9.5 3.5 -28 0 1 3.7 16.4" strokeWidth="1.5" />
+      {/* Satellite Momentum Orb & Focal Singularity */}
+      <circle cx="20.3" cy="7.6" r="1.2" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none" />
     </svg>
   )
 }
