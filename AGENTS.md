@@ -1,7 +1,9 @@
-# Life OS — Agent Instructions
+# Life OS — Agent Instructions (Runtime Executive Brief)
 
 > **For:** Codex, Claude Code, Antigravity, and autonomous coding agents.
+> **Role:** Fast runtime entrypoint and token-efficient rule injection.
 > **Full orientation:** [`docs/AGENT_QUICKSTART.md`](docs/AGENT_QUICKSTART.md)
+> **Deep Operational Handbook:** [`docs/operations/AGENTS.md`](docs/operations/AGENTS.md) (consult for complex changes, new modules, migrations, ledger archival, and multi-file workflows)
 > **Current context:** [`docs/agent-ledger/HANDOFF.md`](docs/agent-ledger/HANDOFF.md)
 > **Mistake codex:** [`docs/agent-ledger/MISTAKES.md`](docs/agent-ledger/MISTAKES.md)
 
@@ -67,9 +69,13 @@ npm run verify:release   # Composite: verify:docs + lint + tsc + build
 
 | File | Role |
 |---|---|
+| `docs/operations/AGENTS.md` | Comprehensive operational handbook (SOPs, protocols, subsystem ownership) |
 | `src/lib/eventTaxonomy.ts` | Canonical event constants |
 | `src/types/database.types.ts` | Generated DB types (NEVER edit) |
 | `src/layout/AstrolabeOrbNav.tsx` | Navigation system |
 | `src/features/system/` | Brain Engine algorithms |
 | `supabase/migrations/` | Immutable migration history |
 | `docs/agent-ledger/SESSION_LOG.md` | Session logging (append-only) |
+
+> [!TIP]
+> **Complex & Architectural Changes:** If your task involves creating new feature modules, writing database migrations, modifying event queue persistence, rotating ledger files, or resolving git merge conflicts, you **MUST** consult the comprehensive standard operating procedures in [`docs/operations/AGENTS.md`](docs/operations/AGENTS.md).

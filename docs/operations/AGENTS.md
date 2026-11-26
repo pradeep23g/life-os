@@ -12,6 +12,9 @@ domain: "operations"
 **Audience:** AI Coding Agents, Software Architects, and Core Maintainers  
 **Target Repository:** `pradeep23g/life-os`
 
+> [!NOTE]
+> **Document Architecture Notice:** This document is the comprehensive operational handbook (Tier 4). For the fast runtime executive brief auto-ingested by agent harnesses at startup, see root [`AGENTS.md`](../../AGENTS.md).
+
 ---
 
 ## 1. Operational Role & Mission
