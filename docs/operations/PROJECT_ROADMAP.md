@@ -77,15 +77,24 @@ Life OS evolves through hardened, evidence-based engineering phases:
 - **Two-Stage Completion Lifecycle:** Stage 1 (`ACTIVE → COMPLETED`) freezes telemetry evaluation; Stage 2 (`COMPLETED → ARCHIVED`) gates archival behind 5-question structured retrospective.
 - **Cross-OS Ambient Penetration:** Dynamic Astrolabe Orb navigation node, Home screen ambient horizon bar ticker, decoupled shell titles and brand lockups.
 
+### ✅ Phase 4 Wave 2 — NATIVE ANDROID COMPANION v1 (Completed November 2026)
+- **Monorepo Android Application (`/android`):** Native Android 15 (SDK 35, minSdk 29) Kotlin + Jetpack Compose application under `android/app` with `BiometricPrompt` whole-app authentication and Supabase Kotlin SDK 3.1.4 integration.
+- **Single Source of Truth (SSOT) Local Persistence & Outbox Sync:** Built Room database `LifeOsDatabase` and WorkManager `OutboxSyncWorker` ensuring offline resilience, FIFO queued mutations, and canonical `public.events` telemetry with `Asia/Kolkata` date partitioning (`event_date_ist`).
+- **Core Mobile Surfaces:** Implemented Home Porch overview, Focus timer with Foreground Service (`FocusTimerService`, ongoing notification, and single active timer DB constraint enforcement), Habits checklist with 5/mo streak break healing, Task ledger with focus handoff, and Contemplative Journaling (1–5 mood + 3 prompts).
+- **Jetpack Glance Widgets & Alarms:** Built actionable `FocusGlanceWidget` (1-tap start/stop) and `HabitGlanceWidget` (1-tap check-off), paired with `EveningReminderScheduler` (exact alarms via `AlarmManager` for 19:30 IST Tasks and 22:00 IST Journal deep links `lifeos://tasks/today` and `lifeos://mind/journal`).
+- **Cross-Platform Telemetry Contracts:** Added `scripts/sync-android-contracts.mjs` ensuring byte-for-byte parity between TypeScript `EVENT_TYPES` and Kotlin `EventTypes.kt`, enforced via `npm run verify:docs`.
+
 ---
 
 ## 3. FUTURE WORK — Scheduled Implementation Waves
 
-### ⏳ Wave 2 — DAILY PRESENCE (Native Android Companion)
-- Native Android Kotlin + Jetpack Compose application (`docs/winter-arc/WINTER_ARC_ANDROID_SPEC.md`).
-- Supabase Kotlin SDK (`io.github.jan-tennert.supabase`) integration.
-- Lock screen widgets, Glance app widgets, native alarms via `AlarmManager`, and quick-action notification tiles.
-- High-frequency Life Pulse check-in dialogs persisting to `public.pulse_logs`.
+### ⏳ Wave 2 Phase H — ANDROID COMPANION EXPANSION
+- Companion logging surfaces for Fitness OS (workout sets, rapid numpad, exercise catalog).
+- Finance OS behavioral expense capture with Need vs Want discretionary categorization.
+- Learning OS study session logs and roadmap inspection.
+- Winter Arc ambient campaign countdown, chapter milestones, and pace badges ([`WINTER_ARC_MOBILE.md`](../winter-arc/WINTER_ARC_MOBILE.md)).
+- Field Reports mobile reading surface.
+- Custom lock screen widgets and Android quick-setting tiles.
 
 ### ⏳ Wave 4 — KNOWLEDGE VAULT UI
 - Dedicated Second-Brain knowledge workspace surfacing `public.knowledge_resources`.

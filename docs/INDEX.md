@@ -30,7 +30,7 @@ domain: "governance"
 | **System Architecture** | [`architecture/SYSTEM_ARCHITECTURE.md`](./architecture/SYSTEM_ARCHITECTURE.md) | `architecture` | Active | ~3,800 | 14-route map, 3-ring Astrolabe, Brain Engine pipeline |
 | **Database Schema** | [`architecture/DATABASE_SCHEMA.md`](./architecture/DATABASE_SCHEMA.md) | `architecture` | Active | ~6,200 | 33 tables, 15 active views, 4 planned views |
 | **Event Taxonomy** | [`architecture/EVENT_TAXONOMY.md`](./architecture/EVENT_TAXONOMY.md) | `architecture` | Active | ~3,100 | 45 canonical events, transient event bus, telemetry |
-| **Module Guide** | [`architecture/MODULE_GUIDE.md`](./architecture/MODULE_GUIDE.md) | `architecture` | Active | ~3,900 | 14 domain modules including Arc Engine, components, hooks |
+| **Module Guide** | [`architecture/MODULE_GUIDE.md`](./architecture/MODULE_GUIDE.md) | `architecture` | Active | ~4,200 | 14 web domains + Native Android Companion (Section 16) |
 | **UI System** | [`architecture/UI_SYSTEM.md`](./architecture/UI_SYSTEM.md) | `architecture` | Active | ~1,600 | 3-tier typography, OKLCH tokens, 5 solar themes |
 | **Security Architecture** | [`architecture/SECURITY.md`](./architecture/SECURITY.md) | `security` | Active | ~2,200 | RLS matrix, service role boundaries, auth session lifecycle |
 | **Life Rules** | [`architecture/LIFE_RULES.md`](./architecture/LIFE_RULES.md) | `architecture` | Active | ~800 | 8 behavioral principles, multi-dimensional growth |
@@ -74,7 +74,7 @@ domain: "governance"
 | **Winter Arc Progress** | [`winter-arc/WINTER_ARC_PROGRESS.md`](./winter-arc/WINTER_ARC_PROGRESS.md) | `winter-arc` | Historical | ~2,600 | Milestones 1–5, completed phase matrix |
 | **Verification Audit** | [`winter-arc/WINTER_ARC_VERIFICATION_AUDIT_2026.md`](./winter-arc/WINTER_ARC_VERIFICATION_AUDIT_2026.md) | `winter-arc` | Historical | ~3,800 | 15 hostile audit citations resolved |
 | **Visual Refoundation** | [`winter-arc/VISUAL_REFOUNDATION_2.md`](./winter-arc/VISUAL_REFOUNDATION_2.md) | `winter-arc` | Historical | ~4,200 | Visual language & design specification |
-| **Android Spec** | [`winter-arc/WINTER_ARC_MOBILE.md`](./winter-arc/WINTER_ARC_MOBILE.md) | `winter-arc` | Historical | ~5,000 | Wave 2 Kotlin / Jetpack Compose technical spec |
+| **Android Spec** | [`winter-arc/WINTER_ARC_MOBILE.md`](./winter-arc/WINTER_ARC_MOBILE.md) | `winter-arc` | Active | ~5,200 | Wave 2 Kotlin / Jetpack Compose technical directive & v1 status |
 
 ---
 

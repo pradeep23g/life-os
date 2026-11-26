@@ -294,5 +294,43 @@ Supabase email/password authentication, session token management, redirect to `/
 - **Key Dependencies:** `@supabase/supabase-js` v2, Supabase Auth
 - **RLS Integration:** Provides `auth.uid()` that all RLS policies depend on
 
+---
+
+## 16. Native Android Companion
+
+**Package:** `com.lifeos.companion`  
+**Type:** Native Android Tactical Companion & Widget Host  
+**Location:** `android/app/src/main/java/com/lifeos/companion/`  
+**Platform:** Android 15 / SDK 35 (minSdk 29) · Kotlin · Jetpack Compose
+
+### Responsibility
+The Android Companion is a native client providing low-friction tactical logging, continuous focus tracking via an Android Foreground Service, home screen Glance widgets, offline Room database caching with a FIFO outbox synchronization worker, and exact evening reminder alarms via `AlarmManager`.
+
+### Key Components & Architecture
+- **Navigation & Shell (`ui/navigation/`):**
+  - `AstrolabeNavigationShell.kt`: Mobile 3-state navigation shell (fluid Pill ↔ single-Orb ↔ 2-ring orbital blur overlay) implementing the True-Black OLED design language (`#000000` / `#0A0A0A`) from `UI_SYSTEM.md`.
+  - `LifeOsRoute.kt`: Type-safe navigation routes across companion surfaces.
+- **Core Product Surfaces (`ui/`):**
+  - `HomeScreen.kt` / `HomeViewModel.kt`: The Porch mobile status surface, displaying active focus timer state, today's habit check-off completion bar, open tasks count, and journal entry CTA.
+  - `FocusScreen.kt` / `FocusViewModel.kt`: Chronometer interface with target duration presets (15, 25, 45, 60m), single-timer database constraint enforcement (`time_logs`), and remote active session conflict resolution.
+  - `HabitsScreen.kt` / `HabitsViewModel.kt`: Habit tracker with binary check-offs, integer target steppers, habit creation/deletion dialogs, and 5/month streak break healing (`habit_streak_heals`).
+  - `TasksScreen.kt` / `TasksViewModel.kt`: Task ledger with priority tags (`HIGH`, `MEDIUM`, `LOW`), deadline chips, completion toggles, and direct "Start Focus" handoff.
+  - `JournalScreen.kt` / `JournalViewModel.kt`: Contemplative evening reflection with 1–5 mood score and 3 structured prompt fields (`what_went_good`, `what_you_learned`, `brief_about_day`).
+  - `ProfileSettingsScreen.kt`: User profile view with biometric authentication toggle, evening reminder time configuration, test alarm dispatch, and session sign-out.
+- **Background Services & Notifications:**
+  - `FocusTimerService.kt`: Foreground Service (`specialUse`) maintaining an ongoing notification ticker with play/pause/stop actions, surviving application backgrounding.
+  - `EveningReminderScheduler.kt` / `EveningReminderReceiver.kt`: Exact scheduling via `AlarmManager.setExactAndAllowWhileIdle()` for default 19:30 IST Tasks and 22:00 IST Journal reminders with deep links (`lifeos://tasks/today`, `lifeos://mind/journal`) and `BOOT_COMPLETED` rescheduling.
+- **Home Screen Widgets (`widgets/`):**
+  - `FocusGlanceWidget.kt`: Actionable Jetpack Glance AppWidget providing 1-tap start/stop deep work control.
+  - `HabitGlanceWidget.kt`: Actionable Glance AppWidget providing 1-tap habit toggle directly on the device home screen.
+  - `WidgetStateSync.kt`: Broadcast synchronization updating Glance widget states upon Room database writes and service lifecycle transitions.
+- **Data & Synchronization Layer (`data/`):**
+  - `LifeOsDatabase.kt`: Room database (v1) caching `HabitEntity`, `HabitLogEntity`, `TaskEntity`, `JournalEntity`, and `OutboxItemEntity`.
+  - `OutboxManager.kt` / `OutboxSyncWorker.kt`: FIFO outbox queue using WorkManager with exponential backoff (10s–300s) to synchronize local mutations to Supabase tables and record durable telemetry in `public.events`.
+  - `SupabaseClientProvider.kt`: Supabase Kotlin SDK 3.1.4 initialization reading connection parameters from root `.env` via `loadRootEnv()`.
+  - `TelemetryLogger.kt` / `EventTypes.kt`: Telemetry logger emitting canonical events with `Asia/Kolkata` date partitioning (`event_date_ist`).
+- **Unfinished Surfaces (Phase H Placeholders):**
+  - `ModulePlaceholderScreen.kt`: Flagged placeholder screens for un-implemented companion surfaces (`Arc`, `MissionControl`, `Learning`, `Fitness`, `Finance`, `Reports`, `DataLab`, `Admin`). These surfaces display their upcoming roadmap status rather than simulated data.
+
 
 

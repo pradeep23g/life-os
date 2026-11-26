@@ -16,6 +16,8 @@ domain: operations
 
 ### Prerequisites
 - Node.js 20+ / npm 10+
+- JDK 17 (Java Development Kit 17 for Android companion builds)
+- Android SDK Platform 35 (`compileSdk 35`, `minSdk 29`) & Build-Tools
 - Supabase project (hosted PostgreSQL)
 
 ### Local Environment Setup
@@ -28,6 +30,7 @@ domain: operations
    VITE_SUPABASE_URL=https://your-project-ref.supabase.co
    VITE_SUPABASE_ANON_KEY=your-anon-key
    ```
+   *(Note: The Android companion reads `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` directly from the root `.env` at build time via `loadRootEnv()` in `android/app/build.gradle.kts`).*
 3. Install dependencies:
    ```bash
    npm install
@@ -35,6 +38,12 @@ domain: operations
 4. Start local development server:
    ```bash
    npm run dev
+   ```
+5. Build and install Android companion app (optional for web-only work):
+   ```bash
+   node scripts/sync-android-contracts.mjs
+   cd android && ./gradlew assembleDebug --no-daemon
+   adb install -r app/build/outputs/apk/debug/app-debug.apk
    ```
 
 ---
@@ -46,10 +55,12 @@ domain: operations
 | Command | Purpose | Prerequisites |
 |---|---|---|
 | `npm run dev` | Starts Vite local development server on `localhost:5173` | Node.js 20+ |
-| `npm run verify:docs` | Verifies documentation drift against code truth (`scripts/verify-doc-drift.mjs`) | Node.js 20+ |
+| `npm run verify:docs` | Verifies documentation drift against code truth and validates Android `EventTypes.kt` parity | Node.js 20+ |
 | `npm run lint` | Runs ESLint across the codebase (`eslint .`) | None |
 | `npm run build` | Runs TypeScript compiler (`tsc -b`) and Vite production bundle | None |
 | `npm run verify:release` | Official composite release gate: runs `verify:docs`, `lint`, `tsc -b`, and `vite build` | None |
+| `node scripts/sync-android-contracts.mjs` | Syncs canonical `EVENT_TYPES` from `eventTaxonomy.ts` to Android `EventTypes.kt` | Node.js 20+ |
+| `cd android && ./gradlew assembleDebug` | Compiles native Android Companion debug APK (`app-debug.apk`) | JDK 17, Android SDK 35 |
 
 ### 2.2 Verification Test Suites
 

@@ -8,7 +8,7 @@
 
 ## Overview
 
-Life OS is a multi-domain behavioral operating system designed to accumulate years of longitudinal life data with zero cognitive distortion. To scale the system across its 14 domains, hosted PostgreSQL 15+ backend, future Android native companion (Wave 2), and external agent MCP gateway (Wave 8), this roadmap records concrete technical skills, architecture patterns, and engineering tasks categorized by priority.
+Life OS is a multi-domain behavioral operating system designed to accumulate years of longitudinal life data with zero cognitive distortion. To scale the system across its 14 domains, hosted PostgreSQL 15+ backend, native Android companion under `/android` (Wave 2, Phases G1–G4 complete), and external agent MCP gateway (Wave 8), this roadmap records concrete technical skills, architecture patterns, and engineering tasks categorized by priority.
 
 ---
 
@@ -99,17 +99,39 @@ Life OS is a multi-domain behavioral operating system designed to accumulate yea
 
 ---
 
-## Track 6: Wave 2 — Native Android Companion (Kotlin + Compose)
-**Priority: MEDIUM** | **Focus:** Real-world tactile companion, home screen widgets, and offline resilience
+## Track 6: Wave 2 — Native Android Companion (Kotlin + Jetpack Compose)
+**Priority: HIGH** | **Status: v1 Complete (Phases G1–G4 Implemented; Phase H Planned)** | **Focus:** Real-world tactile companion, home screen widgets, and offline resilience
 
-- [ ] **Multi-Module Gradle Architecture**
-  - Structure into `:core:model`, `:core:database` (Room), `:core:network` (Supabase Kotlin SDK), `:data`, `:feature:*`, and `:widget`.
-- [ ] **Room Database as Single Source of Truth (SSOT) with Outbox Sync**
-  - Mirror web's `useEventBus.ts` peek-and-splice queue pattern in Android via an outbox SQLite table and Room `Flow` observers.
-- [ ] **Jetpack Glance Home Screen Widgets**
-  - Build actionable Glance widgets ("What Matters Now", active Arc countdown, rapid Life Pulse logger) reading directly from local Room database.
-- [ ] **WorkManager Periodic Synchronization**
-  - Implement 15-minute periodic network-constrained background sync via `WorkManager` updating widgets and flushing telemetry to Supabase.
+- [x] **Monorepo Android Application Architecture (`/android`)**
+  - Structured application under `/android` using Gradle Kotlin DSL targeting Android 15 (`compileSdk = 35`, `minSdk = 29`, `targetSdk = 35`) with Java 17 toolchain.
+  - Configured Supabase Kotlin SDK 3.1.4 (Auth, Postgrest, Realtime) reading credentials from root `.env` via `loadRootEnv()`.
+  - Implemented whole-app `BiometricPrompt` security gate and `AuthScreen` in `MainActivity.kt`.
+  - Added `scripts/sync-android-contracts.mjs` to auto-generate `EventTypes.kt` from `src/lib/eventTaxonomy.ts`, integrated into `verify:docs` and `verify:release`.
+- [x] **Room Local Persistence as Single Source of Truth (SSOT) & Hybrid Outbox**
+  - Built Room database `LifeOsDatabase` (v1) with `LifeOsDao` covering `HabitEntity`, `HabitLogEntity`, `TaskEntity`, `JournalEntity`, and `OutboxItemEntity`.
+  - Built `OutboxManager` and `OutboxSyncWorker` (`CoroutineWorker`) providing FIFO queued mutations and automatic retry backoff syncing to Supabase tables and logging canonical telemetry to `public.events` with `event_date_ist`.
+- [x] **Core Companion Domain Repositories & UI Surfaces (v1)**
+  - `HomeScreen`: Aggregates active focus timer, today's habit completion count, open tasks count, and journal prompt CTA.
+  - `FocusScreen`: Powered by `FocusTimerService` (Foreground Service with persistent chronometer notification and action buttons), enforcing the single active timer database constraint (`time_logs`).
+  - `HabitsScreen`: Full habit listing, binary and target count steppers, CRUD dialogs, and 5/month streak break healing (`habit_streak_heals`).
+  - `TasksScreen`: Task creation, priority badges, deadline chips, completion toggles, and direct handoff to Focus timer.
+  - `JournalScreen`: Daily reflection composer with 1–5 mood rating and 3 structured prompts (`what_went_good`, `what_you_learned`, `brief_about_day`).
+  - `AstrolabeNavigationShell`: Mobile 3-state navigation (fluid Pill ↔ single-Orb ↔ 2-ring orbital blur overlay) styled with True-Black OLED palette (`#000000` / `#0A0A0A`) and 3-tier typography.
+- [x] **Jetpack Glance Home Screen Widgets**
+  - `FocusGlanceWidget`: Actionable home screen widget with 1-tap start/stop deep work controls reading directly from synchronized timer state.
+  - `HabitGlanceWidget`: Interactive home screen widget displaying today's habits with 1-tap check-off writing to Room and queuing outbox sync.
+  - `WidgetStateSync`: Centralized receiver updating Glance AppWidget states on database mutations and service lifecycle changes.
+- [x] **AlarmManager Exact Evening Reflection Alarms**
+  - `EveningReminderScheduler` schedules exact alarms via `AlarmManager.setExactAndAllowWhileIdle()` for default 19:30 IST task review and 22:00 IST journal reflection.
+  - `EveningReminderReceiver` posts actionable notifications with deep links (`lifeos://tasks/today` and `lifeos://mind/journal`) and handles device reboot rescheduling (`BOOT_COMPLETED`).
+  - `ProfileSettingsScreen` allows customizing evening reminder times, toggling biometric authentication, and triggering test notifications.
+- [ ] **Track 6 Phase H: Remaining Domain Companion Surfaces (Planned)**
+  - [ ] Fitness OS companion workout logging, exercise catalog browser, and rapid-entry numpad.
+  - [ ] Finance OS behavioral transaction logging with Need vs Want categorization.
+  - [ ] Learning OS study session timer and roadmap progress inspection.
+  - [ ] Winter Arc ambient campaign countdown, chapter milestones, and pace badges.
+  - [ ] Field Reports mobile reading surface with Sunday dossier summaries.
+  - [ ] Custom lock screen widget & quick-setting tile shortcuts.
 
 ---
 

@@ -127,13 +127,14 @@ domain: "decisions"
 ---
 
 ## ADR-014: Mobile Technology Stack
-- **Status:** Accepted
+- **Status:** Accepted (Implemented in v1 / November 2026 under `/android`)
 - **Context:** An Android application is required for low-friction tactical logging, always-available focus companions, and home screen widgets.
 - **Decision:** Native Android Kotlin + Jetpack Compose.
 - **Consequences:**
   - Web client and Android app share the backend, Supabase Auth, and PostgreSQL data contracts, while maintaining platform-native UI code.
-  - Supabase Kotlin SDK (`io.github.jan-tennert.supabase`) provides authentication and data access.
-  - Employs Jetpack Compose, Kotlin Coroutines, WorkManager, AlarmManager, Jetpack Glance for home screen widgets, and native notification APIs.
+  - Supabase Kotlin SDK (`io.github.jan-tennert.supabase` v3.1.4) provides authentication and data access.
+  - Implemented under `/android` (`com.lifeos.companion`, compileSdk 35, minSdk 29) using Jetpack Compose, Room local SSOT persistence (`LifeOsDatabase`), WorkManager FIFO outbox sync (`OutboxSyncWorker`), AlarmManager exact evening reminders (`EveningReminderScheduler`), Jetpack Glance home screen widgets (`FocusGlanceWidget`, `HabitGlanceWidget`), Foreground chronometer service (`FocusTimerService`), and `BiometricPrompt` whole-app authentication.
+  - Canonical event contracts synchronized via `scripts/sync-android-contracts.mjs` into `EventTypes.kt`, verified in pre-merge release gates.
 
 ---
 

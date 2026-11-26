@@ -8,8 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "verify:docs": "node scripts/verify-doc-drift.mjs",
-    "verify:release": "node scripts/verify-doc-drift.mjs && eslint . && tsc -b && vite build"
+    "verify:docs": "node scripts/verify-doc-drift.mjs && node scripts/sync-android-contracts.mjs --check",
+    "verify:release": "node scripts/verify-doc-drift.mjs && node scripts/sync-android-contracts.mjs --check && eslint . && tsc -b && vite build"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.99.0",

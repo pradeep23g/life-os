@@ -34,9 +34,9 @@ domain: "winter-arc"
 | **Phase D** | Home (The Porch) + Arc (The Grand Hall) | COMPLETED / VERIFIED | Agent 2 (Home + Arc Specialist) | `/`, `/arc` |
 | **Phase E** | Mind + Work + Body + Learning | COMPLETED / VERIFIED | Domain Specialists | `/mind-os`, `/productivity-hub`, `/fitness-os`, `/learning-os` |
 | **Phase F** | Progression + Data Lab + Reports | COMPLETED / VERIFIED | Phase F Specialists | `/profile`, `/data-lab`, `/reports` |
-| **Phase G** | Native Android Foundation | NOT STARTED | Android Specialist | Android Studio / Kotlin Scaffold |
-| **Phase H** | Android Full Product Surfaces | NOT STARTED | Android Specialist | Native Screens |
-| **Phase I** | Android Widgets, Notifications, Deep Links | NOT STARTED | Android Specialist | App Widgets, Notification Engine |
+| **Phase G** | Native Android Foundation | COMPLETED / VERIFIED | Android Specialist | `/android` Gradle Kotlin DSL, Supabase Kotlin, BiometricPrompt, AuthScreen |
+| **Phase H** | Android Full Product Surfaces | IN PROGRESS / PARTIAL | Android Specialist | Core v1 Live (`Home`, `Focus`, `Habits`, `Tasks`, `Journal`); Remaining Planned |
+| **Phase I** | Android Widgets, Notifications, Deep Links | COMPLETED / VERIFIED | Android Specialist | Glance AppWidgets (`Focus`, `Habit`), `AlarmManager` Evening Alarms, Deep Links |
 | **Phase J** | API / MCP Server Integration | NOT STARTED | Systems Guardian | Model Context Protocol Server |
 | **Phase K** | AI Gateway & Provider Router | NOT STARTED | Intelligence Specialist | AI Engine |
 | **Phase L** | Seasons & Achievements Admin Control Layer (ADR-026) | COMPLETED / VERIFIED | Systems Specialist | `/admin`, Profile Room 05 System Operations, Command Palette |

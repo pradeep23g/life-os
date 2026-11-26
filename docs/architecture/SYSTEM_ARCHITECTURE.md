@@ -24,7 +24,9 @@ Its purpose is to build a trustworthy, long-term behavioral ledger across all di
 ## 2. Technical Stack & Runtime Topology
 
 ```text
-Browser Client (SPA)
+Life OS Multi-Platform Architecture
+
+Web Client (React 19 SPA, src/)
   ├── React 19.2 + TypeScript 5.9 + Vite 7.3
   ├── React Router v7 (14 active client routes with route-level lazy loading)
   ├── TailwindCSS v3 (True-black high-contrast design system + OKLCH Solar Themes)
@@ -33,8 +35,20 @@ Browser Client (SPA)
   ├── Astrolabe Orb Navigation (2-ring kinetic orb shell with secondary bloom fanouts, ADR-023, ADR-030)
   ├── Lucide React (Iconography)
   └── Supabase JS v2 Client (@supabase/supabase-js)
-        ↓
-Backend (Supabase PostgreSQL 15+ Cloud Instance)
+
+Native Android Companion (Kotlin + Jetpack Compose, android/)
+  ├── Android 15 / SDK 35 (minSdk 29, compileSdk 35) + Java 17 toolchain
+  ├── Jetpack Compose + Material3 (True-Black OLED #000000 palette)
+  ├── Mobile Astrolabe Navigation Shell (Pill ↔ single-Orb ↔ 2-ring orbital blur)
+  ├── Room Local Database (LifeOsDatabase, SQLite SSOT offline cache)
+  ├── WorkManager FIFO Outbox Queue (OutboxSyncWorker with exponential backoff)
+  ├── Jetpack Glance AppWidgets (FocusGlanceWidget, HabitGlanceWidget)
+  ├── Foreground Focus Chronometer Service (FocusTimerService)
+  ├── AlarmManager Exact Alarms (Evening reminders 19:30 & 22:00 IST)
+  ├── Biometric Security Gate (BiometricPrompt + AuthScreen)
+  └── Supabase Kotlin SDK 3.1.4 (Auth, Postgrest, Realtime via Ktor OkHttp)
+
+Shared Backend (Supabase PostgreSQL 15+ Cloud Instance)
   ├── 33 Base Tables with Row Level Security (auth.uid() = user_id)
   ├── 15 Active SQL Aggregation Views (security_invoker = true) + 4 Planned Views
   ├── Durable Event Ledger (public.events, partitioned by IST date)
@@ -55,8 +69,8 @@ To prevent architectural drift and misunderstandings by developers or AI agents,
 
 | Status | Definition | Examples in Life OS |
 |---|---|---|
-| **IMPLEMENTED** | Active, verified executable architecture running in production and verified by end-to-end test suites. | 14 active client modules, Astrolabe Orb Nav, Brain Engine, 33 RLS tables, 15 SQL views, canonical telemetry taxonomy, Document PiP. |
-| **PLANNED** | Architecturally specified work targeted for subsequent development phases; not yet present in codebase. | 4 Planned SQL Views, Android Kotlin companion, Recovery OS sanctuary mode. |
+| **IMPLEMENTED** | Active, verified executable architecture running in production and verified by end-to-end test suites. | 14 active client modules, Astrolabe Orb Nav, Brain Engine, 33 RLS tables, 15 SQL views, canonical telemetry taxonomy, Document PiP, Native Android Companion v1 (Phases G1–G4 under `android/`: Room database, outbox sync, Glance widgets, Foreground timer service, alarm reminders). |
+| **PLANNED** | Architecturally specified work targeted for subsequent development phases; not yet present in codebase. | 4 Planned SQL Views, Android Phase H companion surfaces (Fitness OS, Finance OS, Learning OS, Arc Engine, Field Reports), Recovery OS sanctuary mode. |
 | **DEPRECATED** | Legacy interfaces or patterns slated for removal; backward compatibility preserved temporarily. | Legacy uppercase/snake_case event names recognized in fallback filters during transitions. |
 | **HISTORICAL** | Archived data or immutable migration records preserved strictly for auditability and schema integrity. | `public.progress_hub_archive` table, migration files `01` through `20260916232300`. |
 
@@ -92,6 +106,51 @@ To prevent architectural drift and misunderstandings by developers or AI agents,
   Sanctuary & grief processing, Spoons Engine, streak hibernation.
   Implementation requires: new migrations, Astrolabe Orb geometry extension,
   event taxonomy constants.
+
+### 4.1 Native Android Companion Architecture (`android/`)
+
+The Android Companion application lives in the `/android` directory of the monorepo under the `com.lifeos.companion` namespace (Android 15 / compileSdk 35 / minSdk 29). It operates as an offline-first mobile companion that shares Supabase PostgreSQL backend contracts with the web client while using platform-native Android architecture:
+
+```text
+android/app/src/main/java/com/lifeos/companion/
+├── LifeOsApp.kt                       # Application bootstrap (Supabase, Room, Outbox, Alarms)
+├── MainActivity.kt                    # Entry activity: BiometricPrompt, Auth gate, deep links
+├── data/
+│   ├── local/                         # Room Database (LifeOsDatabase, LifeOsDao, LifeOsEntities)
+│   ├── supabase/                      # SupabaseClientProvider (Auth, Postgrest, Realtime)
+│   ├── sync/                          # OutboxManager, OutboxSyncWorker (FIFO queue with backoff)
+│   └── repository/                    # Focus, Habits, Tasks, Journal, Home repositories
+├── service/
+│   └── FocusTimerService.kt           # Foreground Service with ongoing notification & chronometer
+├── notifications/
+│   ├── EveningReminderScheduler.kt    # AlarmManager exact scheduling (19:30 & 22:00 IST)
+│   └── EveningReminderReceiver.kt     # BroadcastReceiver handling alarms & BOOT_COMPLETED
+├── widgets/
+│   ├── FocusGlanceWidget.kt           # Jetpack Glance home screen widget (1-tap start/stop)
+│   ├── HabitGlanceWidget.kt           # Jetpack Glance home screen widget (1-tap habit toggle)
+│   └── WidgetStateSync.kt             # Synchronizes Room state with Glance AppWidgetManager
+├── telemetry/
+│   ├── EventTypes.kt                  # GENERATED from src/lib/eventTaxonomy.ts (45 events)
+│   └── TelemetryLogger.kt             # Emits canonical events to public.events (event_date_ist)
+└── ui/
+    ├── navigation/
+    │   ├── AstrolabeNavigationShell.kt# 3-state navigation (Pill ↔ single-Orb ↔ 2-ring blur)
+    │   └── LifeOsRoute.kt             # Navigation routes (Home, Focus, Habits, Tasks, Journal, Profile)
+    ├── home/HomeScreen.kt             # Porch dashboard (Focus timer, habit count, task count, journal)
+    ├── focus/FocusScreen.kt           # Deep work timer, presets, single active timer constraint
+    ├── habits/HabitsScreen.kt         # Habit tracking, counters, CRUD, 5/mo streak break healing
+    ├── tasks/TasksScreen.kt           # Task management, priorities, deadlines, focus handoff
+    ├── journal/JournalScreen.kt       # Contemplative reflection (1–5 mood, 3 structured prompts)
+    ├── screens/
+    │   ├── ProfileSettingsScreen.kt   # Reminder times, biometric toggle, test notification triggers
+    │   └── ModulePlaceholderScreen.kt # Graceful roadmap placeholders (Phase H)
+    └── theme/Theme.kt                 # True-Black OLED palette (#000000) & 3-tier typography
+```
+
+#### Shared Contract Enforcement
+1. **Canonical Telemetry Parity:** `scripts/sync-android-contracts.mjs` parses `src/lib/eventTaxonomy.ts` and regenerates `android/app/src/main/java/com/lifeos/companion/telemetry/EventTypes.kt`. Pre-merge gates (`npm run verify:docs`) enforce 100% byte-for-byte parity via `--check`.
+2. **Single Active Timer Constraint:** The Android companion queries `public.time_logs` where `ended_at IS NULL` on launch, respecting the partial unique index `idx_time_logs_single_active_per_user`. Starting a timer when an existing remote timer is active prompts user takeover rather than creating duplicate sessions.
+3. **IST Clock Partitioning:** All event logging (`TelemetryLogger.kt`) and scheduled outbox mutations calculate `event_date_ist` using `Asia/Kolkata` (`IstClock.kt`), matching backend view expectations.
 
 ---
 

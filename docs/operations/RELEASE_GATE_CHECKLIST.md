@@ -28,13 +28,17 @@ npm run build
 
 # Gate 3: Canonical Composite Release Gate (runs verify:docs, lint, typecheck, build)
 npm run verify:release
+
+# Gate 4: Native Android Companion Compilation
+cd android && ./gradlew assembleDebug --no-daemon
 ```
 
 **Pass Criteria:**
-- Zero documentation drift errors (`verify:docs` exits code 0: schema parity, route coverage, ADR monotonicity, link integrity, task tracker parity).
+- Zero documentation drift errors (`verify:docs` exits code 0: schema parity, route coverage, ADR monotonicity, link integrity, task tracker parity, and Android `EventTypes.kt` contract parity).
 - Zero ESLint errors (`npm run lint`).
 - Zero TypeScript (`tsc -b`) compilation errors (`npm run build`).
 - Clean Vite production bundle generation in `dist/`.
+- Clean Gradle debug APK build (`android/app/build/outputs/apk/debug/app-debug.apk`).
 
 ---
 

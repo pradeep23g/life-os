@@ -124,3 +124,18 @@ ehthumbs_vista.db
 *.sw?
 *~
 *.bak
+
+# ==============================================================================
+# Native Android Companion (/android)
+# ==============================================================================
+android/.gradle/
+android/local.properties
+android/**/build/
+android/.cxx/
+*.apk
+*.aab
+*.ap_
+*.dex
+*.jks
+*.keystore
+!android/gradle/wrapper/gradle-wrapper.jar

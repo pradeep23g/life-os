@@ -181,3 +181,9 @@ Browser Client                           Supabase Auth Service
 - **State Synchronization:** `AuthProvider` (`src/lib/AuthContext.tsx`) subscribes to `supabase.auth.onAuthStateChange` to synchronize auth tokens and user presence across tabs.
 - **Protected Route Interception:** `<ProtectedRoute>` (`src/App.tsx`) monitors session validity. If unauthenticated, all private application routes redirect immediately to `/auth`.
 - **Cryptographic Sign-Out:** Session termination is securely governed via the Profile Dossier (`/profile` Room 05 System Operations via `ProfileSystemOperations.tsx`), accessible directly from the Astrolabe Orb navigation cluster, clearing memory tokens and localStorage state before redirecting.
+
+### 7.1 Mobile Companion Security Architecture (`android/`)
+- **Biometric Security Gate:** `BiometricPrompt` in `MainActivity.kt` enforces device biometric authentication (`BIOMETRIC_STRONG | DEVICE_CREDENTIAL`) on every cold launch and resume when a valid Supabase session exists, preventing unauthorized local data inspection.
+- **Build Credential Isolation:** `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are read from the root `.env` at build time via `loadRootEnv()` in `android/app/build.gradle.kts` and exposed as `BuildConfig` constants. Credentials are never hardcoded in source control.
+- **Sandboxed Local Persistence:** Room SQLite database (`LifeOsDatabase`) and Android `SharedPreferences` are located in internal sandbox storage (`/data/data/com.lifeos.companion/`), protected by Android process isolation.
+- **Row Level Security Parity:** All network requests dispatched by `SupabaseClientProvider` and `OutboxSyncWorker` carry the user's Supabase JWT Bearer token, enforcing the identical PostgreSQL RLS matrix (`auth.uid() = user_id`) across all tables.

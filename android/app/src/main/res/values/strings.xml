@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Life OS</string>
+    <string name="focus_widget_desc">Chronos Focus Timer · 1-tap Deep Work</string>
+    <string name="habit_widget_desc">Mind OS Habit Monitor · Quick Check-off</string>
+</resources>

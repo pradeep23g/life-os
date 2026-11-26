@@ -127,6 +127,7 @@ Presenting execution pressure (overdue tasks, impending deadlines, backlog count
 | **Auth** | `src/features/auth/` | Authentication & Session Gateway: `AuthPage.tsx`, session management, login/sign-up flows, and Supabase auth redirects (`auth.uid()`). |
 | **Shell & Navigation** | `src/layout/` | Owns `AstrolabeOrbNav.tsx`, `ModuleHeader.tsx`, and shell layout wrappers. (Sidebar retired in 2.0). |
 | **Event Store** | `src/store/useEventBus.ts` | Owns operational queue, retry backoff, peek-and-splice persistence invariant, and bounded capacity. |
+| **Android Companion** | `android/` | Owns native Kotlin + Jetpack Compose companion app (`com.lifeos.companion`), Room cache (`LifeOsDatabase`), WorkManager outbox sync, Glance widgets, and Foreground focus service. |
 | **Database Types** | `src/types/database.types.ts` | **STRICTLY PROTECTED FILE.** Never hand-edit. Generated via Supabase CLI. |
 | **Migrations** | `supabase/migrations/` | **IMMUTABLE HISTORY.** Only create new sequential additive migrations. |
 
@@ -429,6 +430,10 @@ npx tsx --env-file=.env scripts/smoke/verify-adversarial-attacks.mjs
 
 # 7. Real-User Browser Verification (60 DOM interactions in headless Google Chrome)
 node scripts/smoke/run-browser-verification.mjs
+
+# 8. Native Android Companion Debug Build & Contract Parity
+node scripts/sync-android-contracts.mjs --check
+cd android && ./gradlew assembleDebug --no-daemon
 ```
 
 ---

@@ -14,13 +14,13 @@ Core system, database, and telemetry specifications.
 - [SYSTEM_ARCHITECTURE.md](./architecture/SYSTEM_ARCHITECTURE.md) — Technical topology, cognitive boundaries, routing, and pipelines.
 - [DATABASE_SCHEMA.md](./architecture/DATABASE_SCHEMA.md) — Authoritative schema for all 33 tables (32 active + 1 archive) and 15 SQL aggregation views.
 - [EVENT_TAXONOMY.md](./architecture/EVENT_TAXONOMY.md) — Canonical dot-notation event taxonomy across all 7 domains (45 canonical event types).
-- [MODULE_GUIDE.md](./architecture/MODULE_GUIDE.md) — Comprehensive guide for all 14 feature modules + System.
+- [MODULE_GUIDE.md](./architecture/MODULE_GUIDE.md) — Comprehensive guide for all 14 feature modules + System + Native Android Companion.
 - [LIFE_RULES.md](./architecture/LIFE_RULES.md) — Core behavioral principles guiding feature design.
 - [UI_SYSTEM.md](./architecture/UI_SYSTEM.md) — True-black design system, layouts, and component guidelines.
 
 ## 📁 decisions/
 Architectural Decision Records (ADRs) and engineering rules.
-- [ARCHITECTURE_DECISIONS.md](./decisions/ARCHITECTURE_DECISIONS.md) — Canonical ADR register (gapless ADR-001 through ADR-028).
+- [ARCHITECTURE_DECISIONS.md](./decisions/ARCHITECTURE_DECISIONS.md) — Canonical ADR register (gapless ADR-001 through ADR-030).
 - [AI_ENGINEERING_CONSTITUTION.md](./decisions/AI_ENGINEERING_CONSTITUTION.md) — Non-negotiable engineering invariants.
 
 ## 📁 operations/
@@ -43,7 +43,7 @@ Phase 2 Winter Arc implementation-ready documentation system.
 - [WINTER_ARC_DATA_MODEL.md](./winter-arc/WINTER_ARC_DATA_MODEL.md) — Data model gap analysis (new tables vs existing reuse).
 - [WINTER_ARC_TELEMETRY.md](./winter-arc/WINTER_ARC_TELEMETRY.md) — Event taxonomy audit and proposed new canonical events.
 - [WINTER_ARC_DESIGN_SYSTEM.md](./winter-arc/WINTER_ARC_DESIGN_SYSTEM.md) — Visual identity, themes, time-of-day modes.
-- [WINTER_ARC_MOBILE.md](./winter-arc/WINTER_ARC_MOBILE.md) — Android app, notifications, widgets, quick actions.
+- [WINTER_ARC_MOBILE.md](./winter-arc/WINTER_ARC_MOBILE.md) — Android companion app directive, notifications, widgets, quick actions, and v1 implementation status.
 - [WINTER_ARC_PROGRESSION.md](./winter-arc/WINTER_ARC_PROGRESSION.md) — XP, levels, achievements, avatar, season engine.
 - [WINTER_ARC_KNOWLEDGE.md](./winter-arc/WINTER_ARC_KNOWLEDGE.md) — Knowledge Vault, books, media, Learning OS completion.
 - [WINTER_ARC_REPORTING.md](./winter-arc/WINTER_ARC_REPORTING.md) — Reports, export, Recovery OS, experiments, patterns, timeline.

@@ -526,3 +526,64 @@ Each entry follows this exact structure:
 
 **Handoff notes for next agent:**
 - Curriculum notes now fully expand across all stations and maps in Learning OS.
+
+---
+
+### Session 2026-11-26-002 — Native Android Companion (Phases G1–G4)
+- **Agent:** Antigravity
+- **Date:** 2026-11-26T14:00:00+05:30
+- **Task:** Plan and build Native Android Companion v1 (Phases G1–G4) in `/android` monorepo and deploy to Nothing Phone (3a) Pro (`00175358E000547`) via `adb`.
+- **Scope:** `/android/**`, `scripts/sync-android-contracts.mjs`, `package.json`, `.gitignore`.
+
+**What was done:**
+- **Phase G1:** Scaffolded `/android` Gradle Kotlin DSL project (`minSdk = 29`, `targetSdk = 35`), Supabase Kotlin SDK (`3.1.4`), `BiometricPrompt` whole-app gate, `AuthScreen`, and `scripts/sync-android-contracts.mjs` (generating `EventTypes.kt` from `src/lib/eventTaxonomy.ts`, wired into `verify:docs` / `verify:release`).
+- **Phase G2:** Built 3-State Mobile Astrolabe (`AstrolabeNavigationShell.kt` — fluid Pill ↔ single-Orb ↔ 2-ring Orbital Blur) and True-Black OLED `HomeScreen` (`UI_SYSTEM.md` accents + 3-tier typography).
+- **Phase G3:** Built Hybrid Outbox (`LifeOsDatabase`, `OutboxManager`, `OutboxSyncWorker`) for Habits/Tasks/Journal + `FocusScreen` (`FocusTimerService` Foreground Service, target presets, Takeover/Resume dialog), `TasksScreen`, `HabitsScreen` (with 5/mo streak healing), and `JournalScreen` (1–5 mood + 3-prompt Serif composer).
+- **Phase G4:** Built `FocusGlanceWidget` (instant Deep Work start/stop), `HabitGlanceWidget` (Room + Outbox 1-tap check-off), `EveningReminderScheduler` / `EveningReminderReceiver` (`AlarmManager` 19:30 IST Tasks & 22:00 IST Journal deep links), and `ProfileSettingsScreen`.
+
+**Verification:**
+- [x] `cd android && ./gradlew assembleDebug --no-daemon` succeeded (`BUILD SUCCESSFUL`).
+- [x] `adb -s 00175358E000547 install -r` + `am start` cold-launched cleanly (`Status: ok`, zero `AndroidRuntime:E` crashes).
+- [x] `npm run verify:release` passed (11/11 doc drift gates, `EventTypes.kt` parity, ESLint, `tsc -b`, Vite build).
+
+**Handoff notes for next agent:**
+- Android v1 (Phases G1–G4) is complete. Next Android milestone is Phase H (Fitness OS, Finance OS, Learning OS, Winter Arc, Field Reports, custom lock screen, Nothing-style widget quick-action popup).
+
+---
+
+### Session 2026-11-26-d4f1 — Quick Fix: Disambiguate Root AGENTS.md & Operational Handbook
+- **Agent:** Antigravity (Gemini 3.8 Flash) | **Scope:** `AGENTS.md`, `docs/operations/AGENTS.md` (<=50 lines)
+- **Change:** Clarified root `AGENTS.md` as the fast Runtime Executive Brief and added explicit pointers/tips for agents to consult `docs/operations/AGENTS.md` for complex architectural and multi-file workflows. Added Document Architecture Notice in `docs/operations/AGENTS.md`.
+- **Verification:** `npm run verify:docs` & `npm run lint` (Passed 11/11 drift checks, 0 warnings/errors)
+
+---
+
+### Session 2026-11-26-s8m2 — Comprehensive Documentation Parity for Native Android Companion
+- **Agent:** Antigravity (Senior Documentation Agent)
+- **Date:** 2026-11-26T16:55:00+05:30
+- **Duration:** ~25m
+- **Task:** Synchronize all documentation across `docs/` and `tasks/` to reflect the newly implemented Native Android Companion app (`android/`, Phases G1–G4), updating system topology, module guides, roadmap status, verification gates, and cross-platform contracts.
+- **Scope:** `tasks/skills-roadmap.md`, `docs/AGENT_QUICKSTART.md`, `docs/architecture/SYSTEM_ARCHITECTURE.md`, `docs/architecture/MODULE_GUIDE.md`, `docs/architecture/EVENT_TAXONOMY.md`, `docs/architecture/SECURITY.md`, `docs/architecture/UI_SYSTEM.md`, `docs/operations/PROJECT_ROADMAP.md`, `docs/operations/AGENTS.md`, `docs/operations/DEV_WORKFLOW.md`, `docs/operations/RELEASE_GATE_CHECKLIST.md`, `docs/decisions/ARCHITECTURE_DECISIONS.md`, `docs/winter-arc/WINTER_ARC_MOBILE.md`, `docs/winter-arc/WINTER_ARC_PROGRESS.md`, `docs/INDEX.md`, `docs/README.md`, `docs/agent-ledger/HANDOFF.md`, `docs/agent-ledger/SESSION_LOG.md`.
+
+**What was done:**
+- Updated `tasks/skills-roadmap.md`: Checked off completed Track 6 Wave 2 items (Phases G1–G4) with exact package, class, and service details; added Phase H (remaining companion surfaces) as upcoming untracked work.
+- Updated `docs/AGENT_QUICKSTART.md`: Added multi-platform monorepo architecture diagram (Web + Android + PostgreSQL), added Section 2.1 mapping Android surfaces, and added Android debug build commands.
+- Updated `docs/architecture/SYSTEM_ARCHITECTURE.md`: Added Android technical stack topology, updated architectural classification to IMPLEMENTED for v1 companion, and added Section 4.1 detailing package structure, service models, outbox queue, and contract sync.
+- Updated `docs/architecture/MODULE_GUIDE.md`: Added Section 16 for the Native Android Companion detailing all 6 live surfaces, foreground service, glance widgets, room cache, and placeholders.
+- Updated `docs/architecture/EVENT_TAXONOMY.md`: Documented `scripts/sync-android-contracts.mjs` contract sync and `EventTypes.kt` generation enforced by `verify:docs`.
+- Updated `docs/architecture/SECURITY.md`: Documented Android `BiometricPrompt` authentication gate, build credential isolation via `loadRootEnv()`, and Room sandbox isolation.
+- Updated `docs/architecture/UI_SYSTEM.md`: Added Section 5.4 detailing Mobile Astrolabe 3-state navigation (Pill ↔ single-Orb ↔ 2-ring blur) and True-Black OLED styling.
+- Updated `docs/operations/PROJECT_ROADMAP.md`: Recorded Phase 4 Wave 2 (Android v1) as completed, scoped upcoming Wave 2 Phase H, and corrected broken reference link to `WINTER_ARC_MOBILE.md`.
+- Updated `docs/operations/AGENTS.md`, `DEV_WORKFLOW.md`, and `RELEASE_GATE_CHECKLIST.md`: Added `android/` subsystem boundaries, prerequisites (JDK 17, Android SDK 35), Gradle commands (`./gradlew assembleDebug`), and release verification gates.
+- Updated `docs/decisions/ARCHITECTURE_DECISIONS.md`: Reconciled ADR-014 with concrete implementation details.
+- Updated `docs/winter-arc/WINTER_ARC_MOBILE.md` and `WINTER_ARC_PROGRESS.md`: Added Section 9 with v1 implementation status, updated Phase G/I status to COMPLETED / VERIFIED, and marked Phase H IN PROGRESS.
+- Updated `docs/INDEX.md` and `docs/README.md`: Synchronized module references, token estimates, and active status.
+
+**Verification:**
+- [x] `npm run verify:docs`: 11/11 gates passed (0 broken links, 0 duplicate ADRs, Android EventTypes in sync).
+- [x] `npm run lint`: 0 errors, 0 warnings.
+- [x] `npm run build`: TypeScript compiler and Vite bundle succeeded.
+- [x] `cd android && ./gradlew assembleDebug --no-daemon`: Android APK compiled cleanly.
+
+**Handoff notes for next agent:**
+- All documentation across `docs/` and `tasks/` is in 100% truth parity with the Android companion app codebase and web application. Next planned phase is Phase H (remaining companion surfaces: Fitness OS, Finance OS, Learning OS, Arc Engine, Field Reports).

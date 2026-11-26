@@ -113,3 +113,17 @@ The document root `<html class="theme-*">` dynamically switches based on local t
 - `CommandPalette`: Keyboard shortcut modal (`Ctrl+K` / `Cmd+K`).
 - `TactileNumpad`: Custom collapsible touch pad for workout reps/weight entry without virtual keyboard layout shift.
 
+### 5.4 Native Mobile Astrolabe & OLED Language (`android/`)
+- **3-State Navigation Shell (`AstrolabeNavigationShell.kt`):**
+  - **Pill State:** Compact floating bottom pill exposing quick domain action buttons (`Home`, `Focus`, `Habits`, `Tasks`, `Journal`).
+  - **Collapsed State:** Minimal single-orb floating button anchored at bottom center.
+  - **Expanded State:** Fullscreen orbital blur overlay arranging Life OS domain nodes radially around the central orb, matching desktop Astrolabe topology.
+- **True-Black OLED Palette:**
+  - Base Canvas: Pure black `#000000`.
+  - Elevated Cards: `#0A0A0A` and `#141416` with calibrated `#222226` border contrasts to prevent pixel smearing on OLED displays.
+  - Accents: Dynamic domain signature colors (Cyan `#22d3ee`, Emerald `#10b981`, Amber `#f59e0b`, Purple `#a855f7`, Red `#ef4444`).
+- **Typographic Parity:**
+  - Newsreader Serif: Contemplative reflection (Journal composer, Daily Prompts).
+  - JetBrains Mono: Numerical telemetry (Focus timer countdown, elapsed ticker, habit counts).
+  - Geist Sans: Interface labels, action chips, dialog buttons, and system status.
+

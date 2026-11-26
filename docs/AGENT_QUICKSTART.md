@@ -16,18 +16,27 @@ domain: "governance"
 ## 1. System Topology at a Glance
 
 ```text
-React 19 + TypeScript 5.9 + Vite 7 + Tailwind CSS v3
-├── React Router v7 (14 client routes, route-level lazy loading)
-├── Astrolabe Orb Navigation (2-ring kinetic orb shell with secondary bloom fanouts, ADR-023)
-├── TanStack React Query v5 (Exclusive server state manager)
-├── Zustand v5 (Operational event queue / transient event bus)
-└── Supabase JS v2 Client (@supabase/supabase-js)
-      ↓
-Hosted PostgreSQL 15+ (Supabase Cloud Instance)
-├── 33 Base Tables (32 active operational tables + 1 historical archive)
-├── Row Level Security (RLS) enabled on all 33 tables (auth.uid() = user_id)
-├── 15 Active SQL Views (WITH security_invoker = true) + 4 Planned Views
-└── IST Partitioning (Asia/Kolkata, UTC+5:30)
+Life OS Multi-Platform Architecture
+├── Web Client (React 19 SPA, src/)
+│   ├── React Router v7 (14 client routes, route-level lazy loading)
+│   ├── Astrolabe Orb Navigation (2-ring kinetic orb shell with secondary bloom fanouts, ADR-023)
+│   ├── TanStack React Query v5 (Exclusive server state manager)
+│   ├── Zustand v5 (Operational event queue / transient event bus)
+│   └── Supabase JS v2 Client (@supabase/supabase-js)
+├── Native Android Companion (Kotlin + Jetpack Compose, android/)
+│   ├── Mobile Astrolabe Navigation Shell (Pill ↔ single-Orb ↔ 2-ring orbital blur)
+│   ├── Room Local Database (LifeOsDatabase, SSOT cache)
+│   ├── WorkManager FIFO Outbox Queue (OutboxSyncWorker)
+│   ├── Jetpack Glance AppWidgets (FocusGlanceWidget, HabitGlanceWidget)
+│   ├── Foreground Focus Chronometer Service (FocusTimerService)
+│   ├── AlarmManager Exact Alarms (Evening reminders 19:30 & 22:00 IST)
+│   └── Supabase Kotlin SDK 3.1.4 (Auth, Postgrest, Realtime)
+└── Shared Cloud Infrastructure
+    └── Hosted PostgreSQL 15+ (Supabase Cloud Instance)
+        ├── 33 Base Tables (32 active operational tables + 1 historical archive)
+        ├── Row Level Security (RLS) enabled on all 33 tables (auth.uid() = user_id)
+        ├── 15 Active SQL Views (WITH security_invoker = true) + 4 Planned Views
+        └── IST Partitioning (Asia/Kolkata, UTC+5:30)
 ```
 
 ---
@@ -55,6 +64,17 @@ Hosted PostgreSQL 15+ (Supabase Cloud Instance)
 - **7 Brain Engine Scoring Domains:** mind, productivity, learning, fitness, time, finance, system
 - **14 Client Routes:** Listed in the Route Map above
 - **15 Feature Directories:** 14 routes + `src/features/system/` (Brain Engine, no dedicated route)
+
+### 2.1 Native Android Companion Surfaces (`android/`)
+- **Home (`HomeScreen`):** Living Porch status aggregating active Focus timer, today's habit completions, execution task counts, and evening reflection CTA.
+- **Focus (`FocusScreen`):** Deep work chronometer backed by `FocusTimerService` (Foreground Service), target duration presets, and single active timer enforcement (`time_logs`).
+- **Habits (`HabitsScreen`):** Full habit tracking, binary & target stepper counters, CRUD dialogs, and 5/mo streak break healing (`habit_streak_heals`).
+- **Tasks (`TasksScreen`):** Task ledger with priority chips, deadline tags, completion toggles, and direct start-focus handoff.
+- **Journal (`JournalScreen`):** Contemplative reflection composer with 1–5 mood score and 3 structured prompts (`what_went_good`, `what_you_learned`, `brief_about_day`).
+- **Profile & Settings (`ProfileSettingsScreen`):** Biometric security toggle, evening reminder time preferences (default 19:30 & 22:00 IST), and test alarm notifications.
+- **Home Screen Widgets (`widgets/`):** Jetpack Glance `FocusGlanceWidget` (1-tap start/stop) and `HabitGlanceWidget` (1-tap habit completion).
+- **Navigation Shell (`AstrolabeNavigationShell`):** 3-state kinetic navigation (fluid Pill ↔ single-Orb ↔ 2-ring orbital blur overlay) styled in True-Black OLED (`#000000`).
+- **Roadmap Placeholders (`ModulePlaceholderScreen`):** Graceful placeholders for remaining companion surfaces (Arc, Mission Control, Learning, Fitness, Finance, Reports, Data Lab, Admin).
 
 ---
 
@@ -151,14 +171,14 @@ Tier 1: Physical Truth (Database & Types)
 
 Tier 2: Core Architecture & Governance (Read before implementing)
   ├── docs/decisions/AI_ENGINEERING_CONSTITUTION.md (Rules & boundaries)
-  ├── docs/decisions/ARCHITECTURE_DECISIONS.md (ADR-001 through ADR-028)
+  ├── docs/decisions/ARCHITECTURE_DECISIONS.md (ADR-001 through ADR-030)
   └── docs/architecture/SYSTEM_ARCHITECTURE.md (Routing & Topology)
 
 Tier 3: Domain Implementation Reference
   ├── docs/architecture/DATABASE_SCHEMA.md (Full 33-table schema & types)
-  ├── docs/architecture/EVENT_TAXONOMY.md (Canonical event constants)
-  ├── docs/architecture/MODULE_GUIDE.md (Domain components & hooks)
-  └── docs/architecture/UI_SYSTEM.md (Typography, OKLCH tokens, themes)
+  ├── docs/architecture/EVENT_TAXONOMY.md (Canonical event constants & Android sync)
+  ├── docs/architecture/MODULE_GUIDE.md (Domain components & Android companion)
+  └── docs/architecture/UI_SYSTEM.md (Typography, OKLCH tokens, themes, Mobile Astrolabe)
 
 Tier 4: Operations & Verification
   ├── docs/agent-ledger/SESSION_LOG.md (Chronological session ledger)
@@ -173,7 +193,7 @@ Tier 4: Operations & Verification
 ## 6. Pre-Merge Verification Commands
 
 ```bash
-# 1. Documentation Drift Verification Gate
+# 1. Documentation Drift Verification Gate (includes Android contracts sync check)
 npm run verify:docs
 
 # 2. Static Lint Analysis (0 errors, 0 warnings required)
@@ -184,4 +204,7 @@ npm run build
 
 # 4. Canonical Release Verification Gate
 npm run verify:release
+
+# 5. Native Android Companion Debug Build
+cd android && ./gradlew assembleDebug --no-daemon
 ```

@@ -49,6 +49,14 @@ Rules:
 3. **Canonical Constants:** Every event MUST be imported from `src/lib/eventTaxonomy.ts`. Inline string literals are strictly prohibited.
 4. **Exact Count:** Exactly 45 canonical event constants exist in `EVENT_TYPES`.
 
+### 2.1 Cross-Platform Contract Synchronization
+
+To guarantee telemetry parity between the React 19 web application and the Native Android Companion:
+- **Source of Truth:** `src/lib/eventTaxonomy.ts` defines all canonical events.
+- **Generator Script:** `scripts/sync-android-contracts.mjs` parses `EVENT_TYPES` from `src/lib/eventTaxonomy.ts` and writes the Kotlin object `EventTypes.kt` located at `android/app/src/main/java/com/lifeos/companion/telemetry/EventTypes.kt`.
+- **Automated Verification:** `npm run verify:docs` runs `node scripts/sync-android-contracts.mjs --check` alongside doc-drift checks, enforcing byte-for-byte parity prior to releases.
+- **Android Emitter:** In Android, `TelemetryLogger.kt` and `OutboxSyncWorker.kt` reference constants from `EventTypes` and serialize canonical payloads to `public.events` with `event_date_ist` calculated in `Asia/Kolkata` (`IstClock.kt`).
+
 ---
 
 ## 3. Canonical Event Catalog (45 Events)
