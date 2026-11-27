@@ -80,6 +80,14 @@ class HabitsViewModel : ViewModel() {
         }
     }
 
+    fun setTargetValue(item: HabitWithTodayStatus, value: Int) {
+        viewModelScope.launch {
+            val next = value.coerceAtLeast(0)
+            runCatching { repo.setTodayValue(item, next) }
+                .onFailure { err -> statusFlow.update { Triple(it.first, it.second, err.message) } }
+        }
+    }
+
     fun createHabit(title: String, habitType: String, targetValue: Int, unit: String?) {
         if (title.isBlank()) return
         viewModelScope.launch {

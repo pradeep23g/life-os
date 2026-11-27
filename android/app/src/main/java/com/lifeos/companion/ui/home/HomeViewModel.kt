@@ -11,11 +11,15 @@ import com.lifeos.companion.data.repository.HabitWithTodayStatus
 import com.lifeos.companion.data.repository.HabitsRepository
 import com.lifeos.companion.data.repository.JournalRepository
 import com.lifeos.companion.data.repository.StartFocusResult
+import com.lifeos.companion.data.repository.TIME_BUCKETS
 import com.lifeos.companion.data.repository.TasksRepository
 import com.lifeos.companion.data.sync.OutboxManager
 import com.lifeos.companion.service.FocusTimerService
 import com.lifeos.companion.util.IstClock
 import com.lifeos.companion.widgets.WidgetStateSync
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -23,6 +27,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.time.Instant
 
 data class HomeUiState(
@@ -117,15 +122,25 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             }
             OutboxManager.scheduleSyncNow()
 
-            val habitsRes = runCatching { habitsRepo.refreshFromRemote() }
-            val tasksRes = runCatching { tasksRepo.refreshFromRemote() }
-            val journalRes = runCatching { journalRepo.refreshFromRemote() }
-            val focusRes = runCatching { focusRepo.fetchFocusSnapshot() }
+            val (habitsRes, tasksRes, journalRes, focusRes) = withContext(Dispatchers.IO) {
+                coroutineScope {
+                    val h = async { runCatching { habitsRepo.refreshFromRemote() } }
+                    val t = async { runCatching { tasksRepo.refreshFromRemote() } }
+                    val j = async { runCatching { journalRepo.refreshFromRemote() } }
+                    val f = async { runCatching { focusRepo.fetchFocusSnapshot() } }
+                    listOf(h.await(), t.await(), j.await(), f.await())
+                }
+            }
 
-            focusRes.onSuccess { snapshot ->
+            @Suppress("UNCHECKED_CAST")
+            val typedFocusRes = focusRes as Result<com.lifeos.companion.data.repository.FocusSnapshot>
+            typedFocusRes.onSuccess { snapshot ->
                 val minutes = snapshot.todayLogs.sumOf { it.durationMinutes ?: 0 }
+                val todayBucketMins = TIME_BUCKETS.associateWith { b ->
+                    snapshot.todayLogs.filter { it.bucket == b }.sumOf { it.durationMinutes ?: 0 }
+                }
                 val active = snapshot.activeTimer
-                WidgetStateSync.saveFocusState(getApplication(), active, minutes)
+                WidgetStateSync.saveFocusState(getApplication(), active, minutes, todayBucketMins)
                 if (active != null) {
                     FocusTimerService.start(getApplication(), active)
                 }

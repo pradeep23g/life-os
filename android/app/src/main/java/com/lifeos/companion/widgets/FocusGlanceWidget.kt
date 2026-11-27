@@ -38,6 +38,7 @@ import com.lifeos.companion.MainActivity
 import com.lifeos.companion.data.model.TimeLogDto
 import com.lifeos.companion.data.repository.FocusRepository
 import com.lifeos.companion.data.repository.StartFocusResult
+import com.lifeos.companion.data.repository.TIME_BUCKETS
 import com.lifeos.companion.data.supabase.SupabaseClientProvider
 import com.lifeos.companion.service.FocusTimerService
 import com.lifeos.companion.util.IstClock
@@ -59,19 +60,16 @@ class FocusGlanceWidgetReceiver : GlanceAppWidgetReceiver() {
 class FocusGlanceWidget : GlanceAppWidget() {
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         SupabaseClientProvider.init(context)
-        // Attempt lightweight remote refresh if signed in, falling back cleanly to cached state
+        val userId = SupabaseClientProvider.awaitAuthenticatedUserId(context)
         val snapshot = runCatching {
-            if (SupabaseClientProvider.auth.currentUserOrNull() != null) {
+            if (userId != null) {
                 val remote = FocusRepository().fetchFocusSnapshot()
                 val mins = remote.todayLogs.sumOf { it.durationMinutes ?: 0 }
-                WidgetStateSync.saveFocusState(context, remote.activeTimer, mins)
-                FocusWidgetSnapshot(
-                    activeId = remote.activeTimer?.id,
-                    activeBucket = remote.activeTimer?.bucket,
-                    activeStartTime = remote.activeTimer?.startTime,
-                    activeDescription = remote.activeTimer?.description,
-                    todayFocusMinutes = mins,
-                )
+                val bucketMins = TIME_BUCKETS.associateWith { b ->
+                    remote.todayLogs.filter { it.bucket == b }.sumOf { it.durationMinutes ?: 0 }
+                }
+                WidgetStateSync.saveFocusState(context, remote.activeTimer, mins, bucketMins)
+                WidgetStateSync.loadFocusState(context)
             } else {
                 WidgetStateSync.loadFocusState(context)
             }
@@ -199,9 +197,8 @@ private fun FocusWidgetContent(
 
 class StartDeepWorkWidgetAction : ActionCallback {
     override suspend fun onAction(context: Context, glanceId: GlanceId, parameters: ActionParameters) {
-        SupabaseClientProvider.init(context)
-        val user = SupabaseClientProvider.auth.currentUserOrNull()
-        if (user == null) {
+        val userId = SupabaseClientProvider.awaitAuthenticatedUserId(context)
+        if (userId == null) {
             val intent = Intent(Intent.ACTION_VIEW, Uri.parse("lifeos://focus"), context, MainActivity::class.java)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             context.startActivity(intent)
@@ -228,9 +225,8 @@ class StartDeepWorkWidgetAction : ActionCallback {
 
 class StopFocusWidgetAction : ActionCallback {
     override suspend fun onAction(context: Context, glanceId: GlanceId, parameters: ActionParameters) {
-        SupabaseClientProvider.init(context)
         val cached = WidgetStateSync.loadFocusState(context)
-        val userId = SupabaseClientProvider.auth.currentUserOrNull()?.id
+        val userId = SupabaseClientProvider.awaitAuthenticatedUserId(context)
         if (userId != null && cached.activeId != null && cached.activeStartTime != null) {
             runCatching {
                 val repo = FocusRepository()

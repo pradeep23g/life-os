@@ -31,8 +31,9 @@ class OutboxSyncWorker(
     private val json = Json { ignoreUnknownKeys = true }
 
     override suspend fun doWork(): Result {
-        SupabaseClientProvider.init(applicationContext)
-        val userId = SupabaseClientProvider.auth.currentUserOrNull()?.id ?: return Result.retry()
+        val userId = SupabaseClientProvider.awaitAuthenticatedUserId(applicationContext)
+            ?: return Result.retry()
+        OutboxManager.init(applicationContext)
         val dao = LifeOsDatabase.get(applicationContext).dao()
         val pending = dao.getPendingMutations()
         if (pending.isEmpty()) return Result.success()

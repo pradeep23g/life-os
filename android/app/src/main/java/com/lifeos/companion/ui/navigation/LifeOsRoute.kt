@@ -11,7 +11,7 @@ enum class LifeOsRoute(
     val isV1Ready: Boolean,
 ) {
     HOME("home", "Home", "Home", LifeOsColors.HomeWhite, true),
-    FOCUS("focus", "Time OS", "Focus", LifeOsColors.TimeGold, true),
+    FOCUS("focus", "Time OS", "Time OS", LifeOsColors.TimeGold, true),
     TASKS("tasks", "Productivity", "Tasks", LifeOsColors.ProductivityBlue, true),
     HABITS("habits", "Habits", "Habits", LifeOsColors.MindPurple, true),
     JOURNAL("journal", "Journal", "Journal", LifeOsColors.MindPurple, true),
@@ -20,6 +20,6 @@ enum class LifeOsRoute(
     LEARNING("learning", "Learning OS", "Learn", LifeOsColors.LearningAmber, false),
     FINANCE("finance", "Finance OS", "Spend", LifeOsColors.FinanceEmerald, false),
     REPORTS("reports", "Field Reports", "Report", LifeOsColors.FieldReportsRose, false),
-    SYSTEM("system", "Mission Control", "System", LifeOsColors.HomeWhite, false),
+    SYSTEM("system", "System", "System", LifeOsColors.HomeWhite, true),
     PROFILE("profile", "Profile", "Profile", LifeOsColors.ProfileSlate, false),
 }

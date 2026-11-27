@@ -2,11 +2,13 @@ package com.lifeos.companion.ui.navigation
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -46,7 +48,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -62,13 +64,10 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lifeos.companion.ui.theme.LifeOsColors
-import kotlin.math.PI
 import kotlin.math.cos
-import kotlin.math.roundToInt
 import kotlin.math.sin
 
 enum class AstrolabeState {
@@ -187,6 +186,23 @@ fun AstrolabeNavigationDock(
     val density = LocalDensity.current
     val innerRadiusPx = with(density) { 142.dp.toPx() }
     val outerRadiusPx = with(density) { 230.dp.toPx() }
+    val expandAnim = remember { Animatable(0f) }
+
+    LaunchedEffect(isExpanded) {
+        if (isExpanded) {
+            expandAnim.animateTo(
+                targetValue = 1f,
+                animationSpec = spring(dampingRatio = 0.74f, stiffness = 280f),
+            )
+        } else if (expandAnim.value > 0f) {
+            expandAnim.animateTo(
+                targetValue = 0f,
+                animationSpec = tween(durationMillis = 160),
+            )
+        }
+    }
+
+    val expandProgress = expandAnim.value
 
     Box(modifier = modifier.fillMaxSize()) {
         // Scrim (backdrop blur itself is applied on the underlying content in MainActivity)
@@ -233,48 +249,54 @@ fun AstrolabeNavigationDock(
                     }
                 },
         ) {
-            // Orbit 1: Fluidly emerges from main orb (0,0) into inner upper semicircle (-160 deg to -20 deg)
-            ORBIT_1_NODES.forEachIndexed { index, route ->
-                val angleDeg = -160.0 + (140.0 * index / (ORBIT_1_NODES.size - 1))
-                val angleRad = Math.toRadians(angleDeg)
-                val targetX = (innerRadiusPx * cos(angleRad)).roundToInt()
-                val targetY = (innerRadiusPx * sin(angleRad)).roundToInt()
+            if (expandProgress > 0.01f) {
+                // Orbit 1: Fluidly emerges from main orb (0,0) into inner upper semicircle (-160 deg to -20 deg)
+                ORBIT_1_NODES.forEachIndexed { index, route ->
+                    val angleDeg = -160.0 + (140.0 * index / (ORBIT_1_NODES.size - 1))
+                    val angleRad = Math.toRadians(angleDeg)
+                    val targetX = (innerRadiusPx * cos(angleRad)).toFloat()
+                    val targetY = (innerRadiusPx * sin(angleRad)).toFloat()
+                    val staggerStart = index * 0.03f
+                    val nodeProgress = ((expandProgress - staggerStart) / (1f - staggerStart)).coerceIn(0f, 1f)
 
-                EmergingOrbitalNode(
-                    route = route,
-                    isExpanded = isExpanded,
-                    isActive = currentRoute == route,
-                    targetX = targetX,
-                    targetY = targetY,
-                    delayMillis = index * 24,
-                    onClick = {
-                        haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                        onNavigate(route)
-                        onStateChange(AstrolabeState.POPPED_ORB)
-                    },
-                )
-            }
+                    EmergingOrbitalNode(
+                        route = route,
+                        isExpanded = isExpanded,
+                        isActive = currentRoute == route,
+                        targetX = targetX,
+                        targetY = targetY,
+                        progress = nodeProgress,
+                        onClick = {
+                            haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                            onNavigate(route)
+                            onStateChange(AstrolabeState.POPPED_ORB)
+                        },
+                    )
+                }
 
-            // Orbit 2: Fluidly emerges from main orb (0,0) into outer upper semicircle (-134 deg to -46 deg)
-            ORBIT_2_NODES.forEachIndexed { index, route ->
-                val angleDeg = -134.0 + (88.0 * index / (ORBIT_2_NODES.size - 1))
-                val angleRad = Math.toRadians(angleDeg)
-                val targetX = (outerRadiusPx * cos(angleRad)).roundToInt()
-                val targetY = (outerRadiusPx * sin(angleRad)).roundToInt()
+                // Orbit 2: Fluidly emerges from main orb (0,0) into outer upper semicircle (-134 deg to -46 deg)
+                ORBIT_2_NODES.forEachIndexed { index, route ->
+                    val angleDeg = -134.0 + (88.0 * index / (ORBIT_2_NODES.size - 1))
+                    val angleRad = Math.toRadians(angleDeg)
+                    val targetX = (outerRadiusPx * cos(angleRad)).toFloat()
+                    val targetY = (outerRadiusPx * sin(angleRad)).toFloat()
+                    val staggerStart = 0.14f + index * 0.03f
+                    val nodeProgress = ((expandProgress - staggerStart) / (1f - staggerStart)).coerceIn(0f, 1f)
 
-                EmergingOrbitalNode(
-                    route = route,
-                    isExpanded = isExpanded,
-                    isActive = currentRoute == route,
-                    targetX = targetX,
-                    targetY = targetY,
-                    delayMillis = 90 + index * 24,
-                    onClick = {
-                        haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                        onNavigate(route)
-                        onStateChange(AstrolabeState.POPPED_ORB)
-                    },
-                )
+                    EmergingOrbitalNode(
+                        route = route,
+                        isExpanded = isExpanded,
+                        isActive = currentRoute == route,
+                        targetX = targetX,
+                        targetY = targetY,
+                        progress = nodeProgress,
+                        onClick = {
+                            haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                            onNavigate(route)
+                            onStateChange(AstrolabeState.POPPED_ORB)
+                        },
+                    )
+                }
             }
 
             // Main Morphing Control: State 1 (Collapsed Pill) <-> State 2 (Single Orb) <-> State 3 (Center Home Hub)
@@ -365,39 +387,25 @@ private fun EmergingOrbitalNode(
     route: LifeOsRoute,
     isExpanded: Boolean,
     isActive: Boolean,
-    targetX: Int,
-    targetY: Int,
-    delayMillis: Int,
+    targetX: Float,
+    targetY: Float,
+    progress: Float,
     onClick: () -> Unit,
 ) {
-    val progress by animateFloatAsState(
-        targetValue = if (isExpanded) 1f else 0f,
-        animationSpec = spring(
-            dampingRatio = 0.72f,
-            stiffness = if (isExpanded) 280f else 420f,
-        ),
-        label = "OrbProgress_${route.route}",
-    )
-    val delayedAlpha by animateFloatAsState(
-        targetValue = if (isExpanded) 1f else 0f,
-        animationSpec = tween(
-            durationMillis = if (isExpanded) 220 else 120,
-            delayMillis = if (isExpanded) delayMillis else 0,
-        ),
-        label = "OrbAlpha_${route.route}",
-    )
+    if (progress <= 0.01f) return
 
-    if (progress <= 0.02f && delayedAlpha <= 0.02f) return
-
-    val currentX = (targetX * progress).roundToInt()
-    val currentY = (targetY * progress).roundToInt()
+    val scaleFactor = 0.35f + 0.65f * progress
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
-            .offset { IntOffset(currentX, currentY) }
-            .scale(0.3f + 0.7f * progress)
-            .alpha(delayedAlpha)
+            .graphicsLayer {
+                translationX = targetX * progress
+                translationY = targetY * progress
+                scaleX = scaleFactor
+                scaleY = scaleFactor
+                alpha = progress
+            }
             .width(66.dp)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },

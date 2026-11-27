@@ -68,6 +68,7 @@ fun HabitsScreen(
     val state by viewModel.uiState.collectAsState()
     var showCreateSheet by remember { mutableStateOf(false) }
     var breakToHeal by remember { mutableStateOf<HabitStreakBreakDto?>(null) }
+    var targetEditHabit by remember { mutableStateOf<HabitWithTodayStatus?>(null) }
 
     if (showCreateSheet) {
         CreateHabitSheet(
@@ -75,6 +76,21 @@ fun HabitsScreen(
             onCreate = { title, type, target, unit ->
                 viewModel.createHabit(title, type, target, unit)
                 showCreateSheet = false
+            },
+        )
+    }
+
+    targetEditHabit?.let { item ->
+        IncrementalHabitDialog(
+            item = item,
+            onDismiss = { targetEditHabit = null },
+            onAddDelta = { delta ->
+                viewModel.adjustTarget(item, delta)
+                targetEditHabit = null
+            },
+            onSetExact = { exact ->
+                viewModel.setTargetValue(item, exact)
+                targetEditHabit = null
             },
         )
     }
@@ -305,6 +321,7 @@ fun HabitsScreen(
                     item = item,
                     onToggleBinary = { viewModel.toggleBinary(item) },
                     onAdjustTarget = { delta -> viewModel.adjustTarget(item, delta) },
+                    onOpenIncrementalDialog = { targetEditHabit = item },
                     onDelete = { viewModel.deleteHabit(item.habit.id) },
                 )
             }
@@ -317,6 +334,7 @@ private fun HabitRowCard(
     item: HabitWithTodayStatus,
     onToggleBinary: () -> Unit,
     onAdjustTarget: (Int) -> Unit,
+    onOpenIncrementalDialog: () -> Unit,
     onDelete: () -> Unit,
 ) {
     Surface(
@@ -367,6 +385,22 @@ private fun HabitRowCard(
                     IconButton(onClick = { onAdjustTarget(-1) }, modifier = Modifier.size(32.dp)) {
                         Icon(Icons.Rounded.Remove, contentDescription = "Decrease", tint = LifeOsColors.TextSecondary, modifier = Modifier.size(16.dp))
                     }
+                    Surface(
+                        shape = RoundedCornerShape(6.dp),
+                        color = LifeOsColors.SurfaceElevated,
+                        border = BorderStroke(1.dp, LifeOsColors.MindPurple.copy(alpha = 0.45f)),
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .clickable(onClick = onOpenIncrementalDialog),
+                    ) {
+                        Text(
+                            text = "+N",
+                            style = MaterialTheme.typography.labelSmall.copy(fontFamily = FontFamily.Monospace),
+                            color = LifeOsColors.MindPurple,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp),
+                        )
+                    }
                     IconButton(onClick = { onAdjustTarget(1) }, modifier = Modifier.size(32.dp)) {
                         Icon(Icons.Rounded.Add, contentDescription = "Increase", tint = LifeOsColors.MindPurple, modifier = Modifier.size(16.dp))
                     }
@@ -383,6 +417,95 @@ private fun HabitRowCard(
             }
         }
     }
+}
+
+@Composable
+private fun IncrementalHabitDialog(
+    item: HabitWithTodayStatus,
+    onDismiss: () -> Unit,
+    onAddDelta: (Int) -> Unit,
+    onSetExact: (Int) -> Unit,
+) {
+    var inputText by remember(item.habit.id) { mutableStateOf("") }
+    val parsed = inputText.toIntOrNull()
+    val unitSuffix = item.habit.unit?.let { " $it" } ?: ""
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = LifeOsColors.SurfaceElevated,
+        title = {
+            Text(
+                text = item.habit.title,
+                style = MaterialTheme.typography.titleMedium,
+                color = LifeOsColors.TextPrimary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(
+                    text = "Current: ${item.todayValue} / ${item.habit.targetValue}$unitSuffix (values above target accepted)",
+                    style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
+                    color = LifeOsColors.TextSecondary,
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    listOf(1, 5, 10).forEach { step ->
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = LifeOsColors.MindPurple.copy(alpha = 0.16f),
+                            border = BorderStroke(1.dp, LifeOsColors.MindPurple.copy(alpha = 0.55f)),
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable { onAddDelta(step) },
+                        ) {
+                            Text(
+                                text = "+$step",
+                                style = MaterialTheme.typography.labelMedium.copy(fontFamily = FontFamily.Monospace),
+                                color = LifeOsColors.MindPurple,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(vertical = 8.dp, horizontal = 12.dp),
+                            )
+                        }
+                    }
+                }
+                OutlinedTextField(
+                    value = inputText,
+                    onValueChange = { inputText = it.filter { ch -> ch.isDigit() } },
+                    label = { Text("Custom amount or total") },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { if (parsed != null && parsed > 0) onAddDelta(parsed) },
+                enabled = parsed != null && parsed > 0,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = LifeOsColors.MindPurple,
+                    contentColor = LifeOsColors.VoidBlack,
+                ),
+            ) {
+                Text("Add +${parsed ?: 0}")
+            }
+        },
+        dismissButton = {
+            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                TextButton(
+                    onClick = { if (parsed != null) onSetExact(parsed) },
+                    enabled = parsed != null,
+                ) {
+                    Text("Set Total", color = LifeOsColors.TextPrimary)
+                }
+                TextButton(onClick = onDismiss) {
+                    Text("Cancel", color = LifeOsColors.TextSecondary)
+                }
+            }
+        },
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

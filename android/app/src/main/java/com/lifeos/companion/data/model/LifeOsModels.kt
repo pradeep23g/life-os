@@ -126,6 +126,22 @@ data class TimeLogInsertDto(
     val bucket: String,
     val description: String? = null,
     @SerialName("start_time") val startTime: String,
+    @SerialName("end_time") val endTime: String? = null,
+    @SerialName("duration_minutes") val durationMinutes: Int? = null,
+)
+
+@Serializable
+data class UserSettingsTimeColorsRow(
+    val id: String? = null,
+    @SerialName("user_id") val userId: String,
+    @SerialName("time_bucket_colors") val timeBucketColors: JsonObject? = null,
+)
+
+@Serializable
+data class UserSettingsTimeColorsUpsert(
+    @SerialName("user_id") val userId: String,
+    @SerialName("time_bucket_colors") val timeBucketColors: JsonObject,
+    @SerialName("updated_at") val updatedAt: String,
 )
 
 @Serializable

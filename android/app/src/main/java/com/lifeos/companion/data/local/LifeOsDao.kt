@@ -100,6 +100,15 @@ interface LifeOsDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun enqueueMutation(mutation: PendingMutationEntity)
 
+    @Query("DELETE FROM pending_mutations WHERE opType = :opType AND entityId = :entityId")
+    suspend fun deletePendingForEntity(opType: String, entityId: String)
+
+    @Transaction
+    suspend fun coalesceAndEnqueue(mutation: PendingMutationEntity) {
+        deletePendingForEntity(mutation.opType, mutation.entityId)
+        enqueueMutation(mutation)
+    }
+
     @Query("DELETE FROM pending_mutations WHERE id = :id")
     suspend fun deleteMutation(id: String)
 

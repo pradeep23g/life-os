@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import java.time.LocalDate
 import java.util.UUID
 
 class JournalRepository {
@@ -23,7 +24,8 @@ class JournalRepository {
     private val json = Json
 
     private fun currentUserIdOrNull(): String? =
-        SupabaseClientProvider.auth.currentUserOrNull()?.id
+        OutboxManager.appContextOrNull()?.let { SupabaseClientProvider.cachedUserIdOrNull(it) }
+            ?: SupabaseClientProvider.auth.currentUserOrNull()?.id
 
     fun observeEntries(): Flow<List<JournalEntryDto>> {
         val userId = currentUserIdOrNull() ?: return flowOf(emptyList())
@@ -82,10 +84,21 @@ class JournalRepository {
         whatWentGood: String?,
         whatYouLearned: String?,
         briefAboutDay: String?,
+        entryDateIst: String? = null,
     ) {
         val userId = currentUserIdOrNull() ?: return
         val id = UUID.randomUUID().toString()
-        val nowIso = IstClock.nowIsoUtc()
+        val nowIso = if (entryDateIst != null && entryDateIst != IstClock.todayIstString()) {
+            runCatching {
+                LocalDate.parse(entryDateIst)
+                    .atTime(12, 0)
+                    .atZone(IstClock.ZONE_IST)
+                    .toInstant()
+                    .toString()
+            }.getOrElse { IstClock.nowIsoUtc() }
+        } else {
+            IstClock.nowIsoUtc()
+        }
         val cleanGood = whatWentGood?.trim()?.takeIf { it.isNotEmpty() }
         val cleanLearned = whatYouLearned?.trim()?.takeIf { it.isNotEmpty() }
         val cleanBrief = briefAboutDay?.trim()?.takeIf { it.isNotEmpty() }

@@ -13,8 +13,6 @@ import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
 import androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL
 import androidx.biometric.BiometricPrompt
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -53,6 +51,7 @@ import androidx.fragment.app.FragmentActivity
 import com.lifeos.companion.data.supabase.SupabaseClientProvider
 import com.lifeos.companion.ui.auth.AuthScreen
 import com.lifeos.companion.ui.focus.FocusScreen
+import com.lifeos.companion.ui.focus.TimeOsSubPage
 import com.lifeos.companion.ui.habits.HabitsScreen
 import com.lifeos.companion.ui.home.HomeScreen
 import com.lifeos.companion.ui.journal.JournalScreen
@@ -62,6 +61,7 @@ import com.lifeos.companion.ui.navigation.LifeOsRoute
 import com.lifeos.companion.ui.navigation.rememberAstrolabeScrollConnection
 import com.lifeos.companion.ui.screens.ModulePlaceholderScreen
 import com.lifeos.companion.ui.screens.ProfileSettingsScreen
+import com.lifeos.companion.ui.screens.SystemSettingsScreen
 import com.lifeos.companion.ui.tasks.TasksScreen
 import com.lifeos.companion.ui.theme.LifeOsColors
 import com.lifeos.companion.ui.theme.LifeOsTheme
@@ -71,12 +71,14 @@ class MainActivity : FragmentActivity() {
     private var isUnlocked by mutableStateOf(false)
     private var biometricError by mutableStateOf<String?>(null)
     private var pendingDeepLinkRoute by mutableStateOf<LifeOsRoute?>(null)
+    private var pendingTimeOsTab by mutableStateOf<TimeOsSubPage?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        pendingDeepLinkRoute = resolveDeepLinkRoute(intent?.data)
-        triggerBiometricGate()
+        requestMaxRefreshRate()
+        applyDeepLinkUri(intent?.data)
+        window.decorView.post { triggerBiometricGate() }
 
         setContent {
             LifeOsTheme {
@@ -101,10 +103,20 @@ class MainActivity : FragmentActivity() {
                                 }
                             }
                             is SessionStatus.Authenticated -> {
+                                LaunchedEffect(status.session.user?.id) {
+                                    SupabaseClientProvider.cacheUserId(
+                                        this@MainActivity,
+                                        status.session.user?.id,
+                                    )
+                                }
                                 LifeOsCompanionShell(
                                     userEmail = status.session.user?.email,
                                     deepLinkRoute = pendingDeepLinkRoute,
-                                    onConsumeDeepLink = { pendingDeepLinkRoute = null },
+                                    deepLinkTimeOsTab = pendingTimeOsTab,
+                                    onConsumeDeepLink = {
+                                        pendingDeepLinkRoute = null
+                                        pendingTimeOsTab = null
+                                    },
                                 )
                             }
                             else -> {
@@ -120,8 +132,41 @@ class MainActivity : FragmentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        resolveDeepLinkRoute(intent.data)?.let { target ->
-            pendingDeepLinkRoute = target
+        applyDeepLinkUri(intent.data)
+    }
+
+    private fun applyDeepLinkUri(uri: Uri?) {
+        val route = resolveDeepLinkRoute(uri) ?: return
+        pendingDeepLinkRoute = route
+        if (route == LifeOsRoute.FOCUS) {
+            pendingTimeOsTab = when (uri?.getQueryParameter("tab")) {
+                "strip" -> TimeOsSubPage.STRIP
+                "analytics" -> TimeOsSubPage.ANALYTICS
+                else -> TimeOsSubPage.CHRONOS
+            }
+        }
+    }
+
+    private fun requestMaxRefreshRate() {
+        runCatching {
+            val activeDisplay = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                display
+            } else {
+                @Suppress("DEPRECATION")
+                windowManager.defaultDisplay
+            } ?: return
+
+            val currentMode = activeDisplay.mode
+            val bestMode = activeDisplay.supportedModes
+                .filter { it.physicalWidth == currentMode.physicalWidth && it.physicalHeight == currentMode.physicalHeight }
+                .maxByOrNull { it.refreshRate } ?: return
+
+            val params = window.attributes
+            params.preferredDisplayModeId = bestMode.modeId
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                params.preferredRefreshRate = bestMode.refreshRate
+            }
+            window.attributes = params
         }
     }
 
@@ -129,13 +174,14 @@ class MainActivity : FragmentActivity() {
         if (uri == null || uri.scheme != "lifeos") return null
         return when (uri.host) {
             "tasks" -> LifeOsRoute.TASKS
-            "focus" -> LifeOsRoute.FOCUS
+            "focus", "time-os" -> LifeOsRoute.FOCUS
             "habits" -> LifeOsRoute.HABITS
             "journal" -> LifeOsRoute.JOURNAL
             "mind" -> when {
                 uri.path?.contains("journal") == true -> LifeOsRoute.JOURNAL
                 else -> LifeOsRoute.HABITS
             }
+            "system" -> LifeOsRoute.SYSTEM
             "profile" -> LifeOsRoute.PROFILE
             "home" -> LifeOsRoute.HOME
             else -> null
@@ -200,15 +246,25 @@ class MainActivity : FragmentActivity() {
 private fun LifeOsCompanionShell(
     userEmail: String?,
     deepLinkRoute: LifeOsRoute?,
+    deepLinkTimeOsTab: TimeOsSubPage?,
     onConsumeDeepLink: () -> Unit,
 ) {
     var currentRoute by remember { mutableStateOf(LifeOsRoute.HOME) }
     var astrolabeState by remember { mutableStateOf(AstrolabeState.POPPED_ORB) }
     var preselectedFocusTaskId by remember { mutableStateOf<String?>(null) }
+    var requestedTimeOsTab by remember { mutableStateOf<TimeOsSubPage?>(null) }
+    var isAodActive by remember { mutableStateOf(false) }
 
-    LaunchedEffect(deepLinkRoute) {
+    LaunchedEffect(currentRoute) {
+        if (currentRoute != LifeOsRoute.FOCUS) {
+            isAodActive = false
+        }
+    }
+
+    LaunchedEffect(deepLinkRoute, deepLinkTimeOsTab) {
         if (deepLinkRoute != null) {
             currentRoute = deepLinkRoute
+            requestedTimeOsTab = deepLinkTimeOsTab
             astrolabeState = AstrolabeState.POPPED_ORB
             onConsumeDeepLink()
         }
@@ -219,13 +275,9 @@ private fun LifeOsCompanionShell(
         onStateChange = { astrolabeState = it },
     )
 
-    val contentBlurRadius by animateDpAsState(
-        targetValue = if (astrolabeState == AstrolabeState.EXPANDED_OVERLAY) 18.dp else 0.dp,
-        animationSpec = tween(durationMillis = 240),
-        label = "AstrolabeBackdropBlur",
-    )
+    val isAstrolabeExpanded = astrolabeState == AstrolabeState.EXPANDED_OVERLAY
 
-    if (currentRoute != LifeOsRoute.HOME && astrolabeState != AstrolabeState.EXPANDED_OVERLAY) {
+    if (currentRoute != LifeOsRoute.HOME && !isAstrolabeExpanded) {
         BackHandler {
             currentRoute = LifeOsRoute.HOME
             astrolabeState = AstrolabeState.POPPED_ORB
@@ -237,10 +289,11 @@ private fun LifeOsCompanionShell(
             .fillMaxSize()
             .nestedScroll(scrollConnection),
     ) {
-        val contentModifier = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && contentBlurRadius > 0.dp) {
+        // Static hardware blur when expanded avoids 24-frame RenderEffect shader recompilation during animation
+        val contentModifier = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && isAstrolabeExpanded) {
             Modifier
                 .fillMaxSize()
-                .blur(contentBlurRadius)
+                .blur(16.dp)
         } else {
             Modifier.fillMaxSize()
         }
@@ -259,6 +312,9 @@ private fun LifeOsCompanionShell(
                     FocusScreen(
                         preselectedTaskId = preselectedFocusTaskId,
                         onClearPreselectedTask = { preselectedFocusTaskId = null },
+                        initialSubPage = requestedTimeOsTab,
+                        onConsumeInitialSubPage = { requestedTimeOsTab = null },
+                        onAodActiveChanged = { isAodActive = it },
                     )
                 }
                 LifeOsRoute.TASKS -> {
@@ -276,6 +332,9 @@ private fun LifeOsCompanionShell(
                 LifeOsRoute.JOURNAL -> {
                     JournalScreen()
                 }
+                LifeOsRoute.SYSTEM -> {
+                    SystemSettingsScreen()
+                }
                 LifeOsRoute.PROFILE -> {
                     ProfileSettingsScreen(userEmail = userEmail)
                 }
@@ -292,12 +351,14 @@ private fun LifeOsCompanionShell(
             }
         }
 
-        AstrolabeNavigationDock(
-            currentRoute = currentRoute,
-            state = astrolabeState,
-            onStateChange = { astrolabeState = it },
-            onNavigate = { target -> currentRoute = target },
-        )
+        if (!isAodActive) {
+            AstrolabeNavigationDock(
+                currentRoute = currentRoute,
+                state = astrolabeState,
+                onStateChange = { astrolabeState = it },
+                onNavigate = { target -> currentRoute = target },
+            )
+        }
     }
 }
 

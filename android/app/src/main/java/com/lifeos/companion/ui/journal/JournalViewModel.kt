@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.lifeos.companion.data.model.JournalEntryDto
 import com.lifeos.companion.data.repository.JournalRepository
 import com.lifeos.companion.data.sync.OutboxManager
+import com.lifeos.companion.util.IstClock
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -12,9 +13,11 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.Instant
 
 data class JournalUiState(
     val entries: List<JournalEntryDto> = emptyList(),
+    val entriesByDateIst: Map<String, List<JournalEntryDto>> = emptyMap(),
     val pendingOutboxCount: Int = 0,
     val isRefreshing: Boolean = false,
     val error: String? = null,
@@ -29,8 +32,13 @@ class JournalViewModel : ViewModel() {
         OutboxManager.database().dao().observePendingCount(),
         statusFlow,
     ) { entries, outboxCount, (refreshing, err) ->
+        val grouped = entries.groupBy { entry ->
+            runCatching { IstClock.toIstDateString(Instant.parse(entry.createdAt)) }
+                .getOrElse { entry.createdAt.take(10) }
+        }
         JournalUiState(
             entries = entries,
+            entriesByDateIst = grouped,
             pendingOutboxCount = outboxCount,
             isRefreshing = refreshing,
             error = err,
@@ -59,9 +67,10 @@ class JournalViewModel : ViewModel() {
         whatWentGood: String,
         whatYouLearned: String,
         briefAboutDay: String,
+        entryDateIst: String? = null,
     ) {
         viewModelScope.launch {
-            runCatching { repo.createEntry(mood, whatWentGood, whatYouLearned, briefAboutDay) }
+            runCatching { repo.createEntry(mood, whatWentGood, whatYouLearned, briefAboutDay, entryDateIst) }
                 .onFailure { err -> statusFlow.update { it.first to err.message } }
         }
     }

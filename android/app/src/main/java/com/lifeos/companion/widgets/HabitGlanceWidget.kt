@@ -63,10 +63,17 @@ class HabitGlanceWidget : GlanceAppWidget() {
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         SupabaseClientProvider.init(context)
         OutboxManager.init(context)
-        val userId = SupabaseClientProvider.auth.currentUserOrNull()?.id
+        val userId = SupabaseClientProvider.awaitAuthenticatedUserId(context)
+            ?: SupabaseClientProvider.cachedUserIdOrNull(context)
         val todayIst = IstClock.todayIstString()
         val habits = if (userId != null) {
-            LifeOsDatabase.get(context).dao().getHabitsSnapshot(userId)
+            val local = LifeOsDatabase.get(context).dao().getHabitsSnapshot(userId)
+            if (local.isEmpty()) {
+                runCatching { HabitsRepository().refreshFromRemote() }
+                LifeOsDatabase.get(context).dao().getHabitsSnapshot(userId)
+            } else {
+                local
+            }
         } else {
             emptyList()
         }
@@ -205,14 +212,18 @@ class ToggleHabitWidgetAction : ActionCallback {
         val habitId = parameters[KEY_HABIT_ID] ?: return
         SupabaseClientProvider.init(context)
         OutboxManager.init(context)
-        val userId = SupabaseClientProvider.auth.currentUserOrNull()?.id ?: return
+        val userId = SupabaseClientProvider.awaitAuthenticatedUserId(context)
+            ?: SupabaseClientProvider.cachedUserIdOrNull(context)
+            ?: return
         val todayIst = IstClock.todayIstString()
         val cached = LifeOsDatabase.get(context).dao().getHabitsSnapshot(userId)
             .firstOrNull { it.id == habitId } ?: return
 
         val todayVal = if (cached.todayLogDate == todayIst) cached.todayValue else 0
-        val nextVal = if (cached.habitType == "target") {
-            if (todayVal >= cached.targetValue) 0 else todayVal + 1
+        val isTarget = cached.habitType == "target" || cached.targetValue > 1
+        // Progressive habits keep counting up past target; binary habits toggle 0 <-> 1
+        val nextVal = if (isTarget) {
+            todayVal + 1
         } else {
             if (todayVal >= 1) 0 else 1
         }

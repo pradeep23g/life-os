@@ -16,11 +16,11 @@ import java.time.Duration
 import java.time.Instant
 import java.util.UUID
 
-val TIME_BUCKETS = listOf("Academics", "Deep Work", "Admin", "Fitness", "Learning")
-
 data class FocusSnapshot(
     val activeTimer: TimeLogDto?,
     val todayLogs: List<TimeLogDto>,
+    val logs7d: List<TimeLogDto>,
+    val logs30d: List<TimeLogDto>,
     val openTasks: List<TaskDto>,
 )
 
@@ -37,20 +37,47 @@ class FocusRepository {
 
     suspend fun fetchFocusSnapshot(): FocusSnapshot {
         val userId = requireUserId()
-        val todayIst = IstClock.todayIstString()
+        val today = IstClock.todayIst()
+        val todayIst = today.toString()
+        val sevenDaysAgoIst = today.minusDays(6).toString()
+        val thirtyDaysAgoIst = today.minusDays(29).toString()
+        val thirtyDaysStartIso = today.minusDays(30).atStartOfDay(IstClock.ZONE_IST).toInstant().toString()
 
         val recent = db["time_logs"]
             .select {
-                filter { eq("user_id", userId) }
+                filter {
+                    eq("user_id", userId)
+                    gte("start_time", thirtyDaysStartIso)
+                }
                 order("start_time", Order.DESCENDING)
-                limit(40)
+                limit(500)
             }
             .decodeList<TimeLogDto>()
 
         val active = recent.firstOrNull { it.endTime == null }
-        val todayLogs = recent.filter { log ->
-            log.endTime != null &&
-                runCatching { IstClock.toIstDateString(Instant.parse(log.startTime)) }.getOrNull() == todayIst
+            ?: db["time_logs"]
+                .select {
+                    filter {
+                        eq("user_id", userId)
+                        exact("end_time", null)
+                    }
+                    order("start_time", Order.DESCENDING)
+                    limit(1)
+                }
+                .decodeSingleOrNull<TimeLogDto>()
+
+        val completed = recent.filter { it.endTime != null }
+
+        val todayLogs = completed.filter { log ->
+            runCatching { IstClock.toIstDateString(Instant.parse(log.startTime)) }.getOrNull() == todayIst
+        }
+        val logs7d = completed.filter { log ->
+            val d = runCatching { IstClock.toIstDateString(Instant.parse(log.startTime)) }.getOrNull()
+            d != null && d >= sevenDaysAgoIst
+        }
+        val logs30d = completed.filter { log ->
+            val d = runCatching { IstClock.toIstDateString(Instant.parse(log.startTime)) }.getOrNull()
+            d != null && d >= thirtyDaysAgoIst
         }
 
         val openTasks = db["tasks"]
@@ -68,6 +95,8 @@ class FocusRepository {
         return FocusSnapshot(
             activeTimer = active,
             todayLogs = todayLogs,
+            logs7d = logs7d,
+            logs30d = logs30d,
             openTasks = openTasks,
         )
     }
@@ -131,6 +160,74 @@ class FocusRepository {
                 put("bucket", active.bucket)
                 put("duration_minutes", minutes)
                 if (active.taskId != null) put("task_id", active.taskId)
+            },
+        )
+    }
+
+    suspend fun logManualSession(
+        bucket: String,
+        startInstant: Instant,
+        endInstant: Instant,
+        description: String?,
+    ): TimeLogDto {
+        val userId = requireUserId()
+        require(endInstant.isAfter(startInstant)) { "End time must be after start time." }
+        val minutes = Duration.between(startInstant, endInstant).toMinutes().toInt().coerceAtLeast(1)
+        val id = UUID.randomUUID().toString()
+        val cleanDesc = description?.trim()?.takeIf { it.isNotEmpty() }
+
+        db["time_logs"].insert(
+            TimeLogInsertDto(
+                id = id,
+                userId = userId,
+                taskId = null,
+                bucket = bucket,
+                description = cleanDesc,
+                startTime = startInstant.toString(),
+                endTime = endInstant.toString(),
+                durationMinutes = minutes,
+            ),
+        )
+
+        TelemetryLogger.logEventSafe(
+            domain = LifeOsDomains.TIME_OS,
+            entityType = "time_log",
+            entityId = id,
+            eventType = EventTypes.TIME_SESSION_LOGGED,
+            payload = buildJsonObject {
+                put("bucket", bucket)
+                put("duration_minutes", minutes)
+                put("manual", true)
+            },
+        )
+
+        return TimeLogDto(
+            id = id,
+            userId = userId,
+            bucket = bucket,
+            description = cleanDesc,
+            startTime = startInstant.toString(),
+            endTime = endInstant.toString(),
+            durationMinutes = minutes,
+        )
+    }
+
+    suspend fun deleteSession(log: TimeLogDto) {
+        val userId = requireUserId()
+        db["time_logs"].delete {
+            filter {
+                eq("id", log.id)
+                eq("user_id", userId)
+            }
+        }
+        TelemetryLogger.logEventSafe(
+            domain = LifeOsDomains.TIME_OS,
+            entityType = "time_log",
+            entityId = log.id,
+            eventType = EventTypes.TIME_TIME_LOG_DELETED,
+            payload = buildJsonObject {
+                put("bucket", log.bucket)
+                put("duration_minutes", log.durationMinutes ?: 0)
             },
         )
     }

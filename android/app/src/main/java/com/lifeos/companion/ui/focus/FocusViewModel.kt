@@ -8,6 +8,7 @@ import com.lifeos.companion.data.model.TimeLogDto
 import com.lifeos.companion.data.repository.FocusRepository
 import com.lifeos.companion.data.repository.StartFocusResult
 import com.lifeos.companion.data.repository.TIME_BUCKETS
+import com.lifeos.companion.data.repository.TimeBucketColorStore
 import com.lifeos.companion.service.FocusTimerService
 import com.lifeos.companion.widgets.WidgetStateSync
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,6 +16,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.Instant
+
+enum class TimeOsSubPage(val label: String) {
+    CHRONOS("TIMER"),
+    STRIP("24H STRIP"),
+    ANALYTICS("7D / 30D"),
+}
 
 data class FocusUiState(
     val isLoading: Boolean = true,
@@ -23,11 +31,15 @@ data class FocusUiState(
     val activeTimer: TimeLogDto? = null,
     val conflictTimer: TimeLogDto? = null,
     val todayLogs: List<TimeLogDto> = emptyList(),
+    val logs7d: List<TimeLogDto> = emptyList(),
+    val logs30d: List<TimeLogDto> = emptyList(),
     val openTasks: List<TaskDto> = emptyList(),
-    val selectedBucket: String = TIME_BUCKETS[1], // Deep Work
+    val selectedBucket: String = TIME_BUCKETS[0], // Deep Work
     val selectedTaskId: String? = null,
     val selectedTargetMinutes: Int = 0, // 0 = Open-ended stopwatch
     val description: String = "",
+    val activeSubPage: TimeOsSubPage = TimeOsSubPage.CHRONOS,
+    val isAodOpen: Boolean = false,
 )
 
 class FocusViewModel(application: Application) : AndroidViewModel(application) {
@@ -37,22 +49,35 @@ class FocusViewModel(application: Application) : AndroidViewModel(application) {
     val uiState: StateFlow<FocusUiState> = _uiState.asStateFlow()
 
     init {
+        TimeBucketColorStore.init(application)
         refresh()
+    }
+
+    fun selectSubPage(page: TimeOsSubPage) {
+        _uiState.update { it.copy(activeSubPage = page) }
+    }
+
+    fun setAodOpen(open: Boolean) {
+        _uiState.update { it.copy(isAodOpen = open) }
     }
 
     fun applyPreselectedTask(taskId: String?) {
         if (taskId != null) {
-            _uiState.update { it.copy(selectedTaskId = taskId) }
+            _uiState.update { it.copy(selectedTaskId = taskId, activeSubPage = TimeOsSubPage.CHRONOS) }
         }
     }
 
     fun refresh() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = it.todayLogs.isEmpty() && it.activeTimer == null, error = null) }
+            _uiState.update { it.copy(isLoading = it.logs30d.isEmpty() && it.activeTimer == null, error = null) }
+            TimeBucketColorStore.refreshFromRemote(getApplication())
             runCatching { repo.fetchFocusSnapshot() }
                 .onSuccess { snap ->
                     val mins = snap.todayLogs.sumOf { it.durationMinutes ?: 0 }
-                    WidgetStateSync.saveFocusState(getApplication(), snap.activeTimer, mins)
+                    val todayBucketMins = TIME_BUCKETS.associateWith { b ->
+                        snap.todayLogs.filter { it.bucket == b }.sumOf { it.durationMinutes ?: 0 }
+                    }
+                    WidgetStateSync.saveFocusState(getApplication(), snap.activeTimer, mins, todayBucketMins)
                     if (snap.activeTimer != null) {
                         FocusTimerService.start(
                             getApplication(),
@@ -65,6 +90,8 @@ class FocusViewModel(application: Application) : AndroidViewModel(application) {
                             isLoading = false,
                             activeTimer = snap.activeTimer,
                             todayLogs = snap.todayLogs,
+                            logs7d = snap.logs7d,
+                            logs30d = snap.logs30d,
                             openTasks = snap.openTasks,
                             error = null,
                         )
@@ -72,7 +99,7 @@ class FocusViewModel(application: Application) : AndroidViewModel(application) {
                 }
                 .onFailure { err ->
                     _uiState.update {
-                        it.copy(isLoading = false, error = err.message ?: "Could not load Chronos state")
+                        it.copy(isLoading = false, error = err.message ?: "Could not load Time OS state")
                     }
                 }
         }
@@ -150,6 +177,7 @@ class FocusViewModel(application: Application) : AndroidViewModel(application) {
                 )
             }.onSuccess { started ->
                 FocusTimerService.start(getApplication(), started, current.selectedTargetMinutes)
+                WidgetStateSync.saveFocusState(getApplication(), started)
                 _uiState.update { it.copy(isSubmitting = false, description = "") }
                 refresh()
             }.onFailure { err ->
@@ -161,6 +189,7 @@ class FocusViewModel(application: Application) : AndroidViewModel(application) {
     fun resumeConflictExisting() {
         val existing = _uiState.value.conflictTimer ?: return
         FocusTimerService.start(getApplication(), existing, _uiState.value.selectedTargetMinutes)
+        WidgetStateSync.saveFocusState(getApplication(), existing)
         _uiState.update { it.copy(activeTimer = existing, conflictTimer = null) }
     }
 
@@ -176,12 +205,39 @@ class FocusViewModel(application: Application) : AndroidViewModel(application) {
                 .onSuccess {
                     FocusTimerService.stop(getApplication())
                     WidgetStateSync.saveFocusState(getApplication(), null)
-                    _uiState.update { it.copy(isSubmitting = false, activeTimer = null) }
+                    _uiState.update { it.copy(isSubmitting = false, activeTimer = null, isAodOpen = false) }
                     refresh()
                 }
                 .onFailure { err ->
                     _uiState.update { it.copy(isSubmitting = false, error = err.message) }
                 }
+        }
+    }
+
+    fun logManualSession(
+        bucket: String,
+        startInstant: Instant,
+        endInstant: Instant,
+        description: String?,
+    ) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isSubmitting = true, error = null) }
+            runCatching { repo.logManualSession(bucket, startInstant, endInstant, description) }
+                .onSuccess {
+                    _uiState.update { it.copy(isSubmitting = false) }
+                    refresh()
+                }
+                .onFailure { err ->
+                    _uiState.update { it.copy(isSubmitting = false, error = err.message ?: "Failed to inject manual log") }
+                }
+        }
+    }
+
+    fun deleteSession(log: TimeLogDto) {
+        viewModelScope.launch {
+            runCatching { repo.deleteSession(log) }
+                .onSuccess { refresh() }
+                .onFailure { err -> _uiState.update { it.copy(error = err.message ?: "Failed to delete log") } }
         }
     }
 }

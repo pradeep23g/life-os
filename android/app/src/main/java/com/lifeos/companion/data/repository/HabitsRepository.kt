@@ -44,7 +44,8 @@ class HabitsRepository {
     private val json = Json
 
     private fun currentUserIdOrNull(): String? =
-        SupabaseClientProvider.auth.currentUserOrNull()?.id
+        OutboxManager.appContextOrNull()?.let { SupabaseClientProvider.cachedUserIdOrNull(it) }
+            ?: SupabaseClientProvider.auth.currentUserOrNull()?.id
 
     fun observeHabitsToday(): Flow<List<HabitWithTodayStatus>> {
         val userId = currentUserIdOrNull() ?: return flowOf(emptyList())

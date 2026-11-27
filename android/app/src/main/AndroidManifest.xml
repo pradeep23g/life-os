@@ -19,6 +19,7 @@
 
         <activity
             android:name=".MainActivity"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden"
             android:exported="true"
             android:launchMode="singleTask"
             android:theme="@style/Theme.LifeOsCompanion">
@@ -74,6 +75,30 @@
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/habit_widget_info" />
+        </receiver>
+
+        <receiver
+            android:name=".widgets.FocusDonut1x1WidgetReceiver"
+            android:exported="true"
+            android:label="Time OS Donut (1x1)">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/focus_donut_1x1_info" />
+        </receiver>
+
+        <receiver
+            android:name=".widgets.FocusMix2x2WidgetReceiver"
+            android:exported="true"
+            android:label="Time OS Mix (2x2)">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/focus_mix_2x2_info" />
         </receiver>
     </application>
 
