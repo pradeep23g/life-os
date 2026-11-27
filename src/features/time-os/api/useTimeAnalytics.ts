@@ -34,11 +34,11 @@ export type TimeAnalytics = {
 export const timeAnalyticsQueryKey = ['time-os', 'analytics'] as const
 
 const BUCKET_COLOR_CLASS: Record<TimeBucket, string> = {
- Academics: 'bg-purple-900',
  'Deep Work': 'bg-blue-900',
- Admin: 'bg-elevated',
- Fitness: 'bg-emerald-900',
- Learning: 'bg-amber-900',
+ Learning: 'bg-emerald-900',
+ Fitness: 'bg-red-900',
+ Gaming: 'bg-pink-900',
+ Chore: 'bg-slate-700',
 }
 
 function getErrorMessage(error: unknown): string {

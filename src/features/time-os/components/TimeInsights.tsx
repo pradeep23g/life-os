@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useTimeAnalytics } from '../api/useTimeAnalytics'
-import { TIME_BUCKET_COLORS, type TimeBucket } from '../api/useTimeLogs'
+import { useTimeBucketColors } from '../api/useTimeBucketColors'
+import type { TimeBucket } from '../api/useTimeLogs'
 
 function formatHoursMins(totalMinutes: number): string {
   const hours = Math.floor(totalMinutes / 60)
@@ -10,6 +11,7 @@ function formatHoursMins(totalMinutes: number): string {
 
 function TimeInsights() {
   const { data, isLoading, isError } = useTimeAnalytics()
+  const { bucketColors } = useTimeBucketColors()
 
   const maxTrendMinutes = useMemo(() => {
     if (!data) return 1
@@ -39,7 +41,7 @@ function TimeInsights() {
         {/* Massive Hero Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {(data?.todayDistribution ?? []).map((segment) => {
-            const color = TIME_BUCKET_COLORS[segment.bucket as TimeBucket] || '#f59e0b'
+            const color = bucketColors[segment.bucket as TimeBucket] || '#f59e0b'
             return (
               <div 
                 key={segment.bucket} 

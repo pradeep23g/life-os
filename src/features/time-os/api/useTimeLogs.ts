@@ -12,16 +12,16 @@ import {
 import { emitSystemFeedback, systemStatusQueryKey } from '../../system'
 import { useEventBus } from '../../../store/useEventBus'
 
-export const TIME_BUCKETS = ['Academics', 'Deep Work', 'Admin', 'Fitness', 'Learning'] as const
+export const TIME_BUCKETS = ['Deep Work', 'Learning', 'Fitness', 'Gaming', 'Chore'] as const
 
 export type TimeBucket = (typeof TIME_BUCKETS)[number]
 
 export const TIME_BUCKET_COLORS: Record<TimeBucket, string> = {
-  'Academics': 'rgba(139, 92, 246, 1)', // Purple
-  'Deep Work': 'rgba(59, 130, 246, 1)', // Blue
-  'Admin': 'rgba(245, 158, 11, 1)',     // Amber
-  'Fitness': 'rgba(239, 68, 68, 1)',    // Red
-  'Learning': 'rgba(16, 185, 129, 1)',  // Emerald
+  'Deep Work': '#3b82f6', // Blue
+  'Learning': '#10b981',  // Emerald
+  'Fitness': '#ef4444',   // Red
+  'Gaming': '#ec4899',    // Pink
+  'Chore': '#94a3b8',     // Slate
 }
 
 export type TimeLog = {

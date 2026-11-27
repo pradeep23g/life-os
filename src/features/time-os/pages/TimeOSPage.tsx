@@ -7,7 +7,6 @@ import TimeInsights from '../components/TimeInsights'
 import { TimeHistory } from '../components/TimeHistory'
 import {
   TIME_BUCKETS,
-  TIME_BUCKET_COLORS,
   useActiveTimer,
   useCompletedTimeLogs,
   useManualLog,
@@ -17,6 +16,7 @@ import {
   type CompletedTimeLog,
   type TimeLog,
 } from '../api/useTimeLogs'
+import { useTimeBucketColors } from '../api/useTimeBucketColors'
 
 function toDateTimeLocalValue(date: Date): string {
   const pad = (n: number) => n.toString().padStart(2, '0')
@@ -36,17 +36,6 @@ function formatElapsed(elapsedMs: number): string {
   return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
 }
 
-// Dynamic bucket color mapper
-const BUCKET_COLORS = TIME_BUCKET_COLORS
-
-const BUCKET_CLASSES: Record<string, string> = {
-  'Academics': 'bg-purple-500',
-  'Deep Work': 'bg-blue-500',
-  'Admin': 'bg-amber-500',
-  'Fitness': 'bg-red-500',
-  'Learning': 'bg-emerald-500',
-}
-
 type TimelineInterval = {
   id: string
   bucket: TimeBucket
@@ -55,7 +44,17 @@ type TimelineInterval = {
   isActive?: boolean
 }
 
-function DailyTimeline({ logs, activeTimer, now }: { logs: CompletedTimeLog[], activeTimer: TimeLog | null, now: number }) {
+function DailyTimeline({
+  logs,
+  activeTimer,
+  now,
+  bucketColors,
+}: {
+  logs: CompletedTimeLog[]
+  activeTimer: TimeLog | null
+  now: number
+  bucketColors: Record<TimeBucket, string>
+}) {
   const startOfDay = new Date()
   startOfDay.setHours(0, 0, 0, 0)
   const startMs = startOfDay.getTime()
@@ -105,13 +104,13 @@ function DailyTimeline({ logs, activeTimer, now }: { logs: CompletedTimeLog[], a
 
           const leftPercent = ((s - startMs) / (endMs - startMs)) * 100
           const widthPercent = ((e - s) / (endMs - startMs)) * 100
-          const colorClass = BUCKET_CLASSES[log.bucket] || 'bg-text-secondary'
+          const color = bucketColors[log.bucket] || '#3b82f6'
 
           return (
             <div
               key={log.id}
-              className={`absolute top-0 bottom-0 ${colorClass} ${log.isActive ? 'animate-pulse opacity-80' : 'opacity-50 hover:opacity-100 transition-opacity'}`}
-              style={{ left: `${leftPercent}%`, width: `${widthPercent}%` }}
+              className={`absolute top-0 bottom-0 ${log.isActive ? 'animate-pulse opacity-85' : 'opacity-65 hover:opacity-100 transition-opacity'}`}
+              style={{ left: `${leftPercent}%`, width: `${widthPercent}%`, backgroundColor: color }}
               title={`${log.bucket} (${Math.round((e - s) / 60000)}m)`}
             />
           )
@@ -131,6 +130,7 @@ function DailyTimeline({ logs, activeTimer, now }: { logs: CompletedTimeLog[], a
 function TimeOSPage() {
   const { data: activeTimer } = useActiveTimer()
   const { data: completedLogs = [] } = useCompletedTimeLogs()
+  const { bucketColors } = useTimeBucketColors()
   const { mutate: startTimer, isPending: isStarting, error: startError } = useStartTimer()
   const { mutate: stopTimer, isPending: isStopping } = useStopTimer()
   const { mutate: createManualLog, isPending: isSavingManual, error: manualError } = useManualLog()
@@ -160,7 +160,7 @@ function TimeOSPage() {
     return formatElapsed(now - new Date(activeTimer.start_time).getTime())
   }, [activeTimer, now])
 
-  const activeColor = activeTimer ? BUCKET_COLORS[activeTimer.bucket] || BUCKET_COLORS['Deep Work'] : 'transparent'
+  const activeColor = activeTimer ? bucketColors[activeTimer.bucket] || bucketColors['Deep Work'] : 'transparent'
 
   return (
     <section className="min-h-[85vh] flex flex-col pb-24 font-sans selection:bg-primary/30 relative">
@@ -257,7 +257,7 @@ function TimeOSPage() {
               </div>
 
               {/* Bottom Gantt Timeline */}
-              <DailyTimeline logs={completedLogs} activeTimer={activeTimer} now={now} />
+              <DailyTimeline logs={completedLogs} activeTimer={activeTimer} now={now} bucketColors={bucketColors} />
             </div>
           ) : (
             <div className="w-full max-w-3xl flex flex-col items-center animate-fade-in">
@@ -269,9 +269,9 @@ function TimeOSPage() {
                     key={option}
                     onClick={() => setBucket(option as TimeBucket)}
                     style={{
-                      borderColor: bucket === option ? BUCKET_COLORS[option] : undefined,
-                      color: bucket === option ? BUCKET_COLORS[option] : undefined,
-                      backgroundColor: bucket === option ? `${BUCKET_COLORS[option].replace('1)', '0.1)')}` : undefined
+                      borderColor: bucket === option ? bucketColors[option] : undefined,
+                      color: bucket === option ? bucketColors[option] : undefined,
+                      backgroundColor: bucket === option ? `${bucketColors[option]}1a` : undefined
                     }}
                     className={`px-6 py-3 text-[10px] font-mono uppercase tracking-[0.15em] transition-all border
                       ${bucket === option 
@@ -304,7 +304,7 @@ function TimeOSPage() {
               {startError && <p className="mt-4 text-[10px] font-mono text-threat-critical uppercase">{startError.message}</p>}
               
               {/* Bottom Gantt Timeline (when no active timer) */}
-              <DailyTimeline logs={completedLogs} activeTimer={null} now={now} />
+              <DailyTimeline logs={completedLogs} activeTimer={null} now={now} bucketColors={bucketColors} />
             </div>
           )}
         </div>

@@ -1276,6 +1276,7 @@ export type Database = {
           created_at: string
           finance_preferences: Json
           id: string
+          time_bucket_colors: Json
           updated_at: string
           user_id: string
         }
@@ -1283,6 +1284,7 @@ export type Database = {
           created_at?: string
           finance_preferences?: Json
           id?: string
+          time_bucket_colors?: Json
           updated_at?: string
           user_id: string
         }
@@ -1290,6 +1292,7 @@ export type Database = {
           created_at?: string
           finance_preferences?: Json
           id?: string
+          time_bucket_colors?: Json
           updated_at?: string
           user_id?: string
         }
